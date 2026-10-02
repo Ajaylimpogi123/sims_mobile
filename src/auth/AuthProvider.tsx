@@ -1,9 +1,10 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
 import { login as apiLogin, logout as apiLogout, meQueryOptions } from '@/api/auth';
 import { ApiError, MESSAGES, toApiError } from '@/api/errors';
-import { ROLE_STUDENT, ROLE_SUPERVISOR, type User } from '@/api/types';
+import type { MeResponse, User } from '@/api/types';
+import { navigationFor, type Navigation } from '@/navigation/access';
 
 import { getDeviceName } from './device-name';
 import { setSessionEndedHandler } from './session-events';
@@ -12,7 +13,7 @@ import { tokenStore } from './token-store';
 /**
  * restoring     – reading the stored token and calling GET /me (splash)
  * signedOut     – show Login
- * signedIn      – show the tabs for user.role_id
+ * signedIn      – show the navigation for the user's role (see src/navigation/access.ts)
  * restoreFailed – a token exists but /me couldn't be reached (offline / server error); offer retry
  */
 export type AuthStatus = 'restoring' | 'signedOut' | 'signedIn' | 'restoreFailed';
@@ -20,6 +21,10 @@ export type AuthStatus = 'restoring' | 'signedOut' | 'signedIn' | 'restoreFailed
 interface AuthContextValue {
   status: AuthStatus;
   user: User | null;
+  /** Latest GET /me (role summary + staff flags). Set whenever status is signedIn. */
+  me: MeResponse | null;
+  /** Tabs / More items for this user. Set whenever status is signedIn. */
+  navigation: Navigation | null;
   /** Message for the login screen, e.g. why the session ended. */
   notice: string | null;
   restoreError: ApiError | null;
@@ -31,18 +36,19 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-/** The server only lets students and supervisors in; this mirrors it so the app never routes anyone else. */
-function isMobileRole(user: User | null | undefined): user is User {
-  return !!user && (user.role_id === ROLE_STUDENT || user.role_id === ROLE_SUPERVISOR);
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<AuthStatus>('restoring');
-  const [user, setUser] = useState<User | null>(null);
+  /** /me as of sign-in / restore; the live query below supersedes it once it refetches. */
+  const [sessionMe, setSessionMe] = useState<MeResponse | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [restoreError, setRestoreError] = useState<ApiError | null>(null);
   const restoreStarted = useRef(false);
+
+  // Keeps role / flags fresh (pull-to-refresh on Profile, app foreground) while signed in.
+  const meQuery = useQuery({ ...meQueryOptions, enabled: status === 'signedIn' });
+  const me = status === 'signedIn' ? (meQuery.data ?? sessionMe) : null;
+  const navigation = useMemo(() => navigationFor(me), [me]);
 
   /** Forget everything locally. Never throws. */
   const endLocalSession = useCallback(
@@ -53,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Secure storage failure: the in-memory token is already gone.
       }
       queryClient.clear();
-      setUser(null);
+      setSessionMe(null);
       setRestoreError(null);
       setNotice(message);
       setStatus('signedOut');
@@ -66,6 +72,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => setSessionEndedHandler((message) => void endLocalSession(message)),
     [endLocalSession],
   );
+
+  /**
+   * Loads GET /me with the stored token and enters the app. Used after login and on launch.
+   * Every active role (1-4) is allowed; the server answers 403 role_not_allowed for anything else.
+   */
+  const enterWithStoredToken = useCallback(async () => {
+    try {
+      const fresh = await queryClient.fetchQuery({ ...meQueryOptions, staleTime: 0 });
+      if (!navigationFor(fresh)) {
+        // A role this app version doesn't know (the server should already have refused it).
+        try {
+          await apiLogout();
+        } catch {
+          // Clear locally anyway.
+        }
+        await endLocalSession(MESSAGES.roleNotAllowed);
+        return;
+      }
+      setSessionMe(fresh);
+      setRestoreError(null);
+      setStatus('signedIn');
+    } catch (error) {
+      const apiError = toApiError(error);
+      if (apiError.endsSession) {
+        // The client interceptor already ended the session; make sure the state agrees.
+        await endLocalSession(apiError.message);
+        return;
+      }
+      // Offline / server error: keep the token and offer Try again / Log out.
+      setRestoreError(apiError);
+      setStatus('restoreFailed');
+    }
+  }, [endLocalSession, queryClient]);
 
   const restore = useCallback(async () => {
     setStatus('restoring');
@@ -81,26 +120,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setStatus('signedOut');
       return;
     }
-
-    try {
-      const me = await queryClient.fetchQuery({ ...meQueryOptions, staleTime: 0 });
-      if (!isMobileRole(me.user)) {
-        await endLocalSession(MESSAGES.roleNotAllowed);
-        return;
-      }
-      setUser(me.user);
-      setStatus('signedIn');
-    } catch (error) {
-      const apiError = toApiError(error);
-      if (apiError.endsSession) {
-        // The client interceptor already ended the session; make sure the state agrees.
-        await endLocalSession(apiError.message);
-        return;
-      }
-      setRestoreError(apiError);
-      setStatus('restoreFailed');
-    }
-  }, [endLocalSession, queryClient]);
+    await enterWithStoredToken();
+  }, [enterWithStoredToken]);
 
   useEffect(() => {
     if (restoreStarted.current) return;
@@ -112,19 +133,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (email: string, password: string) => {
       setNotice(null);
       const result = await apiLogin({ email: email.trim(), password, device_name: getDeviceName() });
-
-      if (!isMobileRole(result.user)) {
-        throw new ApiError({ kind: 'forbidden', status: 403, message: MESSAGES.roleNotAllowed });
-      }
-
       await tokenStore.save(result.token);
       queryClient.clear();
-      setUser(result.user);
-      setStatus('signedIn');
-      // Warm the profile so the Profile tab opens instantly.
-      void queryClient.prefetchQuery(meQueryOptions);
+      // Navigation depends on /me (staff flags), so load it before leaving the login screen.
+      await enterWithStoredToken();
     },
-    [queryClient],
+    [enterWithStoredToken, queryClient],
   );
 
   const signOut = useCallback(async () => {
@@ -141,8 +155,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const clearNotice = useCallback(() => setNotice(null), []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ status, user, notice, restoreError, signIn, signOut, retryRestore: restore, clearNotice }),
-    [status, user, notice, restoreError, signIn, signOut, restore, clearNotice],
+    () => ({
+      status,
+      user: me?.user ?? null,
+      me,
+      navigation,
+      notice,
+      restoreError,
+      signIn,
+      signOut,
+      retryRestore: restore,
+      clearNotice,
+    }),
+    [status, me, navigation, notice, restoreError, signIn, signOut, restore, clearNotice],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -152,4 +177,14 @@ export function useAuth(): AuthContextValue {
   const value = useContext(AuthContext);
   if (!value) throw new Error('useAuth must be used inside <AuthProvider>');
   return value;
+}
+
+const NO_ITEMS: Pick<Navigation, 'tabs' | 'more'> = { tabs: [], more: [] };
+
+/**
+ * Tabs / More items for layouts and screens inside a signed-in route group. Returns empty lists
+ * (never throws) while a group is being torn down after logout.
+ */
+export function useNavigationAccess(): Pick<Navigation, 'tabs' | 'more'> {
+  return useAuth().navigation ?? NO_ITEMS;
 }

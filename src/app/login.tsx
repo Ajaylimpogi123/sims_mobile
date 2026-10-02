@@ -163,7 +163,7 @@ export default function LoginScreen() {
           </View>
 
           <Text className="mt-8 text-center text-xs leading-5 text-slate-400">
-            For students and supervisors. Coordinators and administrators, please use the SIMS website.
+            Use the same account you use on the SIMS website.
           </Text>
         </ScrollView>
       </KeyboardAvoidingView>

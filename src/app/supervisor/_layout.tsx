@@ -1,15 +1,15 @@
 import { RoleTabs } from '@/components/RoleTabs';
 
-/** Supervisor (role 3) tabs. */
+/** Supervisor (role 3) tabs; which ones show comes from src/navigation/access.ts. */
 export default function SupervisorLayout() {
   return (
     <RoleTabs
-      tabs={[
-        { name: 'index', title: 'Home', icon: 'home-outline', iconFocused: 'home' },
-        { name: 'approvals', title: 'Approvals', icon: 'checkmark-done-circle-outline', iconFocused: 'checkmark-done-circle' },
-        { name: 'students', title: 'Students', icon: 'people-outline', iconFocused: 'people' },
-        { name: 'evaluations', title: 'Evaluations', icon: 'star-outline', iconFocused: 'star' },
-        { name: 'profile', title: 'Profile', icon: 'person-circle-outline', iconFocused: 'person-circle' },
+      routes={[
+        { name: 'index', feature: 'home' },
+        { name: 'approvals', feature: 'approvals' },
+        { name: 'students', feature: 'students' },
+        { name: 'evaluations', feature: 'evaluations' },
+        { name: 'profile', feature: 'profile' },
       ]}
     />
   );

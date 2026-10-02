@@ -1,15 +1,15 @@
 import { RoleTabs } from '@/components/RoleTabs';
 
-/** Student (role 1) tabs. */
+/** Student (role 1) tabs; which ones show comes from src/navigation/access.ts. */
 export default function StudentLayout() {
   return (
     <RoleTabs
-      tabs={[
-        { name: 'index', title: 'Home', icon: 'home-outline', iconFocused: 'home' },
-        { name: 'attendance', title: 'Attendance', icon: 'time-outline', iconFocused: 'time' },
-        { name: 'reports', title: 'Reports', icon: 'document-text-outline', iconFocused: 'document-text' },
-        { name: 'feedback', title: 'Feedback', icon: 'chatbox-ellipses-outline', iconFocused: 'chatbox-ellipses' },
-        { name: 'profile', title: 'Profile', icon: 'person-circle-outline', iconFocused: 'person-circle' },
+      routes={[
+        { name: 'index', feature: 'home' },
+        { name: 'attendance', feature: 'attendance' },
+        { name: 'reports', feature: 'my-reports' },
+        { name: 'feedback', feature: 'feedback' },
+        { name: 'profile', feature: 'profile' },
       ]}
     />
   );

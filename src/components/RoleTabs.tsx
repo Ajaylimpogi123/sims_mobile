@@ -2,18 +2,27 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Tabs } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
+import { useNavigationAccess } from '@/auth/AuthProvider';
+import type { FeatureKey } from '@/navigation/access';
 import { colors } from '@/theme/colors';
 
-export interface TabSpec {
-  /** Route file name inside the role folder, e.g. "index", "attendance". */
+export interface TabRoute {
+  /** Route file name inside the group folder, e.g. "index", "attendance", "more". */
   name: string;
-  title: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  iconFocused: keyof typeof Ionicons.glyphMap;
+  /** Feature it shows; whether it's a tab for this user comes from src/navigation/access.ts. */
+  feature: FeatureKey;
+  /** Hide the tab navigator's header (for tabs that render their own stack). */
+  headerShown?: boolean;
 }
 
-/** Bottom tabs with the SIMS green header, shared by the Student and Supervisor layouts. */
-export function RoleTabs({ tabs }: { tabs: TabSpec[] }) {
+/**
+ * Bottom tabs with the SIMS green header. `routes` lists every tab route file in the group,
+ * in display order; only the ones in the user's navigation are mounted (Tabs.Protected),
+ * so a hidden tab can't be opened by URL either.
+ */
+export function RoleTabs({ routes }: { routes: TabRoute[] }) {
+  const navigation = useNavigationAccess();
+
   return (
     <>
       <StatusBar style="light" />
@@ -26,18 +35,24 @@ export function RoleTabs({ tabs }: { tabs: TabSpec[] }) {
           tabBarInactiveTintColor: colors.slate500,
           tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
         }}>
-        {tabs.map((tab) => (
-          <Tabs.Screen
-            key={tab.name}
-            name={tab.name}
-            options={{
-              title: tab.title,
-              tabBarIcon: ({ color, size, focused }) => (
-                <Ionicons name={focused ? tab.iconFocused : tab.icon} size={size} color={color} />
-              ),
-            }}
-          />
-        ))}
+        {routes.map((route) => {
+          const tab = navigation.tabs.find((t) => t.key === route.feature);
+          return (
+            // Keep "index" while the group is being torn down after logout (a navigator needs one screen).
+            <Tabs.Protected key={route.name} guard={!!tab || (navigation.tabs.length === 0 && route.name === 'index')}>
+              <Tabs.Screen
+                name={route.name}
+                options={{
+                  title: tab?.title,
+                  tabBarLabel: tab?.tabLabel ?? tab?.title,
+                  headerShown: route.headerShown ?? true,
+                  tabBarIcon: ({ color, size, focused }) =>
+                    tab ? <Ionicons name={focused ? tab.iconFocused : tab.icon} size={size} color={color} /> : null,
+                }}
+              />
+            </Tabs.Protected>
+          );
+        })}
       </Tabs>
     </>
   );

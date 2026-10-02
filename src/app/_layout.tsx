@@ -6,7 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { ROLE_STUDENT, ROLE_SUPERVISOR } from '@/api/types';
+import { MESSAGES } from '@/api/errors';
 import { AuthProvider, useAuth } from '@/auth/AuthProvider';
 import { SplashView } from '@/components/SplashView';
 import { config } from '@/config';
@@ -41,7 +41,7 @@ export default function RootLayout() {
 }
 
 function RootNavigator() {
-  const { status, user, restoreError, retryRestore, signOut } = useAuth();
+  const { status, navigation, restoreError, retryRestore, signOut } = useAuth();
 
   if (status === 'restoring') {
     return <SplashView />;
@@ -57,9 +57,13 @@ function RootNavigator() {
   }
 
   const signedIn = status === 'signedIn';
-  const role = user?.role_id;
+  if (signedIn && !navigation) {
+    // /me came back with a role this app version doesn't know.
+    return <SplashView error={MESSAGES.roleNotAllowed} onSignOut={() => void signOut()} />;
+  }
+  const group = signedIn ? navigation?.group : null;
 
-  // Which screens exist is decided by the session; index.tsx redirects to the right one.
+  // Which route group exists is decided by src/navigation/access.ts; index.tsx redirects into it.
   // This is navigation only: the API enforces every role rule on its side.
   return (
     <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
@@ -67,11 +71,14 @@ function RootNavigator() {
       <Stack.Protected guard={!signedIn}>
         <Stack.Screen name="login" />
       </Stack.Protected>
-      <Stack.Protected guard={signedIn && role === ROLE_STUDENT}>
+      <Stack.Protected guard={group === 'student'}>
         <Stack.Screen name="student" />
       </Stack.Protected>
-      <Stack.Protected guard={signedIn && role === ROLE_SUPERVISOR}>
+      <Stack.Protected guard={group === 'supervisor'}>
         <Stack.Screen name="supervisor" />
+      </Stack.Protected>
+      <Stack.Protected guard={group === 'staff'}>
+        <Stack.Screen name="staff" />
       </Stack.Protected>
     </Stack>
   );

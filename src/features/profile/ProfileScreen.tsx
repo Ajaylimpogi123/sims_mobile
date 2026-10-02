@@ -4,7 +4,7 @@ import { ActivityIndicator, Alert, RefreshControl, ScrollView, Text, View } from
 
 import { useMe } from '@/api/auth';
 import { toApiError } from '@/api/errors';
-import type { InternshipStatus, MeResponse, StudentProfile } from '@/api/types';
+import { ROLE_STUDENT, ROLE_SUPERVISOR, type InternshipStatus, type MeResponse, type StaffPermissions, type StudentProfile } from '@/api/types';
 import { useAuth } from '@/auth/AuthProvider';
 import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
@@ -74,7 +74,49 @@ function SupervisorDetails({ me }: { me: MeResponse }) {
   );
 }
 
-/** Profile tab, shared by the Student and Supervisor layouts. */
+const STAFF_PERMISSION_LABELS: [keyof StaffPermissions, string][] = [
+  ['can_manage_users', 'Manage users'],
+  ['can_manage_companies', 'Manage companies'],
+  ['can_assign_internships', 'Assign internships'],
+  ['can_approve_attendance', 'Approve attendance'],
+  ['can_edit_attendance', 'Edit attendance'],
+  ['can_review_reports', 'Review reports'],
+  ['can_write_evaluations', 'Write evaluations'],
+  ['can_lock_evaluations', 'Lock / reopen evaluations'],
+  ['can_manage_criteria', 'Manage evaluation criteria'],
+];
+
+/** Coordinator / Administrator: what this account may do (from /me staff flags; the server enforces it). */
+function StaffDetails({ staff }: { staff: StaffPermissions | null }) {
+  if (!staff) return null;
+  return (
+    <Card>
+      <SectionTitle>Access</SectionTitle>
+      {STAFF_PERMISSION_LABELS.map(([key, label], index) => (
+        <Row
+          key={key}
+          label={label}
+          value={staff[key] === true ? 'Yes' : 'No'}
+          muted={staff[key] !== true}
+          last={index === STAFF_PERMISSION_LABELS.length - 1}
+        />
+      ))}
+    </Card>
+  );
+}
+
+function RoleDetails({ me }: { me: MeResponse }) {
+  switch (me.user.role_id) {
+    case ROLE_STUDENT:
+      return <StudentDetails student={me.student} />;
+    case ROLE_SUPERVISOR:
+      return <SupervisorDetails me={me} />;
+    default:
+      return <StaffDetails staff={me.staff} />;
+  }
+}
+
+/** Profile screen for every role (a tab for Students / Supervisors, under More for staff). */
 export function ProfileScreen() {
   const { signOut } = useAuth();
   const me = useMe();
@@ -128,7 +170,7 @@ export function ProfileScreen() {
             </View>
           </Card>
 
-          {data.user.role_id === 1 ? <StudentDetails student={data.student} /> : <SupervisorDetails me={data} />}
+          <RoleDetails me={data} />
         </>
       ) : null}
 

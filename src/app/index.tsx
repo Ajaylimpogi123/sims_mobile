@@ -1,13 +1,11 @@
 import { Redirect } from 'expo-router';
 
-import { ROLE_STUDENT, ROLE_SUPERVISOR } from '@/api/types';
 import { useAuth } from '@/auth/AuthProvider';
 
-/** Entry route: sends the user to Login or to their role's tabs. */
+/** Entry route: sends the user to Login or to their role's home tab (see src/navigation/access.ts). */
 export default function Index() {
-  const { status, user } = useAuth();
+  const { status, navigation } = useAuth();
 
-  if (status === 'signedIn' && user?.role_id === ROLE_STUDENT) return <Redirect href="/student" />;
-  if (status === 'signedIn' && user?.role_id === ROLE_SUPERVISOR) return <Redirect href="/supervisor" />;
+  if (status === 'signedIn' && navigation) return <Redirect href={navigation.home} />;
   return <Redirect href="/login" />;
 }
