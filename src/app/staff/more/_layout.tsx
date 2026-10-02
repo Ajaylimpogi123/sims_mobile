@@ -1,10 +1,17 @@
 import { Stack } from 'expo-router';
 
 import { useNavigationAccess } from '@/auth/AuthProvider';
+import { NotificationBell } from '@/components/NotificationBell';
 import type { FeatureKey } from '@/navigation/access';
 import { colors } from '@/theme/colors';
 
-/** Every screen the More list can open (file name = feature key). */
+/** Keeps the More list under any screen opened straight from elsewhere (e.g. a notification), so Back works. */
+export const unstable_settings = { initialRouteName: 'index' };
+
+/**
+ * Every screen the More list can open in this stack (file name = feature key).
+ * Notifications is not here: it's the app-wide screen in src/app/notifications.tsx.
+ */
 const MORE_ROUTES: FeatureKey[] = [
   'users',
   'report-reviews',
@@ -15,7 +22,6 @@ const MORE_ROUTES: FeatureKey[] = [
   'criteria',
   'attendance-monitoring',
   'progress',
-  'notifications',
   'profile',
 ];
 
@@ -32,6 +38,7 @@ export default function MoreLayout() {
         headerStyle: { backgroundColor: colors.brand700 },
         headerTintColor: colors.white,
         headerTitleStyle: { fontWeight: '600' },
+        headerRight: () => <NotificationBell />,
       }}>
       <Stack.Screen name="index" options={{ title: 'More' }} />
       {MORE_ROUTES.map((key) => {

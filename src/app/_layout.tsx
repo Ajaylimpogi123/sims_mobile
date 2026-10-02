@@ -12,6 +12,7 @@ import { AuthProvider, useAuth } from '@/auth/AuthProvider';
 import { SplashView } from '@/components/SplashView';
 import { config } from '@/config';
 import { queryClient } from '@/lib/query-client';
+import { colors } from '@/theme/colors';
 
 void SplashScreen.preventAutoHideAsync();
 // Expo Go can't customize the splash screen (it logs a warning); real builds fade it out.
@@ -83,6 +84,20 @@ function RootNavigator() {
       </Stack.Protected>
       <Stack.Protected guard={group === 'staff'}>
         <Stack.Screen name="staff" />
+      </Stack.Protected>
+      {/* Every role: opened from the header bell (and staff's More), above the role's tabs. */}
+      <Stack.Protected guard={signedIn && !!group}>
+        <Stack.Screen
+          name="notifications"
+          options={{
+            headerShown: true,
+            title: 'Notifications',
+            animation: 'slide_from_right',
+            headerStyle: { backgroundColor: colors.brand700 },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: '600' },
+          }}
+        />
       </Stack.Protected>
     </Stack>
   );

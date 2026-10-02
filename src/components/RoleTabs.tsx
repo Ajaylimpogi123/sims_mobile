@@ -6,6 +6,8 @@ import { useNavigationAccess } from '@/auth/AuthProvider';
 import type { FeatureKey } from '@/navigation/access';
 import { colors } from '@/theme/colors';
 
+import { NotificationBell } from './NotificationBell';
+
 export interface TabRoute {
   /** Route file name inside the group folder, e.g. "index", "attendance", "more". */
   name: string;
@@ -16,7 +18,7 @@ export interface TabRoute {
 }
 
 /**
- * Bottom tabs with the SIMS green header. `routes` lists every tab route file in the group,
+ * Bottom tabs with the SIMS green header and the notification bell. `routes` lists every tab route file in the group,
  * in display order; only the ones in the user's navigation are mounted (Tabs.Protected),
  * so a hidden tab can't be opened by URL either.
  */
@@ -31,6 +33,7 @@ export function RoleTabs({ routes }: { routes: TabRoute[] }) {
           headerStyle: { backgroundColor: colors.brand700 },
           headerTintColor: colors.white,
           headerTitleStyle: { fontWeight: '600' },
+          headerRight: () => <NotificationBell />,
           tabBarActiveTintColor: colors.brand700,
           tabBarInactiveTintColor: colors.gray500,
           tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },

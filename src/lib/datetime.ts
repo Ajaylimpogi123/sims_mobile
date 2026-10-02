@@ -85,3 +85,36 @@ export function greeting(now: DateInput = new Date()): string {
   if (hours < 18) return 'Good afternoon';
   return 'Good evening';
 }
+
+/** Whole Manila calendar days from `input` to `now` (0 = same day, 1 = yesterday). */
+function manilaDaysAgo(input: DateInput, now: DateInput): number | null {
+  const a = manilaParts(input);
+  const b = manilaParts(now);
+  if (!a || !b) return null;
+  return Math.round((Date.UTC(b.year, b.month, b.day) - Date.UTC(a.year, a.month, a.day)) / 86_400_000);
+}
+
+/**
+ * When something happened, relative plus the 12-hour Manila time:
+ * "Just now", "5 min ago · 3:05 PM", "2 hours ago · 1:10 PM", "Yesterday · 3:05 PM",
+ * "3 days ago · Sep 29, 2026, 3:05 PM", then just "Sep 2, 2026, 3:05 PM" after a week.
+ */
+export function formatRelativeDateTime(input: DateInput, now: DateInput = new Date()): string {
+  const date = parseApiDate(input);
+  const nowDate = parseApiDate(now);
+  if (Number.isNaN(date.getTime())) return '';
+
+  const minutes = Math.floor((nowDate.getTime() - date.getTime()) / 60_000);
+  const days = manilaDaysAgo(date, nowDate) ?? 0;
+  const time = formatTime(date);
+
+  if (minutes < 1) return 'Just now';
+  if (minutes < 60) return `${minutes} min ago · ${time}`;
+  if (days === 0) {
+    const hours = Math.floor(minutes / 60);
+    return `${hours} hour${hours === 1 ? '' : 's'} ago · ${time}`;
+  }
+  if (days === 1) return `Yesterday · ${time}`;
+  if (days < 7) return `${days} days ago · ${formatDateTime(date)}`;
+  return formatDateTime(date);
+}
