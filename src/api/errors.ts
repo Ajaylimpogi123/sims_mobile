@@ -8,7 +8,7 @@ export type ApiErrorKind =
   | 'timeout'
   /** 401: missing / invalid / revoked token. Ends the session. */
   | 'unauthenticated'
-  /** 403 with code role_not_allowed / account_inactive. Ends the session. */
+  /** 403 with code account_inactive, or role_not_allowed (no / unknown role). Ends the session. */
   | 'session_blocked'
   /** 403 without a code: not allowed to do this particular thing. */
   | 'forbidden'
@@ -62,7 +62,8 @@ export const MESSAGES = {
   validation: 'Please check the highlighted fields.',
   server: 'Something went wrong on the server. Please try again later.',
   unknown: 'Something went wrong. Please try again.',
-  roleNotAllowed: 'The mobile app is for students and supervisors only. Please use the website.',
+  /** Fallback for 403 role_not_allowed (account with no / an unknown role); the server's message wins. */
+  roleNotAllowed: 'This account does not have access to the mobile app.',
   accountInactive: 'This account has been deactivated. Please contact an administrator.',
 } as const;
 

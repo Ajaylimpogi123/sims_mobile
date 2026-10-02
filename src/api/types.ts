@@ -3,18 +3,22 @@
  * Source of truth: docs/api/v1.md in the Laravel repo. Field names match it exactly.
  */
 
-/** 1 = Student, 3 = Supervisor. The API never returns other roles to the app. */
-export type RoleId = 1 | 3;
+/** Role ids from the roles table (RoleSeeder): 1 Student, 2 Internship Coordinator, 3 Supervisor, 4 Administrator. */
+export type RoleId = 1 | 2 | 3 | 4;
 
 export const ROLE_STUDENT = 1 as const;
+export const ROLE_COORDINATOR = 2 as const;
 export const ROLE_SUPERVISOR = 3 as const;
+export const ROLE_ADMIN = 4 as const;
+
+export type RoleName = 'Student' | 'Internship Coordinator' | 'Supervisor' | 'Administrator';
 
 export interface User {
   id: number;
   name: string;
   email: string;
   role_id: RoleId;
-  role: 'Student' | 'Supervisor';
+  role: RoleName;
 }
 
 export type InternshipStatus = 'not_started' | 'ongoing' | 'completed';
@@ -43,6 +47,32 @@ export interface SupervisorSummary {
   students_count: number;
 }
 
+/**
+ * Coordinator (2) / Administrator (4) permission flags, mirroring the website's route roles.
+ * UI hints only: the API still answers 403 for anything not allowed. New flags may be added
+ * within v1 (none are removed or renamed); treat a missing flag as false.
+ */
+export interface StaffPermissions {
+  /** User Management */
+  can_manage_users: boolean;
+  /** Company Management + Supervisor Roster */
+  can_manage_companies: boolean;
+  /** Internship Assignment */
+  can_assign_internships: boolean;
+  /** Pending Approvals (approve / reject) */
+  can_approve_attendance: boolean;
+  /** Attendance Monitoring manual entries / required hours (otherwise view only) */
+  can_edit_attendance: boolean;
+  /** Report Reviews: the review action (viewing needs no flag) */
+  can_review_reports: boolean;
+  /** Create / edit / submit evaluations (otherwise view only) */
+  can_write_evaluations: boolean;
+  /** Lock / reopen evaluations */
+  can_lock_evaluations: boolean;
+  /** Evaluation Criteria screen */
+  can_manage_criteria: boolean;
+}
+
 // POST /login
 export interface LoginRequest {
   email: string;
@@ -55,16 +85,19 @@ export interface LoginResponse {
   user: User;
 }
 
-// GET /me
+// GET /me — exactly one of student / supervisor / staff is relevant to the role; the other two are null.
 export interface MeResponse {
   user: User;
-  /** Set for students (null if the profile isn't set up yet); always null for supervisors. */
+  /** Students only (null if the student profile isn't set up yet). */
   student: StudentProfile | null;
-  /** Set for supervisors; always null for students. */
+  /** Supervisors only. */
   supervisor: SupervisorSummary | null;
+  /** Coordinators and Administrators only. */
+  staff: StaffPermissions | null;
 }
 
 // Errors
+/** role_not_allowed is now only sent for accounts with no / an unknown role. */
 export type SessionBlockedCode = 'role_not_allowed' | 'account_inactive';
 
 export interface ApiErrorBody {
