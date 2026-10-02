@@ -11,7 +11,7 @@ export function HomeGreeting() {
 
   return (
     <View className="gap-1 px-1 pt-2">
-      <Text className="text-2xl font-bold text-slate-900">
+      <Text className="text-2xl font-semibold text-slate-900">
         {greeting(now)}
         {firstName ? `, ${firstName}` : ''}
       </Text>

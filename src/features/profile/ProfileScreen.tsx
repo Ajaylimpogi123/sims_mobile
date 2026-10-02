@@ -161,9 +161,9 @@ export function ProfileScreen() {
 
           <Card className="items-center gap-2 py-6">
             <View className="h-20 w-20 items-center justify-center rounded-full bg-brand-700">
-              <Text className="text-2xl font-bold text-white">{initials(data.user.name)}</Text>
+              <Text className="text-2xl font-semibold text-white">{initials(data.user.name)}</Text>
             </View>
-            <Text className="mt-2 text-center text-xl font-bold text-slate-900">{data.user.name}</Text>
+            <Text className="mt-2 text-center text-xl font-semibold text-slate-900">{data.user.name}</Text>
             <Text className="text-center text-sm text-slate-500">{data.user.email}</Text>
             <View className="mt-1 rounded-full bg-brand-100 px-3 py-1">
               <Text className="text-xs font-semibold text-brand-800">{data.user.role}</Text>
