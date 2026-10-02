@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
-import { login as apiLogin, logout as apiLogout, meQueryOptions } from '@/api/auth';
+import { login as apiLogin, logout as apiLogout, meQueryOptions, revokeToken } from '@/api/auth';
 import { ApiError, MESSAGES, toApiError } from '@/api/errors';
 import type { MeResponse, User } from '@/api/types';
 import { navigationFor, type Navigation } from '@/navigation/access';
@@ -133,7 +133,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (email: string, password: string) => {
       setNotice(null);
       const result = await apiLogin({ email: email.trim(), password, device_name: getDeviceName() });
-      await tokenStore.save(result.token);
+      try {
+        await tokenStore.save(result.token);
+      } catch {
+        // Couldn't keep the token in secure storage: revoke it so it isn't left orphaned on the server.
+        await tokenStore.clear().catch(() => undefined);
+        await revokeToken(result.token);
+        throw new ApiError({ kind: 'unknown', message: MESSAGES.tokenStorageFailed });
+      }
       queryClient.clear();
       // Navigation depends on /me (staff flags), so load it before leaving the login screen.
       await enterWithStoredToken();

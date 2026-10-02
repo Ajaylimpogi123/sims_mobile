@@ -16,6 +16,22 @@ export async function logout(): Promise<void> {
   await api.post('/logout', undefined, { skipSessionEnd: true, timeout: config.logoutTimeoutMs });
 }
 
+/**
+ * POST /logout with an explicit token that was never stored (e.g. secure storage failed right
+ * after login), so the server doesn't keep an orphaned token. Best effort; never throws.
+ */
+export async function revokeToken(token: string): Promise<void> {
+  try {
+    await api.post('/logout', undefined, {
+      skipSessionEnd: true,
+      timeout: config.logoutTimeoutMs,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  } catch {
+    // Offline / already revoked: nothing more we can do.
+  }
+}
+
 /** GET /me: the signed-in user plus the role-specific summary. */
 export async function getMe(): Promise<MeResponse> {
   const { data } = await api.get<MeResponse>('/me');

@@ -64,6 +64,7 @@ export const MESSAGES = {
   unknown: 'Something went wrong. Please try again.',
   /** Fallback for 403 role_not_allowed (account with no / an unknown role); the server's message wins. */
   roleNotAllowed: 'This account does not have access to the mobile app.',
+  tokenStorageFailed: "Couldn't save your login securely on this phone. Please try again; if it keeps happening, restart the phone.",
   accountInactive: 'This account has been deactivated. Please contact an administrator.',
 } as const;
 
