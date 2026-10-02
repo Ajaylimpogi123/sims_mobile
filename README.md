@@ -129,3 +129,5 @@ Decided in one place, `src/navigation/access.ts`, from `GET /me` (`user.role_id`
 | Administrator (4) | Home, Approvals, Students, Companies, More | Users, Report Reviews, Evaluations, Evaluation Criteria, Attendance Monitoring, Progress, Notifications, Profile |
 
 Approvals needs `can_approve_attendance`, Students `can_assign_internships`, Companies `can_manage_companies`, Users `can_manage_users`, Evaluation Criteria `can_manage_criteria`. Features not built yet show a "Coming in Module N" placeholder.
+
+Notifications: Students and Supervisors have no More tab, so Module 4 adds a notification bell with an unread badge to the header of every role's tabs (staff keep the More entry too). Supervisors reach the view-only Report Reviews from their students (Modules 10/11).
