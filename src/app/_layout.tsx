@@ -1,6 +1,7 @@
 import '@/global.css';
 
 import { QueryClientProvider } from '@tanstack/react-query';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
@@ -13,7 +14,10 @@ import { config } from '@/config';
 import { queryClient } from '@/lib/query-client';
 
 void SplashScreen.preventAutoHideAsync();
-SplashScreen.setOptions({ fade: true, duration: 250 });
+// Expo Go can't customize the splash screen (it logs a warning); real builds fade it out.
+if (Constants.executionEnvironment !== ExecutionEnvironment.StoreClient) {
+  SplashScreen.setOptions({ fade: true, duration: 250 });
+}
 
 export default function RootLayout() {
   // The native splash hands over to <SplashView>, which looks the same, as soon as JS is running.
