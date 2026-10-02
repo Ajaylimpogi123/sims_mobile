@@ -14,13 +14,13 @@ interface TextFieldProps extends Omit<TextInputProps, 'className'> {
 export const TextField = forwardRef<TextInput, TextFieldProps>(function TextField({ label, error, right, ...inputProps }, ref) {
   return (
     <View className="gap-1.5">
-      <Text className="text-sm font-medium text-slate-700">{label}</Text>
+      <Text className="text-sm font-medium text-gray-700">{label}</Text>
       <View
-        className={`h-12 flex-row items-center rounded-xl border bg-white px-3 ${error ? 'border-red-500' : 'border-slate-300'}`}>
+        className={`h-12 flex-row items-center rounded-xl border bg-white px-3 ${error ? 'border-red-500' : 'border-gray-300'}`}>
         <TextInput
           ref={ref}
-          placeholderTextColor={colors.slate400}
-          className="flex-1 text-base text-slate-900"
+          placeholderTextColor={colors.gray400}
+          className="flex-1 text-base text-gray-900"
           accessibilityLabel={label}
           accessibilityHint={error ?? undefined}
           {...inputProps}

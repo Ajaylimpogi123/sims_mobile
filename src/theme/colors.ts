@@ -10,7 +10,7 @@ export const colors = {
   brand700: '#15803d',
   brand800: '#166534',
   white: '#ffffff',
-  slate400: '#94a3b8',
-  slate500: '#64748b',
-  slate900: '#0f172a',
+  gray400: '#9ca3af',
+  gray500: '#6b7280',
+  gray900: '#111827',
 } as const;

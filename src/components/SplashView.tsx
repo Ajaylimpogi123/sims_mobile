@@ -31,7 +31,7 @@ export function SplashView({ error, onRetry, onSignOut }: SplashViewProps) {
           accessibilityLabel="Bacolod City College logo"
         />
         <Text className="mt-6 text-2xl font-bold text-brand-800">SIMS</Text>
-        <Text className="mt-1 text-center text-sm text-slate-500">Student Internship Management System</Text>
+        <Text className="mt-1 text-center text-sm text-gray-500">Student Internship Management System</Text>
 
         {error ? (
           <View className="mt-8 w-full gap-3">

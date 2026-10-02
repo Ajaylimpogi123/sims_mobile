@@ -32,7 +32,7 @@ export function RoleTabs({ routes }: { routes: TabRoute[] }) {
           headerTintColor: colors.white,
           headerTitleStyle: { fontWeight: '600' },
           tabBarActiveTintColor: colors.brand700,
-          tabBarInactiveTintColor: colors.slate500,
+          tabBarInactiveTintColor: colors.gray500,
           tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
         }}>
         {routes.map((route) => {

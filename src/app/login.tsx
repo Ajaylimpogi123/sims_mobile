@@ -94,12 +94,12 @@ export default function LoginScreen() {
               accessibilityLabel="Bacolod City College logo"
             />
             <Text className="mt-4 text-3xl font-bold text-brand-800">SIMS</Text>
-            <Text className="mt-1 text-center text-sm text-slate-500">Student Internship Management System</Text>
+            <Text className="mt-1 text-center text-sm text-gray-500">Student Internship Management System</Text>
             <Text className="text-center text-sm font-medium text-brand-700">Bacolod City College</Text>
           </View>
 
           <View className="mt-10 gap-4">
-            <Text className="text-xl font-semibold text-slate-900">Log in</Text>
+            <Text className="text-xl font-semibold text-gray-900">Log in</Text>
 
             {banner ? <Banner message={banner} tone={locked ? 'warning' : 'error'} /> : null}
 
@@ -147,7 +147,7 @@ export default function LoginScreen() {
                   hitSlop={12}
                   accessibilityRole="button"
                   accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}>
-                  <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={22} color={colors.slate500} />
+                  <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={22} color={colors.gray500} />
                 </Pressable>
               }
             />
@@ -162,7 +162,7 @@ export default function LoginScreen() {
             />
           </View>
 
-          <Text className="mt-8 text-center text-xs leading-5 text-slate-400">
+          <Text className="mt-8 text-center text-xs leading-5 text-gray-400">
             Use the same account you use on the SIMS website.
           </Text>
         </ScrollView>

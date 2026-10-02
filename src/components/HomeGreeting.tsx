@@ -11,11 +11,11 @@ export function HomeGreeting() {
 
   return (
     <View className="gap-1 px-1 pt-2">
-      <Text className="text-2xl font-semibold text-slate-900">
+      <Text className="text-2xl font-semibold text-gray-900">
         {greeting(now)}
         {firstName ? `, ${firstName}` : ''}
       </Text>
-      <Text className="text-sm text-slate-500">{formatLongDate(now)}</Text>
+      <Text className="text-sm text-gray-500">{formatLongDate(now)}</Text>
     </View>
   );
 }
