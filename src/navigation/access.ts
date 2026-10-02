@@ -80,7 +80,8 @@ const CATALOG: Record<FeatureKey, CatalogEntry> = {
     },
   },
   attendance: {
-    title: 'Attendance',
+    title: 'My Attendance',
+    tabLabel: 'Attendance',
     icon: 'time-outline',
     iconFocused: 'time',
     module: 'Module 6 — Attendance (Time In/Out)',
@@ -116,22 +117,24 @@ const CATALOG: Record<FeatureKey, CatalogEntry> = {
     },
   },
   students: {
-    title: 'Students',
+    title: 'Internship Assignment',
+    tabLabel: 'Students',
     icon: 'people-outline',
     iconFocused: 'people',
     module: 'Module 15 — Internship Assignment',
     description: 'All students: assign a company, a supervisor from its roster, status and schedule.',
     byRole: {
       [ROLE_SUPERVISOR]: {
-        title: 'My Students',
-        tabLabel: 'Students',
+        // Same page as the website's supervisor menu item.
+        title: 'Attendance Monitoring',
         module: 'Module 10 — Attendance & Progress Monitoring',
         description: "Your assigned students: attendance logs with evidence, manual entries and hours progress.",
       },
     },
   },
   evaluations: {
-    title: 'Evaluations',
+    title: 'Supervisor Monitoring & Feedback',
+    tabLabel: 'Evaluations',
     icon: 'star-outline',
     iconFocused: 'star',
     module: 'Module 12 — Supervisor Evaluations',
@@ -154,14 +157,15 @@ const CATALOG: Record<FeatureKey, CatalogEntry> = {
     },
   },
   companies: {
-    title: 'Companies',
+    title: 'Company Management',
+    tabLabel: 'Companies',
     icon: 'business-outline',
     iconFocused: 'business',
     module: 'Module 14 — Company Management & Supervisor Roster',
     description: 'Host companies: add, edit, activate or deactivate, and manage each company’s supervisor roster.',
   },
   users: {
-    title: 'Users',
+    title: 'User Management',
     icon: 'person-add-outline',
     iconFocused: 'person-add',
     module: 'Module 13 — User Management',
@@ -186,7 +190,7 @@ const CATALOG: Record<FeatureKey, CatalogEntry> = {
     },
   },
   progress: {
-    title: 'Progress',
+    title: 'Progress Monitoring',
     icon: 'trending-up-outline',
     iconFocused: 'trending-up',
     module: 'Module 10 — Progress Monitoring',
