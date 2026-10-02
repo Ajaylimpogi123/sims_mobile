@@ -107,3 +107,56 @@ export interface ApiErrorBody {
   /** 422 */
   errors?: Record<string, string[]>;
 }
+
+// Notifications (Module 4)
+
+/**
+ * Where tapping a notification leads, resolved by the server for the viewer's current role.
+ * `screen` is a FeatureKey from src/navigation/access.ts (new keys may appear; unknown ones are
+ * ignored). `params` holds int ids that are only highlight hints (the record may be gone),
+ * e.g. { attendance_id: 12 } or { report_id: 7 }; {} when there's nothing to highlight.
+ */
+export interface NotificationTarget {
+  screen: string;
+  params: Record<string, number>;
+}
+
+export interface AppNotification {
+  id: number;
+  type: string;
+  title: string;
+  message: string | null;
+  /** ISO 8601 (+08:00); null = unread */
+  read_at: string | null;
+  /** ISO 8601 (+08:00) */
+  created_at: string;
+  /** null = nothing to open for this type / role */
+  target: NotificationTarget | null;
+}
+
+// GET /notifications?unread=&per_page=&cursor= — cursor pagination, newest first.
+export interface NotificationsPage {
+  data: AppNotification[];
+  meta: {
+    per_page: number;
+    next_cursor: string | null;
+    has_more: boolean;
+  };
+}
+
+// GET /notifications/unread-count
+export interface UnreadCountResponse {
+  count: number;
+}
+
+// POST /notifications/{id}/read
+export interface MarkReadResponse {
+  notification: AppNotification;
+  unread_count: number;
+}
+
+// POST /notifications/read-all
+export interface MarkAllReadResponse {
+  marked: number;
+  unread_count: number;
+}
