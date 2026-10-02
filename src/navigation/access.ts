@@ -200,8 +200,8 @@ const CATALOG: Record<FeatureKey, CatalogEntry> = {
     title: 'Notifications',
     icon: 'notifications-outline',
     iconFocused: 'notifications',
-    module: 'Module 4 — Notifications',
-    description: 'Your SIMS notifications; tap one to open the related screen.',
+    // Same subtitle as the website's Notifications page.
+    description: 'Stay on top of approvals, reviews, and assignment updates',
   },
   profile: {
     title: 'Profile',
@@ -338,7 +338,8 @@ const MORE_HREF: Partial<Record<FeatureKey, Href>> = {
   criteria: '/staff/more/criteria',
   'attendance-monitoring': '/staff/more/attendance-monitoring',
   progress: '/staff/more/progress',
-  notifications: '/staff/more/notifications',
+  // The one Notifications screen (src/app/notifications.tsx), also opened by the header bell.
+  notifications: '/notifications',
   profile: '/staff/more/profile',
 };
 
@@ -391,4 +392,43 @@ export function navigationFor(me: MeResponse | null | undefined): Navigation | n
     more,
     allowed: new Set<FeatureKey>([...tabKeys, ...more.map((m) => m.key)]),
   };
+}
+
+// ---------------------------------------------------------------------------
+// Opening a feature from elsewhere (notification taps now; push taps in Module 16).
+// ---------------------------------------------------------------------------
+
+/**
+ * Features a group has no screen of its own for, shown inside another of its screens instead.
+ * Supervisors have no More: their Attendance Monitoring tab ("students") also covers progress
+ * and, view only, their students' reports (Modules 10/11).
+ */
+const HOSTED_IN: Record<NavGroup, Partial<Record<FeatureKey, FeatureKey>>> = {
+  student: {},
+  supervisor: {
+    'attendance-monitoring': 'students',
+    progress: 'students',
+    'report-reviews': 'students',
+  },
+  staff: {},
+};
+
+export function isFeatureKey(value: unknown): value is FeatureKey {
+  return typeof value === 'string' && Object.prototype.hasOwnProperty.call(CATALOG, value);
+}
+
+/**
+ * The route where this user opens a feature (its tab, its More item, or the screen hosting it),
+ * or null if the role can't use it or the app has no screen for it. Never returns a route that
+ * isn't in the user's own navigation.
+ */
+export function hrefForFeature(key: string, me: MeResponse | null | undefined): Href | null {
+  const navigation = navigationFor(me);
+  if (!me || !navigation || !isFeatureKey(key) || key === 'more' || !canUse(key, me)) return null;
+
+  const find = (k: FeatureKey) => navigation.tabs.find((t) => t.key === k) ?? navigation.more.find((m) => m.key === k);
+  const direct = find(key);
+  if (direct) return direct.href;
+  const host = HOSTED_IN[navigation.group][key];
+  return host ? (find(host)?.href ?? null) : null;
 }
