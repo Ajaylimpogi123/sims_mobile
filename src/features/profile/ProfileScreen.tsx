@@ -4,18 +4,14 @@ import { ActivityIndicator, Alert, RefreshControl, ScrollView, Text, View } from
 
 import { useMe } from '@/api/auth';
 import { toApiError } from '@/api/errors';
-import { ROLE_STUDENT, ROLE_SUPERVISOR, type InternshipStatus, type MeResponse, type StaffPermissions, type StudentProfile } from '@/api/types';
+import { ROLE_STUDENT, ROLE_SUPERVISOR, type MeResponse, type StaffPermissions, type StudentProfile } from '@/api/types';
 import { useAuth } from '@/auth/AuthProvider';
 import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { StatusBadge } from '@/components/ui/StatusBadge';
 import { colors } from '@/theme/colors';
 
-const STATUS_LABEL: Record<InternshipStatus, string> = {
-  not_started: 'Not started',
-  ongoing: 'Ongoing',
-  completed: 'Completed',
-};
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -25,15 +21,15 @@ function initials(name: string): string {
 
 function Row({ label, value, muted = false, last = false }: { label: string; value: string; muted?: boolean; last?: boolean }) {
   return (
-    <View className={`flex-row justify-between gap-4 py-3 ${last ? '' : 'border-b border-slate-100'}`}>
-      <Text className="text-sm text-slate-500">{label}</Text>
-      <Text className={`flex-1 text-right text-sm font-medium ${muted ? 'text-slate-400' : 'text-slate-900'}`}>{value}</Text>
+    <View className={`flex-row justify-between gap-4 py-3 ${last ? '' : 'border-b border-gray-100'}`}>
+      <Text className="text-sm text-gray-500">{label}</Text>
+      <Text className={`flex-1 text-right text-sm font-medium ${muted ? 'text-gray-400' : 'text-gray-900'}`}>{value}</Text>
     </View>
   );
 }
 
 function SectionTitle({ children }: { children: string }) {
-  return <Text className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">{children}</Text>;
+  return <Text className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">{children}</Text>;
 }
 
 function StudentDetails({ student }: { student: StudentProfile | null }) {
@@ -46,7 +42,10 @@ function StudentDetails({ student }: { student: StudentProfile | null }) {
         <SectionTitle>Internship</SectionTitle>
         <Row label="Company" value={student.company?.name ?? 'Not assigned yet'} muted={!student.company} />
         <Row label="Supervisor" value={student.supervisor?.name ?? 'Not assigned yet'} muted={!student.supervisor} />
-        <Row label="Status" value={STATUS_LABEL[student.internship_status] ?? student.internship_status} />
+        <View className="flex-row items-center justify-between gap-4 border-b border-gray-100 py-3">
+          <Text className="text-sm text-gray-500">Status</Text>
+          <StatusBadge status={student.internship_status} />
+        </View>
         <Row
           label="Required hours"
           value={student.required_hours !== null ? `${student.required_hours} hours` : 'Not set yet'}
@@ -141,7 +140,7 @@ export function ProfileScreen() {
 
   return (
     <ScrollView
-      className="flex-1 bg-slate-50"
+      className="flex-1 bg-gray-50"
       contentContainerClassName="gap-4 p-4 pb-10"
       refreshControl={
         <RefreshControl refreshing={me.isRefetching} onRefresh={() => void me.refetch()} colors={[colors.brand700]} />
@@ -163,8 +162,8 @@ export function ProfileScreen() {
             <View className="h-20 w-20 items-center justify-center rounded-full bg-brand-700">
               <Text className="text-2xl font-semibold text-white">{initials(data.user.name)}</Text>
             </View>
-            <Text className="mt-2 text-center text-xl font-semibold text-slate-900">{data.user.name}</Text>
-            <Text className="text-center text-sm text-slate-500">{data.user.email}</Text>
+            <Text className="mt-2 text-center text-xl font-semibold text-gray-900">{data.user.name}</Text>
+            <Text className="text-center text-sm text-gray-500">{data.user.email}</Text>
             <View className="mt-1 rounded-full bg-brand-100 px-3 py-1">
               <Text className="text-xs font-semibold text-brand-800">{data.user.role}</Text>
             </View>
@@ -176,7 +175,7 @@ export function ProfileScreen() {
 
       <Button label="Log out" variant="danger" onPress={confirmSignOut} loading={signingOut} loadingLabel="Logging out…" />
 
-      <Text className="text-center text-xs text-slate-400">
+      <Text className="text-center text-xs text-gray-400">
         SIMS v{Constants.expoConfig?.version ?? '1.0.0'} · Bacolod City College
       </Text>
     </ScrollView>
