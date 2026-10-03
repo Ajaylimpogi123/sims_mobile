@@ -463,3 +463,58 @@ export interface ReportSaveResponse {
   message: string;
   report: Report;
 }
+
+// ---------------------------------------------------------------------------
+// My Feedback (Module 8): GET /feedback, GET /feedback/{id}. Student only.
+// ---------------------------------------------------------------------------
+
+/** Students only ever see submitted or locked evaluations (drafts never appear). */
+export type FeedbackStatus = 'submitted' | 'locked';
+
+export interface FeedbackSummary {
+  id: number;
+  /** "YYYY-MM-DD" (Manila) */
+  period_start: string;
+  period_end: string;
+  status: FeedbackStatus;
+  /** Average of the 1-5 ratings, 2 dp. */
+  overall_rating: number | null;
+  rating_max: number;
+  supervisor: { id: number; name: string } | null;
+  company: { id: number; name: string } | null;
+  /** ISO 8601 with +08:00 */
+  submitted_at: string | null;
+  locked_at: string | null;
+}
+
+export interface FeedbackCriterion {
+  id: number;
+  label: string;
+  description: string | null;
+  rating: number | null;
+  max: number;
+  comment: string | null;
+}
+
+export interface FeedbackCategory {
+  category: string;
+  criteria: FeedbackCriterion[];
+}
+
+export interface FeedbackDetail extends FeedbackSummary {
+  strengths: string | null;
+  areas_for_improvement: string | null;
+  recommendations: string | null;
+  supervisor_remarks: string | null;
+  /** Saved ratings in the website's order, grouped by category. */
+  categories: FeedbackCategory[];
+}
+
+export interface FeedbackPage {
+  data: FeedbackSummary[];
+  meta: {
+    per_page: number;
+    next_cursor: string | null;
+    has_more: boolean;
+  };
+}
