@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 
 import { login as apiLogin, logout as apiLogout, meQueryOptions, revokeToken } from '@/api/auth';
 import { ApiError, MESSAGES, toApiError } from '@/api/errors';
+import { clearImageCaches } from '@/api/images';
 import type { MeResponse, User } from '@/api/types';
 import { navigationFor, type Navigation } from '@/navigation/access';
 
@@ -59,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Secure storage failure: the in-memory token is already gone.
       }
       queryClient.clear();
+      clearImageCaches();
       setSessionMe(null);
       setRestoreError(null);
       setNotice(message);
@@ -142,6 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new ApiError({ kind: 'unknown', message: MESSAGES.tokenStorageFailed });
       }
       queryClient.clear();
+      clearImageCaches();
       // Navigation depends on /me (staff flags), so load it before leaving the login screen.
       await enterWithStoredToken();
     },

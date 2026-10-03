@@ -1,3 +1,5 @@
+import { Image } from 'expo-image';
+
 import { tokenStore } from '@/auth/token-store';
 import { config } from '@/config';
 
@@ -26,4 +28,13 @@ export function authImageSource(url: string | null | undefined): { uri: string; 
       ...(config.isNgrok ? { 'ngrok-skip-browser-warning': 'true' } : {}),
     },
   };
+}
+
+/**
+ * Forget every cached protected image (attendance evidence) on this phone. Called whenever a
+ * session ends or a new one starts, so photos never outlive the account or the access that loaded them.
+ */
+export function clearImageCaches() {
+  void Image.clearMemoryCache().catch(() => undefined);
+  void Image.clearDiskCache().catch(() => undefined);
 }
