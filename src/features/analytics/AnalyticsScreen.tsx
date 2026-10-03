@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react-native';
 
 import { EMPTY_ANALYTICS_FILTERS, useAnalytics, useAnalyticsFilterOptions } from '@/api/dashboard';
@@ -107,9 +107,9 @@ function Charts({ data }: { data: AnalyticsResponse }) {
                 key={row.student_id}
                 className={`flex-row items-center gap-3 py-2.5 ${index > 0 ? 'border-t border-gray-100' : ''}`}
                 accessible
-                accessibilityLabel={`${row.name}, ${row.rejection_count} rejected`}>
+                accessibilityLabel={`${row.name ?? 'Unnamed student'}, ${row.rejection_count} rejected`}>
                 <Text className="flex-1 text-sm text-gray-900" numberOfLines={1}>
-                  {row.name}
+                  {row.name ?? 'Unnamed student'}
                 </Text>
                 <Text className="text-sm font-medium text-red-600" style={TABULAR}>
                   {formatNumber(row.rejection_count)} rejected
@@ -186,6 +186,13 @@ export function AnalyticsScreen() {
   const data = analytics.data;
   const updating = analytics.isFetching && analytics.isPlaceholderData;
 
+  // A 403 usually means the cached filter lists are out of date (e.g. a student was reassigned).
+  const forbidden = error?.kind === 'forbidden';
+  const refetchOptions = options.refetch;
+  useEffect(() => {
+    if (forbidden) void refetchOptions();
+  }, [forbidden, refetchOptions]);
+
   const refresh = async () => {
     setPulling(true);
     try {
@@ -226,7 +233,13 @@ export function AnalyticsScreen() {
       ) : error && !data ? (
         error.kind === 'validation' || error.kind === 'forbidden' ? (
           // Bad filters: the fields above show what to fix; Clear Filters gets back to all data.
-          <Banner message={error.message} />
+          <Banner
+            message={
+              error.kind === 'forbidden'
+                ? 'That filter is outside your students. Clear Filters to continue.'
+                : error.message
+            }
+          />
         ) : (
           <ErrorState message={error.message} onRetry={() => void analytics.refetch()} retrying={analytics.isFetching} />
         )

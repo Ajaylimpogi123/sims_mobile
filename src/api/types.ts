@@ -320,7 +320,7 @@ export interface AnalyticsResponse {
     outcomes: ChartPoint[];
     /** Only days with rows; default range = last 30 days */
     trend: { date: string; present: number; rejected: number }[];
-    frequent_rejections: { student_id: number; name: string; rejection_count: number }[];
+    frequent_rejections: { student_id: number; name: string | null; rejection_count: number }[];
   };
   evaluation: {
     /** draft | submitted | locked */
