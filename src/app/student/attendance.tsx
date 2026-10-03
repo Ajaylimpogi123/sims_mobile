@@ -1,5 +1,3 @@
-import { FeaturePlaceholder } from '@/components/FeaturePlaceholder';
+import { AttendanceScreen } from '@/features/attendance/AttendanceScreen';
 
-export default function StudentAttendance() {
-  return <FeaturePlaceholder feature="attendance" />;
-}
+export default AttendanceScreen;
