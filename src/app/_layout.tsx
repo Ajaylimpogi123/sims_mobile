@@ -114,6 +114,31 @@ function RootNavigator() {
           }}
         />
       </Stack.Protected>
+      {/* Students (access.ts "my-reports"): a report and the New / Edit Report form, above the tabs. */}
+      <Stack.Protected guard={signedIn && group === 'student' && !!me && canUse('my-reports', me)}>
+        <Stack.Screen
+          name="report/[id]"
+          options={{
+            headerShown: true,
+            title: 'Report',
+            animation: 'slide_from_right',
+            headerStyle: { backgroundColor: colors.brand700 },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: '600' },
+          }}
+        />
+        <Stack.Screen
+          name="report-form"
+          options={{
+            headerShown: true,
+            title: 'New Report',
+            animation: 'slide_from_bottom',
+            headerStyle: { backgroundColor: colors.brand700 },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: '600' },
+          }}
+        />
+      </Stack.Protected>
       {/* Supervisors, Coordinators, Admins (access.ts): opened from Home, above the role's tabs. */}
       <Stack.Protected guard={signedIn && !!group && !!me && canUse('analytics', me)}>
         <Stack.Screen

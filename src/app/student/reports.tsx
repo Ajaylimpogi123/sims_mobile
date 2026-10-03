@@ -1,5 +1,3 @@
-import { FeaturePlaceholder } from '@/components/FeaturePlaceholder';
+import { ReportsScreen } from '@/features/reports/ReportsScreen';
 
-export default function StudentReports() {
-  return <FeaturePlaceholder feature="my-reports" />;
-}
+export default ReportsScreen;

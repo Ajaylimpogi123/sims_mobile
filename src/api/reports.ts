@@ -195,10 +195,8 @@ export function useDeleteReport() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => deleteReport(id),
-    onSuccess: (_data, id) => {
-      queryClient.removeQueries({ queryKey: reportKeys.detail(id), exact: true });
-      refreshAfterReportChange(queryClient);
-    },
+    // The detail cache is left to expire: the screen showing it is closing, and removing it now would refetch a 404.
+    onSuccess: () => refreshAfterReportChange(queryClient),
     onError: (error, id) => applyRefusal(queryClient, id, error),
   });
 }
