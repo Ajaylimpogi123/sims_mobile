@@ -106,6 +106,8 @@ export interface ApiErrorBody {
   code?: SessionBlockedCode | string;
   /** 422 */
   errors?: Record<string, string[]>;
+  /** Endpoint-specific extras, e.g. attendance 422 code attendance_rule carries `today`. */
+  [extra: string]: unknown;
 }
 
 // Notifications (Module 4)
@@ -340,4 +342,64 @@ export interface AnalyticsFilterOptions {
   companies: IdName[];
   supervisors: IdName[];
   students: { id: number; name: string | null; student_number: string }[];
+}
+
+// Attendance (Module 6, Student)
+
+export type AttendanceLeg = 'time_in' | 'time_out';
+export type AttendanceAction = 'time_in' | 'time_out' | 'emergency_time_out';
+
+/** One day's attendance record, flat like the website's (GET /attendance, /attendance/today). */
+export interface AttendanceRecord {
+  id: number;
+  /** YYYY-MM-DD (Manila) */
+  date: string;
+  /** ISO 8601 with +08:00 */
+  time_in: string | null;
+  time_in_status: AttendanceStatus | null;
+  time_in_rejection_reason: string | null;
+  time_in_latitude: number | null;
+  time_in_longitude: number | null;
+  /** metres */
+  time_in_accuracy: number | null;
+  /** Android's fake-GPS flag; null = unknown (website, staff entry, or not reported) */
+  time_in_mocked: boolean | null;
+  /** Absolute API URL; fetch with the Bearer header. */
+  time_in_photo_url: string | null;
+  time_out: string | null;
+  time_out_status: AttendanceStatus | null;
+  time_out_rejection_reason: string | null;
+  time_out_latitude: number | null;
+  time_out_longitude: number | null;
+  time_out_accuracy: number | null;
+  time_out_mocked: boolean | null;
+  time_out_photo_url: string | null;
+  /** Set only when both legs are approved. */
+  rendered_hours: number | null;
+  is_emergency: boolean;
+  note: string | null;
+}
+
+export interface AttendanceActionState {
+  allowed: boolean;
+  /** null when allowed; otherwise the server's rule message, shown as-is */
+  reason: string | null;
+}
+
+export interface AttendanceToday {
+  /** YYYY-MM-DD (Manila) */
+  date: string;
+  record: AttendanceRecord | null;
+  actions: Record<AttendanceAction, AttendanceActionState>;
+  hours: { rendered: number; required: number | null; remaining: number | null };
+}
+
+/** POST /attendance/{time-in|time-out|emergency-time-out} → message + the fresh today state. */
+export interface AttendanceSubmitResponse extends AttendanceToday {
+  message: string;
+}
+
+export interface AttendancePage {
+  data: AttendanceRecord[];
+  meta: { per_page: number; next_cursor: string | null; has_more: boolean };
 }

@@ -13,6 +13,8 @@ export type ApiErrorKind =
   /** 403 without a code: not allowed to do this particular thing. */
   | 'forbidden'
   | 'not_found'
+  /** 409: refused because of the account's state, e.g. code no_student_profile. Never ends the session. */
+  | 'conflict'
   | 'validation'
   | 'rate_limited'
   | 'server'
@@ -29,6 +31,8 @@ export class ApiError extends Error {
   readonly fieldErrors: Record<string, string>;
   /** 429 only: seconds from the Retry-After header. */
   readonly retryAfterSeconds: number | null;
+  /** The JSON error body, for endpoints that send extra data with an error (e.g. attendance 422 `today`). */
+  readonly body: ApiErrorBody;
 
   constructor(init: {
     kind: ApiErrorKind;
@@ -37,6 +41,7 @@ export class ApiError extends Error {
     code?: string | null;
     fieldErrors?: Record<string, string>;
     retryAfterSeconds?: number | null;
+    body?: ApiErrorBody;
   }) {
     super(init.message);
     this.name = 'ApiError';
@@ -45,6 +50,7 @@ export class ApiError extends Error {
     this.code = init.code ?? null;
     this.fieldErrors = init.fieldErrors ?? {};
     this.retryAfterSeconds = init.retryAfterSeconds ?? null;
+    this.body = init.body ?? {};
   }
 
   /** True when the server has (or must be treated as having) revoked this device's token. */
@@ -130,10 +136,14 @@ export function toApiError(error: unknown): ApiError {
       return new ApiError({ kind: 'forbidden', status, code, message: serverMessage ?? MESSAGES.forbidden });
     case 404:
       return new ApiError({ kind: 'not_found', status, message: MESSAGES.notFound });
+    case 409:
+      return new ApiError({ kind: 'conflict', status, code, body, message: serverMessage ?? MESSAGES.unknown });
     case 422:
       return new ApiError({
         kind: 'validation',
         status,
+        code,
+        body,
         message: serverMessage ?? MESSAGES.validation,
         fieldErrors: firstFieldErrors(body.errors),
       });
@@ -143,6 +153,6 @@ export function toApiError(error: unknown): ApiError {
     }
     default:
       if (status >= 500) return new ApiError({ kind: 'server', status, message: MESSAGES.server });
-      return new ApiError({ kind: 'unknown', status, message: serverMessage ?? MESSAGES.unknown });
+      return new ApiError({ kind: 'unknown', status, code, body, message: serverMessage ?? MESSAGES.unknown });
   }
 }
