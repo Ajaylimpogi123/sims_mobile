@@ -160,3 +160,184 @@ export interface MarkAllReadResponse {
   marked: number;
   unread_count: number;
 }
+
+// Dashboards & Analytics (Module 5)
+
+/** One KPI number; `trend` is the month-over-month % change where the web shows one, else null. */
+export interface Kpi {
+  value: number;
+  trend: number | null;
+}
+
+export interface AttendanceSummaryKpi {
+  present: number;
+  rejected: number;
+}
+
+export type AttendanceStatus = 'pending' | 'approved' | 'rejected';
+
+export interface DashboardHours {
+  rendered: number;
+  /** null = not set yet */
+  required: number | null;
+  remaining: number | null;
+  /** min(round(rendered / required * 100), 100); null when required is not set */
+  progress_percent: number | null;
+}
+
+export interface TodayAttendance {
+  id: number;
+  /** YYYY-MM-DD */
+  date: string;
+  /** ISO 8601 (+08:00) */
+  time_in: string | null;
+  time_in_status: AttendanceStatus | null;
+  time_out: string | null;
+  time_out_status: AttendanceStatus | null;
+}
+
+export interface DashboardReportRow {
+  id: number;
+  type: 'daily' | 'weekly' | string;
+  /** YYYY-MM-DD */
+  period_start: string;
+  period_end: string;
+  status: 'pending' | 'reviewed' | string;
+}
+
+export interface StudentDashboard {
+  internship: {
+    status: InternshipStatus;
+    company: IdName | null;
+    supervisor: IdName | null;
+  };
+  hours: DashboardHours;
+  today_attendance: TodayAttendance | null;
+  reports: { pending: number; reviewed: number };
+  /** Latest 5 by period_start */
+  recent_reports: DashboardReportRow[];
+}
+
+export interface SupervisorKpis {
+  assigned_students: Kpi;
+  active_internships: Kpi;
+  todays_attendance: Kpi;
+  pending_attendance_approvals: Kpi;
+  reports_awaiting_review: Kpi;
+  pending_evaluations: Kpi;
+  completed_evaluations: Kpi;
+  students_requiring_attention: Kpi;
+}
+
+export interface CoordinatorKpis {
+  total_students: Kpi;
+  active_internship_assignments: Kpi;
+  companies: Kpi;
+  active_supervisors: Kpi;
+  students_without_company: Kpi;
+  pending_approvals: Kpi;
+  attendance_summary: AttendanceSummaryKpi;
+  /** value = percent with 1 decimal */
+  internship_completion_progress: Kpi;
+  reports_awaiting_review: Kpi;
+  students_requiring_attention: Kpi;
+}
+
+export interface AdminKpis {
+  total_students: Kpi;
+  total_companies: Kpi;
+  total_supervisors: Kpi;
+  active_internship_assignments: Kpi;
+  completed_internships: Kpi;
+  pending_approvals: Kpi;
+  attendance_summary: AttendanceSummaryKpi;
+  students_nearing_completion: Kpi;
+  students_with_attendance_issues: Kpi;
+  pending_supervisor_evaluations: Kpi;
+}
+
+export interface SupervisedStudentRow {
+  id: number;
+  name: string | null;
+  internship_status: InternshipStatus;
+  rendered_hours: number;
+  required_hours: number | null;
+  progress_percent: number | null;
+}
+
+export interface ActionItem {
+  key: string;
+  /** Same text as the website, e.g. "3 attendance approval(s) awaiting your action" */
+  label: string;
+  count: number;
+  target: NotificationTarget | null;
+}
+
+/** A notification on the dashboard feed; a supervisor also sees their students' ones (is_own = false). */
+export interface ActivityItem extends AppNotification {
+  is_own: boolean;
+}
+
+interface DashboardBase {
+  action_items: ActionItem[];
+  recent_activity: ActivityItem[];
+}
+
+// GET /dashboard — every key is always present; the ones that don't apply to the role are null / [].
+export type DashboardResponse =
+  | (DashboardBase & { role_id: 1; student: StudentDashboard | null; kpis: null; supervised_students: null })
+  | (DashboardBase & { role_id: 3; student: null; kpis: SupervisorKpis; supervised_students: SupervisedStudentRow[] })
+  | (DashboardBase & { role_id: 2; student: null; kpis: CoordinatorKpis; supervised_students: null })
+  | (DashboardBase & { role_id: 4; student: null; kpis: AdminKpis; supervised_students: null });
+
+export interface AnalyticsFilters {
+  /** YYYY-MM-DD */
+  date_from: string | null;
+  date_to: string | null;
+  company_id: number | null;
+  supervisor_id: number | null;
+  student_id: number | null;
+}
+
+export interface ChartPoint {
+  key: string;
+  label: string;
+  value: number;
+}
+
+// GET /analytics?date_from=&date_to=&company_id=&supervisor_id=&student_id= (roles 2, 3, 4)
+export interface AnalyticsResponse {
+  /** As resolved by the server (supervisor_id = self for supervisors). */
+  filters: AnalyticsFilters;
+  internship: {
+    status_breakdown: ChartPoint[];
+    /** Top 10 */
+    students_by_company: ChartPoint[];
+    /** Always 5 buckets: 0-25%, 25-50%, 50-75%, 75-100%, 100%+ */
+    completion_progress: ChartPoint[];
+  };
+  attendance: {
+    outcomes: ChartPoint[];
+    /** Only days with rows; default range = last 30 days */
+    trend: { date: string; present: number; rejected: number }[];
+    frequent_rejections: { student_id: number; name: string; rejection_count: number }[];
+  };
+  evaluation: {
+    /** draft | submitted | locked */
+    completion: ChartPoint[];
+    /** value = average rating (1–5), 2 decimals */
+    by_category: ChartPoint[];
+  };
+  reports: {
+    /** pending | reviewed */
+    funnel: ChartPoint[];
+    submission_trend: { date: string; value: number }[];
+  };
+}
+
+// GET /analytics/filter-options (already scoped for a supervisor)
+export interface AnalyticsFilterOptions {
+  companies: IdName[];
+  supervisors: IdName[];
+  students: { id: number; name: string | null; student_number: string }[];
+}
