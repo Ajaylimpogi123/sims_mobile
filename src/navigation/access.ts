@@ -37,6 +37,7 @@ export type FeatureKey =
   | 'attendance-monitoring'
   | 'progress'
   | 'notifications'
+  | 'analytics'
   | 'profile'
   | 'more';
 
@@ -64,19 +65,23 @@ type CatalogEntry = FeatureInfo & { byRole?: Partial<Record<RoleId, Partial<Feat
 
 const CATALOG: Record<FeatureKey, CatalogEntry> = {
   home: {
+    // Same page titles as the website's Dashboard (ROLE_TITLES in Dashboard/Index.jsx).
     title: 'Dashboard',
     tabLabel: 'Home',
     icon: 'home-outline',
     iconFocused: 'home',
-    module: 'Module 5 — Dashboards & Analytics',
     description: 'System-wide KPIs, action items, recent activity and analytics charts.',
     byRole: {
       [ROLE_STUDENT]: {
+        title: 'My Dashboard',
         description: "Your internship status, company, supervisor, rendered and remaining hours, today's attendance and recent reports.",
       },
       [ROLE_SUPERVISOR]: {
+        title: 'Supervisor Dashboard',
         description: "Your students at a glance: pending approvals, today's attendance and hours progress.",
       },
+      [ROLE_COORDINATOR]: { title: 'Coordinator Dashboard' },
+      [ROLE_ADMIN]: { title: 'Administrator Dashboard' },
     },
   },
   attendance: {
@@ -203,6 +208,16 @@ const CATALOG: Record<FeatureKey, CatalogEntry> = {
     // Same subtitle as the website's Notifications page.
     description: 'Stay on top of approvals, reviews, and assignment updates',
   },
+  analytics: {
+    // The website's Dashboard "Analytics" tab; here its own screen, opened from Home.
+    title: 'Analytics',
+    icon: 'bar-chart-outline',
+    iconFocused: 'bar-chart',
+    description: 'Charts for internships, attendance, evaluations and reports.',
+    byRole: {
+      [ROLE_SUPERVISOR]: { description: 'Charts for your students: internships, attendance, evaluations and reports.' },
+    },
+  },
   profile: {
     title: 'Profile',
     icon: 'person-circle-outline',
@@ -261,6 +276,7 @@ export function canUse(key: FeatureKey, me: MeResponse): boolean {
     case 'report-reviews':
     case 'attendance-monitoring':
     case 'progress':
+    case 'analytics':
       return supervisor || isStaff;
     case 'more':
       return isStaff;
@@ -341,6 +357,14 @@ const MORE_HREF: Partial<Record<FeatureKey, Href>> = {
   // The one Notifications screen (src/app/notifications.tsx), also opened by the header bell.
   notifications: '/notifications',
   profile: '/staff/more/profile',
+};
+
+/**
+ * Screens in the root stack, above every role's tabs (src/app/<name>.tsx), reached the same way
+ * from any group. Each is mounted only for users who canUse() it (src/app/_layout.tsx).
+ */
+const ROOT_HREF: Partial<Record<FeatureKey, Href>> = {
+  analytics: '/analytics',
 };
 
 export interface NavItem extends FeatureInfo {
@@ -429,6 +453,8 @@ export function hrefForFeature(key: string, me: MeResponse | null | undefined): 
   const find = (k: FeatureKey) => navigation.tabs.find((t) => t.key === k) ?? navigation.more.find((m) => m.key === k);
   const direct = find(key);
   if (direct) return direct.href;
+  const root = ROOT_HREF[key];
+  if (root) return root;
   const host = HOSTED_IN[navigation.group][key];
   return host ? (find(host)?.href ?? null) : null;
 }

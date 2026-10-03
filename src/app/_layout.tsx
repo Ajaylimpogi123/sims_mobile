@@ -11,6 +11,7 @@ import { MESSAGES } from '@/api/errors';
 import { AuthProvider, useAuth } from '@/auth/AuthProvider';
 import { SplashView } from '@/components/SplashView';
 import { config } from '@/config';
+import { canUse } from '@/navigation/access';
 import { queryClient } from '@/lib/query-client';
 import { colors } from '@/theme/colors';
 
@@ -46,7 +47,7 @@ export default function RootLayout() {
 }
 
 function RootNavigator() {
-  const { status, navigation, restoreError, retryRestore, signOut } = useAuth();
+  const { status, me, navigation, restoreError, retryRestore, signOut } = useAuth();
 
   if (status === 'restoring') {
     return <SplashView />;
@@ -92,6 +93,20 @@ function RootNavigator() {
           options={{
             headerShown: true,
             title: 'Notifications',
+            animation: 'slide_from_right',
+            headerStyle: { backgroundColor: colors.brand700 },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: '600' },
+          }}
+        />
+      </Stack.Protected>
+      {/* Supervisors, Coordinators, Admins (access.ts): opened from Home, above the role's tabs. */}
+      <Stack.Protected guard={signedIn && !!group && !!me && canUse('analytics', me)}>
+        <Stack.Screen
+          name="analytics"
+          options={{
+            headerShown: true,
+            title: 'Analytics',
             animation: 'slide_from_right',
             headerStyle: { backgroundColor: colors.brand700 },
             headerTintColor: colors.white,

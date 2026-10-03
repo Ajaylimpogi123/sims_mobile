@@ -28,6 +28,21 @@ export function hrefForTarget(target: NotificationTarget | null | undefined, me:
  * switches to the target instead of stacking a second copy of them; `withAnchor` keeps the More
  * list under a More screen so Back works.
  */
+/** Opens a route from inside the role's tabs (switches tab, or pushes a More / root screen). */
+export function openHref(href: Href | null): boolean {
+  if (!href) return false;
+  router.navigate(href, { withAnchor: true });
+  return true;
+}
+
+/**
+ * navigateToTarget() for screens inside the role's tabs (e.g. the dashboard): switches to the
+ * target's tab, pushes a More screen with the More list under it, or opens a root screen.
+ */
+export function openTarget(target: NotificationTarget | null | undefined, me: MeResponse | null | undefined): boolean {
+  return openHref(hrefForTarget(target, me));
+}
+
 export function navigateToTarget(target: NotificationTarget | null | undefined, me: MeResponse | null | undefined): boolean {
   const href = hrefForTarget(target, me);
   if (!href) return false;
