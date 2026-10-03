@@ -1,6 +1,3 @@
-import { FeaturePlaceholder } from '@/components/FeaturePlaceholder';
-import { HomeGreeting } from '@/components/HomeGreeting';
+import { DashboardScreen } from '@/features/dashboard/DashboardScreen';
 
-export default function StudentHome() {
-  return <FeaturePlaceholder feature="home" header={<HomeGreeting />} />;
-}
+export default DashboardScreen;
