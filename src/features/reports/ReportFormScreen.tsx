@@ -34,6 +34,9 @@ import { TYPE_LABEL } from './format';
 
 /** The API's cap on Accomplishment Details. */
 const CONTENT_MAX = 16_000;
+
+/** Characters as the server counts them (mb_strlen: code points), not UTF-16 units, so an emoji is 1. */
+const countChars = (text: string) => Array.from(text).length;
 const TYPE_OPTIONS = (['daily', 'weekly'] as const).map((value) => ({ value, label: TYPE_LABEL[value] }));
 
 /** Laravel's wording for the same rules, so a client-side check reads like the server's 422. */
@@ -74,7 +77,7 @@ function validate(values: FormValues): FieldErrors {
     else if (values.periodStart && values.periodEnd < values.periodStart) errors.period_end = RULE_MESSAGES.periodEndAfterStart;
   }
   if (!values.content.trim()) errors.content = RULE_MESSAGES.contentRequired;
-  else if (values.content.length > CONTENT_MAX) errors.content = RULE_MESSAGES.contentMax;
+  else if (countChars(values.content) > CONTENT_MAX) errors.content = RULE_MESSAGES.contentMax;
   return errors;
 }
 
@@ -322,6 +325,7 @@ function ReportForm({ initial }: { initial: Report | null }) {
   };
 
   const inputsDisabled = submitting || locked;
+  const contentChars = countChars(values.content);
 
   return (
     <KeyboardAvoidingView className="flex-1 bg-gray-50" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -365,10 +369,11 @@ function ReportForm({ initial }: { initial: Report | null }) {
           value={values.content}
           onChangeText={(text) => setField('content', text)}
           multiline
-          maxLength={CONTENT_MAX}
+          // Hard stop at 2x (an emoji is 2 UTF-16 units); validate() enforces the real limit.
+          maxLength={CONTENT_MAX * 2}
           editable={!inputsDisabled}
           error={errors.content}
-          counter={values.content.length >= CONTENT_MAX * 0.8 ? `${formatNumber(values.content.length)} / ${formatNumber(CONTENT_MAX)}` : undefined}
+          counter={contentChars >= CONTENT_MAX * 0.8 ? `${formatNumber(contentChars)} / ${formatNumber(CONTENT_MAX)}` : undefined}
           style={{ minHeight: 160 }}
         />
 
