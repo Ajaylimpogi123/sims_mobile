@@ -403,3 +403,62 @@ export interface AttendancePage {
   data: AttendanceRecord[];
   meta: { per_page: number; next_cursor: string | null; has_more: boolean };
 }
+
+// Reports (Module 7, Student)
+
+export type ReportType = 'daily' | 'weekly';
+export type ReportStatus = 'pending' | 'reviewed';
+
+export interface ReportAttachment {
+  /** Original file name, e.g. "proof.pdf" */
+  name: string;
+  /** image/jpeg, image/png or application/pdf */
+  mime: string;
+  kind: 'image' | 'pdf';
+  /** bytes */
+  size: number;
+  /** Absolute API URL with a ?v= fingerprint that changes when the file is replaced; fetch with the Bearer header. */
+  url: string;
+}
+
+export interface Report {
+  id: number;
+  type: ReportType;
+  /** YYYY-MM-DD; for a daily report period_end equals period_start */
+  period_start: string;
+  period_end: string;
+  content: string;
+  status: ReportStatus;
+  reviewer_comment: string | null;
+  /** null when not reviewed (or the reviewer's account was deleted) */
+  reviewer: IdName | null;
+  /** ISO 8601 (+08:00) */
+  reviewed_at: string | null;
+  attachment: ReportAttachment | null;
+  created_at: string;
+  updated_at: string;
+  /** From the server's policy (own + pending). UI hints only; the server re-checks. */
+  can_edit: boolean;
+  can_delete: boolean;
+}
+
+export interface ReportFilters {
+  type: ReportType | null;
+  status: ReportStatus | null;
+}
+
+// GET /reports?type=&status=&per_page=&cursor= — period_start desc, then id desc.
+export interface ReportsPage {
+  data: Report[];
+  meta: {
+    per_page: number;
+    next_cursor: string | null;
+    has_more: boolean;
+  };
+}
+
+// POST /reports, POST /reports/{id} (_method=PATCH)
+export interface ReportSaveResponse {
+  message: string;
+  report: Report;
+}
