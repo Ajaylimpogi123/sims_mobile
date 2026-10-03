@@ -9,9 +9,11 @@ interface TextFieldProps extends Omit<TextInputProps, 'className'> {
   error?: string | null;
   /** Element rendered inside the input on the right, e.g. a show/hide toggle. */
   right?: ReactNode;
+  /** Small right-aligned text under the input, e.g. a character count "120 / 16,000". */
+  counter?: string;
 }
 
-export const TextField = forwardRef<TextInput, TextFieldProps>(function TextField({ label, error, right, ...inputProps }, ref) {
+export const TextField = forwardRef<TextInput, TextFieldProps>(function TextField({ label, error, right, counter, ...inputProps }, ref) {
   // multiline = the website's <textarea>: about three lines tall, text starts at the top.
   const multiline = !!inputProps.multiline;
   return (
@@ -30,7 +32,16 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
         />
         {right}
       </View>
-      {error ? <Text className="text-sm text-red-600">{error}</Text> : null}
+      {error || counter ? (
+        <View className="flex-row items-start gap-3">
+          <Text className="flex-1 text-sm text-red-600">{error ?? ''}</Text>
+          {counter ? (
+            <Text className="text-xs text-gray-500" style={{ fontVariant: ['tabular-nums'] }} importantForAccessibility="no">
+              {counter}
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
     </View>
   );
 });

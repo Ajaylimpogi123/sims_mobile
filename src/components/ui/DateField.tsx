@@ -15,10 +15,12 @@ interface DateFieldProps {
   minimumDate?: string | null;
   maximumDate?: string | null;
   error?: string | null;
+  /** Show the × clear button (off for required dates). Default true. */
+  clearable?: boolean;
 }
 
 /** A date input: label above, tap to pick (Android's calendar dialog), × to clear, red 422 error below. */
-export function DateField({ label, value, onChange, placeholder = 'Any date', minimumDate, maximumDate, error }: DateFieldProps) {
+export function DateField({ label, value, onChange, placeholder = 'Any date', minimumDate, maximumDate, error, clearable = true }: DateFieldProps) {
   const [iosOpen, setIosOpen] = useState(false);
   const current = value ? fromApiDate(value) : maximumDate ? fromApiDate(maximumDate) : new Date();
   const min = minimumDate ? fromApiDate(minimumDate) : undefined;
@@ -52,7 +54,7 @@ export function DateField({ label, value, onChange, placeholder = 'Any date', mi
             {value ? formatDate(value) : placeholder}
           </Text>
         </Pressable>
-        {value ? (
+        {value && clearable ? (
           <Pressable
             onPress={() => onChange(null)}
             accessibilityRole="button"
