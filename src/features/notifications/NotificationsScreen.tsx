@@ -135,6 +135,16 @@ export function NotificationsScreen() {
     }, [queryClient]),
   );
 
+  // A stored cursor the server no longer accepts (422 on `cursor`): start again from the first page.
+  const listError = list.error;
+  useEffect(() => {
+    if (!listError) return;
+    const apiError = toApiError(listError);
+    if (apiError.kind === 'validation' && apiError.fieldErrors.cursor) {
+      void queryClient.resetQueries({ queryKey: notificationKeys.list });
+    }
+  }, [listError, queryClient]);
+
   const items = list.data?.pages.flatMap((page) => page.data) ?? [];
   const unread = unreadCount.data ?? items.filter((item) => !item.read_at).length;
 
