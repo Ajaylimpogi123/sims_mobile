@@ -139,6 +139,20 @@ function RootNavigator() {
           }}
         />
       </Stack.Protected>
+      {/* Students (access.ts "feedback"): one evaluation from My Feedback, above the tabs. */}
+      <Stack.Protected guard={signedIn && group === 'student' && !!me && canUse('feedback', me)}>
+        <Stack.Screen
+          name="feedback/[id]"
+          options={{
+            headerShown: true,
+            title: 'Evaluation',
+            animation: 'slide_from_right',
+            headerStyle: { backgroundColor: colors.brand700 },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: '600' },
+          }}
+        />
+      </Stack.Protected>
       {/* Supervisors, Coordinators, Admins (access.ts): opened from Home, above the role's tabs. */}
       <Stack.Protected guard={signedIn && !!group && !!me && canUse('analytics', me)}>
         <Stack.Screen

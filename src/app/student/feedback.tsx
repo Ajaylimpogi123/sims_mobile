@@ -1,5 +1,3 @@
-import { FeaturePlaceholder } from '@/components/FeaturePlaceholder';
+import { FeedbackScreen } from '@/features/feedback/FeedbackScreen';
 
-export default function StudentFeedback() {
-  return <FeaturePlaceholder feature="feedback" />;
-}
+export default FeedbackScreen;
