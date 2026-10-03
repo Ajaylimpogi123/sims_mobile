@@ -12,15 +12,18 @@ interface TextFieldProps extends Omit<TextInputProps, 'className'> {
 }
 
 export const TextField = forwardRef<TextInput, TextFieldProps>(function TextField({ label, error, right, ...inputProps }, ref) {
+  // multiline = the website's <textarea>: about three lines tall, text starts at the top.
+  const multiline = !!inputProps.multiline;
   return (
     <View className="gap-1.5">
       <Text className="text-sm font-medium text-gray-700">{label}</Text>
       <View
-        className={`h-12 flex-row items-center rounded-xl border bg-white px-3 ${error ? 'border-red-500' : 'border-gray-300'}`}>
+        className={`flex-row rounded-xl border bg-white px-3 ${multiline ? 'min-h-24 items-start py-2' : 'h-12 items-center'} ${error ? 'border-red-500' : 'border-gray-300'}`}>
         <TextInput
           ref={ref}
           placeholderTextColor={colors.gray400}
-          className="flex-1 text-base text-gray-900"
+          textAlignVertical={multiline ? 'top' : undefined}
+          className={`flex-1 text-base text-gray-900 ${multiline ? 'min-h-20' : ''}`}
           accessibilityLabel={label}
           accessibilityHint={error ?? undefined}
           {...inputProps}
