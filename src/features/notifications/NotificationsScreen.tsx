@@ -69,7 +69,9 @@ function NotificationRow({
             <View className="mt-0.5 rounded-full bg-emerald-100 px-2 py-0.5">
               <Text className="text-xs font-medium text-emerald-700">New</Text>
             </View>
-          ) : null}
+          ) : (
+            <Text className="mt-0.5 py-0.5 text-xs text-gray-500">Read</Text>
+          )}
         </View>
         {item.message ? (
           <Text className="text-sm leading-5 text-gray-600" numberOfLines={3}>
@@ -135,12 +137,16 @@ export function NotificationsScreen() {
     }, [queryClient]),
   );
 
-  // A stored cursor the server no longer accepts (422 on `cursor`): start again from the first page.
+  // A stored cursor the server no longer accepts (422 on `cursor`): start again from the first page,
+  // at most once per visit, so a server that rejected its own cursors can't cause a reset loop
+  // (a second time, the footer's error with Try again shows instead).
   const listError = list.error;
+  const cursorResetDone = useRef(false);
   useEffect(() => {
-    if (!listError) return;
+    if (!listError || cursorResetDone.current) return;
     const apiError = toApiError(listError);
     if (apiError.kind === 'validation' && apiError.fieldErrors.cursor) {
+      cursorResetDone.current = true;
       void queryClient.resetQueries({ queryKey: notificationKeys.list });
     }
   }, [listError, queryClient]);
