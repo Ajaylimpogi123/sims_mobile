@@ -100,6 +100,20 @@ function RootNavigator() {
           }}
         />
       </Stack.Protected>
+      {/* Students (access.ts "attendance"): Time In / Time Out / Emergency capture, above the tabs. */}
+      <Stack.Protected guard={signedIn && group === 'student' && !!me && canUse('attendance', me)}>
+        <Stack.Screen
+          name="attendance-capture"
+          options={{
+            headerShown: true,
+            title: 'My Attendance',
+            animation: 'slide_from_bottom',
+            headerStyle: { backgroundColor: colors.brand700 },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: '600' },
+          }}
+        />
+      </Stack.Protected>
       {/* Supervisors, Coordinators, Admins (access.ts): opened from Home, above the role's tabs. */}
       <Stack.Protected guard={signedIn && !!group && !!me && canUse('analytics', me)}>
         <Stack.Screen
