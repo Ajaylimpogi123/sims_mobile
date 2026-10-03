@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { CameraView } from 'expo-camera';
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
@@ -5,9 +6,16 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, AppState, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { isNoStudentProfile, ruleRefusalToday, useAttendanceToday, useSubmitAttendance } from '@/api/attendance';
+import {
+  attendanceKeys,
+  getAttendanceToday,
+  isNoStudentProfile,
+  ruleRefusalToday,
+  useAttendanceToday,
+  useSubmitAttendance,
+} from '@/api/attendance';
 import { MESSAGES, toApiError, type ApiError } from '@/api/errors';
-import type { AttendanceAction } from '@/api/types';
+import type { AttendanceAction, AttendanceToday } from '@/api/types';
 import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
@@ -46,6 +54,22 @@ const CAMERA_MESSAGES = {
 
 const KEPT_EVIDENCE = 'Your photo and location are kept, so you can submit again.';
 
+/** The server's success messages, for a submit whose response was lost but which the server saved. */
+const SUBMITTED_MESSAGES: Record<AttendanceAction, string> = {
+  time_in: 'Time-in submitted for approval.',
+  time_out: 'Time-out submitted for approval.',
+  emergency_time_out: 'Emergency time-out submitted for approval.',
+};
+
+/** True when today's record already holds this action's leg (it was allowed before submitting, so it's ours). */
+function legWasSubmitted(today: AttendanceToday, action: AttendanceAction): boolean {
+  const record = today.record;
+  if (!record) return false;
+  const status = action === 'time_in' ? record.time_in_status : record.time_out_status;
+  if (status !== 'pending' && status !== 'approved') return false;
+  return action === 'time_in' || record.is_emergency === (action === 'emergency_time_out');
+}
+
 export function isAttendanceAction(value: unknown): value is AttendanceAction {
   return value === 'time_in' || value === 'time_out' || value === 'emergency_time_out';
 }
@@ -76,6 +100,8 @@ function Capture({ action }: { action: AttendanceAction }) {
   const permissions = useCapturePermissions();
   const [requesting, setRequesting] = useState(false);
   const today = useAttendanceToday();
+  const queryClient = useQueryClient();
+  const [verifying, setVerifying] = useState(false);
   const location = useLocationFix();
   const submit = useSubmitAttendance();
 
@@ -107,7 +133,7 @@ function Capture({ action }: { action: AttendanceAction }) {
 
   // Don't let Back or a swipe abandon an upload half-way. A ref, not state: on success the screen
   // closes before React re-renders, and the listener must already see the upload as finished.
-  const submitting = submit.isPending;
+  const submitting = submit.isPending || verifying;
   const uploading = useRef(false);
   useEffect(
     () =>
@@ -177,6 +203,26 @@ function Capture({ action }: { action: AttendanceAction }) {
   const noteMissing = action === 'emergency_time_out' && note.trim() === '';
   const canSubmit = !!photo && !!fix && !noteMissing && !refusedReason && !noProfile && !submitting;
 
+  const confirmAfterLostResponse = async (lostError: ApiError) => {
+    setVerifying(true);
+    try {
+      const fresh = await queryClient.fetchQuery({ queryKey: attendanceKeys.today, queryFn: getAttendanceToday, staleTime: 0 });
+      if (legWasSubmitted(fresh, action)) {
+        uploading.current = false;
+        setAttendanceFlash(SUBMITTED_MESSAGES[action]);
+        router.back();
+        return;
+      }
+      setSubmitError(lostError);
+    } catch {
+      // Still offline: the evidence is kept for another try.
+      setSubmitError(lostError);
+    } finally {
+      uploading.current = false;
+      setVerifying(false);
+    }
+  };
+
   const doSubmit = () => {
     if (!photo || !fix || !canSubmit || uploading.current) return;
     uploading.current = true;
@@ -198,8 +244,13 @@ function Capture({ action }: { action: AttendanceAction }) {
           router.back();
         },
         onError: (error) => {
-          uploading.current = false;
           const apiError = toApiError(error);
+          if (apiError.kind === 'network' || apiError.kind === 'timeout') {
+            // The upload may have been saved before the connection dropped: ask the server before offering a resubmit.
+            void confirmAfterLostResponse(apiError);
+            return;
+          }
+          uploading.current = false;
           // A state-rule refusal updates today, which shows its reason above; 401 is handled app-wide.
           if (ruleRefusalToday(apiError) || apiError.endsSession) return;
           setSubmitError(apiError);
