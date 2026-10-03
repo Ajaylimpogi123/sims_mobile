@@ -11,22 +11,26 @@ export interface PreparedPhoto {
   height: number;
 }
 
-/** Downscales a captured photo to ≤ 1280 px on its long edge and re-encodes it as JPEG. */
-export async function preparePhoto(photo: { uri: string; width: number; height: number }): Promise<PreparedPhoto> {
-  const context = ImageManipulator.manipulate(photo.uri);
+/**
+ * Downscales a captured photo to ≤ 1280 px on its long edge and re-encodes it as JPEG.
+ * The long edge is read from the decoded image itself, not from the camera's reported size,
+ * which some Android devices may give before rotation (a portrait shot would end up 1280×1707).
+ */
+export async function preparePhoto(photo: { uri: string }): Promise<PreparedPhoto> {
+  const decodeContext = ImageManipulator.manipulate(photo.uri);
+  const decoded = await decodeContext.renderAsync().finally(() => decodeContext.release());
+  let output = decoded;
   try {
-    if (Math.max(photo.width, photo.height) > MAX_DIMENSION) {
-      context.resize(photo.width >= photo.height ? { width: MAX_DIMENSION } : { height: MAX_DIMENSION });
+    if (Math.max(decoded.width, decoded.height) > MAX_DIMENSION) {
+      const resizeContext = ImageManipulator.manipulate(decoded);
+      resizeContext.resize(decoded.width >= decoded.height ? { width: MAX_DIMENSION } : { height: MAX_DIMENSION });
+      output = await resizeContext.renderAsync().finally(() => resizeContext.release());
     }
-    const image = await context.renderAsync();
-    try {
-      const saved = await image.saveAsync({ compress: JPEG_QUALITY, format: SaveFormat.JPEG });
-      return { uri: saved.uri, width: saved.width, height: saved.height };
-    } finally {
-      image.release();
-    }
+    const saved = await output.saveAsync({ compress: JPEG_QUALITY, format: SaveFormat.JPEG });
+    return { uri: saved.uri, width: saved.width, height: saved.height };
   } finally {
-    context.release();
+    if (output !== decoded) output.release();
+    decoded.release();
   }
 }
 
