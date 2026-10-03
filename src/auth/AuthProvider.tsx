@@ -5,6 +5,7 @@ import { login as apiLogin, logout as apiLogout, meQueryOptions, revokeToken } f
 import { ApiError, MESSAGES, toApiError } from '@/api/errors';
 import { clearImageCaches } from '@/api/images';
 import type { MeResponse, User } from '@/api/types';
+import { clearDownloadedFiles } from '@/lib/downloads';
 import { navigationFor, type Navigation } from '@/navigation/access';
 
 import { getDeviceName } from './device-name';
@@ -61,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       queryClient.clear();
       clearImageCaches();
+      clearDownloadedFiles();
       setSessionMe(null);
       setRestoreError(null);
       setNotice(message);
@@ -145,6 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       queryClient.clear();
       clearImageCaches();
+      clearDownloadedFiles();
       // Navigation depends on /me (staff flags), so load it before leaving the login screen.
       await enterWithStoredToken();
     },

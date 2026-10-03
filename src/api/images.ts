@@ -6,17 +6,27 @@ import { config } from '@/config';
 const API_PREFIX = '/api/v1/';
 
 /**
- * expo-image source for a protected API image (e.g. an attendance photo_url), sent with the Bearer token.
+ * The part of an absolute API URL after /api/v1 (e.g. "/reports/12/attachment?v=3f1c"), to request
+ * through the configured server only. The server may build URLs with another host (APP_URL vs. an
+ * ngrok tunnel); the token must never follow that host. Null for anything that isn't an /api/v1 URL.
+ */
+export function apiPathFromUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const at = url.indexOf(API_PREFIX);
+  return at < 0 ? null : url.slice(at + API_PREFIX.length - 1);
+}
+
+/**
+ * expo-image source for a protected API image (e.g. an attendance photo_url or a report attachment),
+ * sent with the Bearer token.
  *
- * The URL is re-rooted on the configured server so the token never goes to another host, and so a
- * server that builds URLs with a different host (APP_URL vs. an ngrok tunnel) still works.
- * Returns null for anything that isn't an /api/v1 URL.
+ * The URL is re-rooted on the configured server (see apiPathFromUrl), so the token never goes to
+ * another host. Returns null for anything that isn't an /api/v1 URL.
  */
 export function authImageSource(url: string | null | undefined): { uri: string; headers: Record<string, string>; cacheKey: string } | null {
-  if (!url || !config.serverUrl) return null;
-  const at = url.indexOf(API_PREFIX);
-  if (at < 0) return null;
-  const uri = `${config.serverUrl}${url.slice(at)}`;
+  const path = apiPathFromUrl(url);
+  if (!path || !config.apiBaseUrl) return null;
+  const uri = `${config.apiBaseUrl}${path}`;
   const token = tokenStore.current();
   return {
     uri,
@@ -31,8 +41,8 @@ export function authImageSource(url: string | null | undefined): { uri: string; 
 }
 
 /**
- * Forget every cached protected image (attendance evidence) on this phone. Called whenever a
- * session ends or a new one starts, so photos never outlive the account or the access that loaded them.
+ * Forget every cached protected image (attendance evidence, report attachments) on this phone. Called
+ * whenever a session ends or a new one starts, so photos never outlive the account or the access that loaded them.
  */
 export function clearImageCaches() {
   void Image.clearMemoryCache().catch(() => undefined);
