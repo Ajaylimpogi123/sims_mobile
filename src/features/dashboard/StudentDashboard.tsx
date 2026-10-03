@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import type { Href } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 
 import type { AttendanceStatus, MeResponse, StudentDashboard as StudentData } from '@/api/types';
@@ -132,10 +133,13 @@ export function StudentDashboard({ data, me }: { data: StudentData | null; me: M
           <EmptyState message="No reports submitted yet." />
         ) : (
           recent.map((report, index) => (
-            <View
+            <Pressable
               key={report.id}
-              className={`flex-row items-center gap-3 py-3 ${index > 0 ? 'border-t border-gray-100' : ''}`}
-              accessible
+              disabled={!reportsHref}
+              onPress={() => openHref(`/report/${report.id}` as Href)}
+              className={`min-h-12 flex-row items-center gap-3 py-3 active:bg-gray-50 ${index > 0 ? 'border-t border-gray-100' : ''}`}
+              accessibilityRole={reportsHref ? 'button' : undefined}
+              accessibilityHint={reportsHref ? 'Opens the report' : undefined}
               accessibilityLabel={`${capitalize(report.type)} report, ${formatDate(report.period_start)} to ${formatDate(report.period_end)}, ${report.status}`}>
               <View className="flex-1 gap-0.5">
                 <Text className="text-sm font-medium text-gray-900">{capitalize(report.type)}</Text>
@@ -146,7 +150,7 @@ export function StudentDashboard({ data, me }: { data: StudentData | null; me: M
                 </Text>
               </View>
               <StatusBadge status={report.status} />
-            </View>
+            </Pressable>
           ))
         )}
       </Card>
