@@ -11,7 +11,8 @@ import { colors } from '@/theme/colors';
  * Header bell with the unread badge (same red "9+" badge as the website's NotificationBell).
  * Shown in the header of every role's tab screens; opens the Notifications screen.
  * The count refreshes when a screen with the bell gains focus, when the app returns to the
- * foreground, every 60 s while foregrounded, and right after marking notifications read.
+ * foreground, every 60 s while foregrounded (by the one poller in RoleTabs; never here, since
+ * polling runs per observer), and right after marking notifications read.
  */
 export function NotificationBell() {
   const queryClient = useQueryClient();

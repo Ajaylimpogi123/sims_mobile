@@ -2,6 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Tabs } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
+import { useUnreadCountPolling } from '@/api/notifications';
 import { useNavigationAccess } from '@/auth/AuthProvider';
 import type { FeatureKey } from '@/navigation/access';
 import { colors } from '@/theme/colors';
@@ -24,6 +25,8 @@ export interface TabRoute {
  */
 export function RoleTabs({ routes }: { routes: TabRoute[] }) {
   const navigation = useNavigationAccess();
+  // One badge poller per session (one role group is mounted at a time; Notifications sits above it).
+  useUnreadCountPolling();
 
   return (
     <>

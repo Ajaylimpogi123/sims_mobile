@@ -56,16 +56,24 @@ export async function markAllNotificationsRead(): Promise<MarkAllReadResponse> {
 // Queries
 // ---------------------------------------------------------------------------
 
-/** Bell badge. Every bell instance shares this one query; polls only while the app is foregrounded. */
+const unreadCountOptions = {
+  queryKey: notificationKeys.unreadCount,
+  queryFn: getUnreadCount,
+  staleTime: 15_000,
+} as const;
+
+/** Unread count for the bell badge and the Notifications screen. Never polls by itself. */
 export function useUnreadCount() {
-  return useQuery({
-    queryKey: notificationKeys.unreadCount,
-    queryFn: getUnreadCount,
-    staleTime: 15_000,
-    refetchInterval: UNREAD_POLL_MS,
-    // focusManager follows AppState (src/lib/query-client.ts), so this pauses in the background.
-    refetchIntervalInBackground: false,
-  });
+  return useQuery(unreadCountOptions);
+}
+
+/**
+ * THE one poller of the unread count. refetchInterval runs per observer, so mount this exactly
+ * once per signed-in session (RoleTabs), never in each bell. Pauses in the background:
+ * focusManager follows AppState (src/lib/query-client.ts).
+ */
+export function useUnreadCountPolling() {
+  useQuery({ ...unreadCountOptions, refetchInterval: UNREAD_POLL_MS, refetchIntervalInBackground: false });
 }
 
 export function useNotificationsList() {
