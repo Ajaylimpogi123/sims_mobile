@@ -118,3 +118,29 @@ export function formatRelativeDateTime(input: DateInput, now: DateInput = new Da
   if (days < 7) return `${days} days ago · ${formatDateTime(date)}`;
   return formatDateTime(date);
 }
+
+/** "Oct 2" (chart axes and compact ranges). */
+export function formatShortDate(input: DateInput): string {
+  const p = manilaParts(input);
+  return p ? `${MONTHS[p.month].slice(0, 3)} ${p.day}` : '';
+}
+
+/**
+ * "YYYY-MM-DD" for the calendar day the user picked in a date picker. The picker returns a Date
+ * at the phone's local midnight, so read the local parts (the API treats the string as a Manila date).
+ */
+export function toApiDate(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+/** Local Date (midnight) for an API "YYYY-MM-DD", to seed a date picker. */
+export function fromApiDate(value: string): Date {
+  const [y, m, d] = value.split('-').map(Number);
+  return new Date(y, (m ?? 1) - 1, d ?? 1);
+}
+
+/** Today's date in Manila as "YYYY-MM-DD". */
+export function todayApiDate(now: DateInput = new Date()): string {
+  const p = manilaParts(now);
+  return p ? `${p.year}-${String(p.month + 1).padStart(2, '0')}-${String(p.day).padStart(2, '0')}` : '';
+}
