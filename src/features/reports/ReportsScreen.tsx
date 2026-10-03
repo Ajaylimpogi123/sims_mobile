@@ -16,7 +16,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { colors } from '@/theme/colors';
 
 import { takeReportsFlash } from './flash';
-import { formatPeriod, STATUS_LABEL, TYPE_LABEL } from './format';
+import { formatPeriod, KIND_LABEL, STATUS_LABEL, TYPE_LABEL } from './format';
 
 // ---------------------------------------------------------------------------
 // Filters (the API's type / status filters; the website lists everything)
@@ -93,7 +93,7 @@ function ReportRow({ report, onPress }: { report: Report; onPress: () => void })
               <>
                 <Text className="text-sm text-gray-400">·</Text>
                 <Ionicons name="attach" size={16} color={colors.gray500} />
-                <Text className="text-sm text-gray-600">{report.attachment.kind === 'pdf' ? 'PDF' : 'Image'}</Text>
+                <Text className="text-sm text-gray-600">{KIND_LABEL[report.attachment.kind]}</Text>
               </>
             ) : null}
           </View>

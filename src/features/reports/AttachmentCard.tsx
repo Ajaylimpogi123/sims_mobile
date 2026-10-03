@@ -12,16 +12,16 @@ import { Card } from '@/components/ui/Card';
 import { downloadProtectedFile, openFile, shareFile } from '@/lib/downloads';
 import { colors } from '@/theme/colors';
 
-import { formatFileSize } from './format';
+import { formatFileSize, KIND_LABEL } from './format';
 import { ImageViewer } from './ImageViewer';
 
 /** Icon + name + size of an attachment (detail card and form field). */
-export function AttachmentSummary({ name, kind, size, meta }: { name: string; kind: 'image' | 'pdf'; size: number | null; meta?: string }) {
-  const details = [kind === 'pdf' ? 'PDF' : 'Image', formatFileSize(size), meta].filter(Boolean).join(' · ');
+export function AttachmentSummary({ name, kind, size, meta }: { name: string; kind: ReportAttachment['kind']; size: number | null; meta?: string }) {
+  const details = [KIND_LABEL[kind], formatFileSize(size), meta].filter(Boolean).join(' · ');
   return (
     <View className="flex-1 flex-row items-center gap-3">
       <View className={`h-10 w-10 items-center justify-center rounded-lg ${kind === 'pdf' ? 'bg-red-50' : 'bg-gray-100'}`}>
-        <Ionicons name={kind === 'pdf' ? 'document-text-outline' : 'image-outline'} size={20} color={kind === 'pdf' ? colors.red600 : colors.gray500} />
+        <Ionicons name={kind === 'pdf' ? 'document-text-outline' : kind === 'image' ? 'image-outline' : 'document-attach-outline'} size={20} color={kind === 'pdf' ? colors.red600 : colors.gray500} />
       </View>
       <View className="flex-1">
         <Text className="text-sm font-medium text-gray-900" numberOfLines={1} ellipsizeMode="middle">
@@ -101,7 +101,7 @@ export function AttachmentCard({ attachment }: { attachment: ReportAttachment })
           <Button label="View" icon="expand-outline" variant="outline" className="flex-1" disabled={imageFailed} onPress={() => setViewerOpen(true)} />
         ) : (
           <Button
-            label="Open PDF"
+            label={attachment.kind === 'pdf' ? 'Open PDF' : 'Open'}
             icon="open-outline"
             variant="outline"
             className="flex-1"

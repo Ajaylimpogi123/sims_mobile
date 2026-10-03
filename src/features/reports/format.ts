@@ -19,3 +19,6 @@ export function formatFileSize(bytes: number | null | undefined): string {
   if (bytes < 1024 * 1024) return `${formatNumber(bytes / 1024, 0)} KB`;
   return `${formatNumber(bytes / (1024 * 1024), 1)} MB`;
 }
+
+/** "PDF" / "Image" / "File" (attachment.kind; 'file' is the API's fallback for any other type). */
+export const KIND_LABEL: Record<'image' | 'pdf' | 'file', string> = { image: 'Image', pdf: 'PDF', file: 'File' };

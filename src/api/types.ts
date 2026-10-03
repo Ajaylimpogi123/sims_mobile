@@ -414,7 +414,8 @@ export interface ReportAttachment {
   name: string;
   /** image/jpeg, image/png or application/pdf */
   mime: string;
-  kind: 'image' | 'pdf';
+  /** 'file' is a fallback for any other stored type (validation only lets images and PDFs in). */
+  kind: 'image' | 'pdf' | 'file';
   /** bytes */
   size: number;
   /** Absolute API URL with a ?v= fingerprint that changes when the file is replaced; fetch with the Bearer header. */
