@@ -97,23 +97,24 @@ function Capture({ action }: { action: AttendanceAction }) {
   }, [locationAllowed, locationStatus, startLocation]);
 
   // Back from turning Location on in Settings: try again by itself.
-  const statusRef = useRef(locationStatus);
-  statusRef.current = locationStatus;
   useEffect(() => {
+    if (locationStatus !== 'off') return;
     const sub = AppState.addEventListener('change', (state) => {
-      if (state === 'active' && statusRef.current === 'off') void startLocation();
+      if (state === 'active') void startLocation();
     });
     return () => sub.remove();
-  }, [startLocation]);
+  }, [locationStatus, startLocation]);
 
-  // Don't let Back or a swipe abandon an upload half-way.
+  // Don't let Back or a swipe abandon an upload half-way. A ref, not state: on success the screen
+  // closes before React re-renders, and the listener must already see the upload as finished.
   const submitting = submit.isPending;
+  const uploading = useRef(false);
   useEffect(
     () =>
       navigation.addListener('beforeRemove', (event) => {
-        if (submitting) event.preventDefault();
+        if (uploading.current) event.preventDefault();
       }),
-    [navigation, submitting],
+    [navigation],
   );
 
   const requestPermissions = async () => {
@@ -177,7 +178,8 @@ function Capture({ action }: { action: AttendanceAction }) {
   const canSubmit = !!photo && !!fix && !noteMissing && !refusedReason && !noProfile && !submitting;
 
   const doSubmit = () => {
-    if (!photo || !fix || !canSubmit) return;
+    if (!photo || !fix || !canSubmit || uploading.current) return;
+    uploading.current = true;
     setSubmitError(null);
     submit.mutate(
       {
@@ -191,10 +193,12 @@ function Capture({ action }: { action: AttendanceAction }) {
       },
       {
         onSuccess: (response) => {
+          uploading.current = false;
           setAttendanceFlash(response.message);
           router.back();
         },
         onError: (error) => {
+          uploading.current = false;
           const apiError = toApiError(error);
           // A state-rule refusal updates today, which shows its reason above; 401 is handled app-wide.
           if (ruleRefusalToday(apiError) || apiError.endsSession) return;
