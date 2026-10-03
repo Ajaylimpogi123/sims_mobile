@@ -43,7 +43,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "SIMS uses the camera to take a live photo of you when you time in or out.",
+          "cameraPermission": "SIMS uses the camera to take a live photo of you when you time in or out, and to photograph documents for your reports.",
           "microphonePermission": false,
           "recordAudioAndroid": false
         }
@@ -56,6 +56,14 @@
           "locationAlwaysPermission": false,
           "isAndroidBackgroundLocationEnabled": false,
           "isAndroidForegroundServiceEnabled": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "SIMS lets you attach a photo from your gallery to a report.",
+          "cameraPermission": "SIMS uses the camera to take a live photo of you when you time in or out, and to photograph documents for your reports.",
+          "microphonePermission": false
         }
       ]
     ],
