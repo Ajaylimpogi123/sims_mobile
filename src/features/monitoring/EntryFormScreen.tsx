@@ -173,7 +173,7 @@ export function EntryFormScreen() {
           placeholder="Select a date"
           clearable={false}
           minimumDate="2000-01-01"
-          maximumDate="2099-12-31"
+          maximumDate={todayApiDate()}
           onChange={(value) => {
             setDate(value);
             clearError('date');
