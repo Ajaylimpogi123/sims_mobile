@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData, type QueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData, type QueryClient } from '@tanstack/react-query';
 
 import { approvalKeys } from './approvals';
 import { api } from './client';
@@ -84,24 +84,17 @@ export async function setRequiredHours(studentId: number, requiredHours: number 
 
 type StudentsData = InfiniteData<MonitoredStudentsPage, number>;
 
-function useStudentPages(kind: 'students' | 'progress', search: string) {
+/** Attendance Monitoring ('students') or Progress Monitoring list; search = student name contains (the website's filter). */
+export function useMonitoringList(kind: 'students' | 'progress', search: string) {
   return useInfiniteQuery({
     queryKey: kind === 'students' ? monitoringKeys.students(search) : monitoringKeys.progress(search),
     queryFn: ({ pageParam }) => getStudents(kind === 'students' ? '/monitoring/students' : '/progress', search, pageParam),
     initialPageParam: 1,
     getNextPageParam: (last) => (last.meta.has_more ? last.meta.current_page + 1 : undefined),
     staleTime: 30_000,
+    // Keep the previous results on screen while a new search loads.
+    placeholderData: keepPreviousData,
   });
-}
-
-/** Attendance Monitoring list (search = student name contains, like the website's filter). */
-export function useMonitoredStudents(search: string) {
-  return useStudentPages('students', search);
-}
-
-/** Progress Monitoring list. */
-export function useProgressStudents(search: string) {
-  return useStudentPages('progress', search);
 }
 
 function findStudentInLists(queryClient: QueryClient, id: number): MonitoredStudent | undefined {
