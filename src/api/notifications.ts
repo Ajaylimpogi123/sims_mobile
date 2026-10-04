@@ -72,8 +72,10 @@ export function useUnreadCount() {
  * once per signed-in session (RoleTabs), never in each bell. Pauses in the background:
  * focusManager follows AppState (src/lib/query-client.ts).
  */
-export function useUnreadCountPolling() {
-  useQuery({ ...unreadCountOptions, refetchInterval: UNREAD_POLL_MS, refetchIntervalInBackground: false });
+export function useUnreadCountPolling(): number {
+  const { dataUpdatedAt } = useQuery({ ...unreadCountOptions, refetchInterval: UNREAD_POLL_MS, refetchIntervalInBackground: false });
+  // When the count was last fetched; other badges (Pending Approvals) refresh on the same beat.
+  return dataUpdatedAt;
 }
 
 export function useNotificationsList() {

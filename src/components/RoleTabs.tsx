@@ -1,7 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useQueryClient } from '@tanstack/react-query';
 import { Tabs } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
 
+import { approvalKeys, useApprovalCount } from '@/api/approvals';
 import { useUnreadCountPolling } from '@/api/notifications';
 import { useNavigationAccess } from '@/auth/AuthProvider';
 import type { FeatureKey } from '@/navigation/access';
@@ -25,11 +28,12 @@ export interface TabRoute {
  */
 export function RoleTabs({ routes }: { routes: TabRoute[] }) {
   const navigation = useNavigationAccess();
-  // One badge poller per session (one role group is mounted at a time; Notifications sits above it).
-  useUnreadCountPolling();
+  const hasApprovals = navigation.tabs.some((t) => t.key === 'approvals');
+  const { data: pendingApprovals = 0 } = useApprovalCount(hasApprovals);
 
   return (
     <>
+      <BadgePoller approvals={hasApprovals} />
       <StatusBar style="light" />
       <Tabs
         screenOptions={{
@@ -52,6 +56,9 @@ export function RoleTabs({ routes }: { routes: TabRoute[] }) {
                   title: tab?.title,
                   tabBarLabel: tab?.tabLabel ?? tab?.title,
                   headerShown: route.headerShown ?? true,
+                  tabBarBadge:
+                    route.feature === 'approvals' && pendingApprovals > 0 ? (pendingApprovals > 99 ? '99+' : pendingApprovals) : undefined,
+                  tabBarBadgeStyle: { backgroundColor: colors.red600, color: colors.white, fontSize: 10, fontWeight: '600' },
                   tabBarIcon: ({ color, size, focused }) =>
                     tab ? <Ionicons name={focused ? tab.iconFocused : tab.icon} size={size} color={color} /> : null,
                 }}
@@ -62,4 +69,21 @@ export function RoleTabs({ routes }: { routes: TabRoute[] }) {
       </Tabs>
     </>
   );
+}
+
+/**
+ * THE one badge poller per session (one role group is mounted at a time; Notifications sits above it).
+ * The bell's unread count polls every 60 s in the foreground; the Pending Approvals count is refreshed
+ * on the same beat (when stale), so there is still one timer. Renders nothing, so polling never
+ * re-renders the tab navigator.
+ */
+function BadgePoller({ approvals }: { approvals: boolean }) {
+  const queryClient = useQueryClient();
+  const polledAt = useUnreadCountPolling();
+  useEffect(() => {
+    if (approvals && polledAt > 0) {
+      void queryClient.refetchQueries({ queryKey: approvalKeys.count, stale: true, type: 'active' });
+    }
+  }, [approvals, polledAt, queryClient]);
+  return null;
 }
