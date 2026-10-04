@@ -11,7 +11,10 @@ import { colors } from '@/theme/colors';
  * A leg's photo thumbnail (website: AttendanceEvidence), fetched with the Bearer token.
  * Tap for the full-size photo. Shows "Photo unavailable" if it can't load (404, offline).
  */
-export function AttendancePhoto({ url, label }: { url: string | null; label: string }) {
+export function AttendancePhoto({ url, label, size = 'sm' }: { url: string | null; label: string; size?: 'sm' | 'lg' }) {
+  // sm: 48dp thumbnail (lists) · lg: full-width preview (Pending Approvals evidence).
+  const box = size === 'lg' ? 'h-60 w-full rounded-xl' : 'h-12 w-12 rounded-lg';
+  const iconSize = size === 'lg' ? 28 : 18;
   const insets = useSafeAreaInsets();
   const [open, setOpen] = useState(false);
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
@@ -20,10 +23,11 @@ export function AttendancePhoto({ url, label }: { url: string | null; label: str
   if (!source) {
     return (
       <View
-        className="h-12 w-12 items-center justify-center rounded-lg border border-gray-200 bg-gray-50"
+        className={`${box} items-center justify-center border border-gray-200 bg-gray-50`}
         accessible
         accessibilityLabel={`${label}: no photo`}>
-        <Ionicons name="image-outline" size={18} color={colors.gray400} />
+        <Ionicons name="image-outline" size={iconSize} color={colors.gray400} />
+        {size === 'lg' ? <Text className="text-sm text-gray-500">No photo</Text> : null}
       </View>
     );
   }
@@ -35,8 +39,9 @@ export function AttendancePhoto({ url, label }: { url: string | null; label: str
         accessibilityRole="button"
         accessibilityLabel={`${label}: photo unavailable`}
         accessibilityHint="Tries to load the photo again"
-        className="h-12 w-12 items-center justify-center rounded-lg border border-gray-200 bg-gray-100">
-        <Ionicons name="alert-circle-outline" size={18} color={colors.gray500} />
+        className={`${box} items-center justify-center gap-1 border border-gray-200 bg-gray-100`}>
+        <Ionicons name="alert-circle-outline" size={iconSize} color={colors.gray500} />
+        {size === 'lg' ? <Text className="text-sm text-gray-500">Photo unavailable. Tap to try again.</Text> : null}
       </Pressable>
     );
   }
@@ -48,7 +53,7 @@ export function AttendancePhoto({ url, label }: { url: string | null; label: str
         accessibilityRole="imagebutton"
         accessibilityLabel={label}
         accessibilityHint="Opens the full-size photo"
-        className="h-12 w-12 overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
+        className={`${box} overflow-hidden border border-gray-200 bg-gray-100`}>
         <Image
           source={source}
           cachePolicy="disk"

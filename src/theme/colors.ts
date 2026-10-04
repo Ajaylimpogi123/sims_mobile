@@ -17,6 +17,7 @@ export const colors = {
   gray900: '#111827',
   amber500: '#f59e0b',
   amber600: '#d97706',
+  amber700: '#b45309',
   red600: '#dc2626',
   emerald600: '#059669',
 } as const;
