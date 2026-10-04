@@ -518,3 +518,52 @@ export interface FeedbackPage {
     has_more: boolean;
   };
 }
+
+// Pending Approvals (Module 9) — roles 3 (own students) and 4 (all); 403 for others.
+
+export interface ApprovalLegReview {
+  /** True only when the leg is pending and this user may review it. */
+  can_approve: boolean;
+  can_reject: boolean;
+}
+
+/** An attendance record to review: the Module 6 record plus who it belongs to and what may be decided. */
+export interface ApprovalItem extends AttendanceRecord {
+  student: {
+    id: number;
+    name: string;
+    student_number: string | null;
+    company: { id: number; name: string } | null;
+  };
+  /** Pending legs, in time_in, time_out order; [] once both are decided. */
+  pending_legs: AttendanceLeg[];
+  review: Record<AttendanceLeg, ApprovalLegReview>;
+}
+
+// GET /approvals?per_page=&cursor= — records with a pending leg, newest date first.
+export interface ApprovalsPage {
+  data: ApprovalItem[];
+  meta: {
+    per_page: number;
+    next_cursor: string | null;
+    has_more: boolean;
+  };
+}
+
+// GET /approvals/count — records with a pending leg (same as the dashboard KPI).
+export interface ApprovalCountResponse {
+  count: number;
+}
+
+// GET /approvals/{id}
+export interface ApprovalResponse {
+  data: ApprovalItem;
+}
+
+export type ApprovalDecision = 'approve' | 'reject';
+
+// POST /attendance/{id}/{time-in|time-out}/{approve|reject}; 422 code attendance_rule carries a fresh `attendance` too.
+export interface ApprovalDecisionResponse {
+  message: string;
+  attendance: ApprovalItem;
+}
