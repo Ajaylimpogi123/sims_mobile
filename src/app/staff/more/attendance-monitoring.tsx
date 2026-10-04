@@ -1,5 +1,6 @@
-import { FeaturePlaceholder } from '@/components/FeaturePlaceholder';
+import { StudentList } from '@/features/monitoring/StudentListScreen';
 
+/** Coordinator (view only) and Admin: Attendance Monitoring from More. */
 export default function MoreAttendanceMonitoring() {
-  return <FeaturePlaceholder feature="attendance-monitoring" />;
+  return <StudentList kind="attendance" />;
 }

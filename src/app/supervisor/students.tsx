@@ -1,5 +1,3 @@
-import { FeaturePlaceholder } from '@/components/FeaturePlaceholder';
+import { SupervisorMonitoringTab } from '@/features/monitoring/SupervisorMonitoringTab';
 
-export default function SupervisorStudents() {
-  return <FeaturePlaceholder feature="students" />;
-}
+export default SupervisorMonitoringTab;

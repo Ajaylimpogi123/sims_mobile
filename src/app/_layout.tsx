@@ -167,6 +167,32 @@ function RootNavigator() {
           }}
         />
       </Stack.Protected>
+      {/* Supervisors, Coordinators (view only), Admins (access.ts "attendance-monitoring"): a student's Attendance Log
+          and the Add / Edit Entry form, above the tabs. Write buttons follow the API's per-student flags. */}
+      <Stack.Protected guard={signedIn && !!group && !!me && canUse('attendance-monitoring', me)}>
+        <Stack.Screen
+          name="monitoring/[id]"
+          options={{
+            headerShown: true,
+            title: 'Attendance Log',
+            animation: 'slide_from_right',
+            headerStyle: { backgroundColor: colors.brand700 },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: '600' },
+          }}
+        />
+        <Stack.Screen
+          name="monitoring-entry"
+          options={{
+            headerShown: true,
+            title: 'Add Entry',
+            animation: 'slide_from_bottom',
+            headerStyle: { backgroundColor: colors.brand700 },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: '600' },
+          }}
+        />
+      </Stack.Protected>
       {/* Supervisors, Coordinators, Admins (access.ts): opened from Home, above the role's tabs. */}
       <Stack.Protected guard={signedIn && !!group && !!me && canUse('analytics', me)}>
         <Stack.Screen
