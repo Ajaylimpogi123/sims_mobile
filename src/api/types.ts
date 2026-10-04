@@ -567,3 +567,63 @@ export interface ApprovalDecisionResponse {
   message: string;
   attendance: ApprovalItem;
 }
+
+// Attendance & Progress Monitoring (Module 10: Supervisor own students, Coordinator view only, Admin all)
+
+/** GET /monitoring/students, /monitoring/students/{id}, /progress: one student with hours progress. */
+export interface MonitoredStudent {
+  id: number;
+  user_id: number;
+  name: string;
+  student_number: string | null;
+  course: string | null;
+  section: string | null;
+  internship_status: InternshipStatus | null;
+  company: { id: number; name: string } | null;
+  supervisor: { id: number; name: string } | null;
+  /** Sum of approved days, 2 dp */
+  rendered_hours: number;
+  required_hours: number | null;
+  /** max(required - rendered, 0); null when required isn't set */
+  remaining_hours: number | null;
+  /** Website bar: 0-100 capped, 0 when required is 0, null when not set */
+  progress_percent: number | null;
+  /** Add / edit / delete entries (Admin, the student's own Supervisor; never a Coordinator) */
+  can_edit_attendance: boolean;
+  can_edit_required_hours: boolean;
+}
+
+/** Page-numbered (not cursor) like the website's table. */
+export interface MonitoredStudentsPage {
+  data: MonitoredStudent[];
+  meta: { current_page: number; last_page: number; per_page: number; total: number; has_more: boolean };
+}
+
+export interface MonitoredStudentResponse {
+  data: MonitoredStudent;
+}
+
+/** The attendance record of /attendance/history plus the website's Recorded By column and write flags. */
+export interface MonitoringAttendance extends AttendanceRecord {
+  recorded_by: 'self' | 'staff';
+  can_edit: boolean;
+  can_delete: boolean;
+}
+
+export interface MonitoringAttendancePage {
+  data: MonitoringAttendance[];
+  meta: { per_page: number; next_cursor: string | null; has_more: boolean };
+}
+
+/** POST /monitoring/students/{id}/attendance, PATCH /monitoring/attendance/{id} */
+export interface AttendanceEntryResponse {
+  message: string;
+  attendance: MonitoringAttendance;
+  student: MonitoredStudent;
+}
+
+/** DELETE /monitoring/attendance/{id}, PATCH /monitoring/students/{id}/required-hours */
+export interface MonitoredStudentWriteResponse {
+  message: string;
+  student: MonitoredStudent;
+}
