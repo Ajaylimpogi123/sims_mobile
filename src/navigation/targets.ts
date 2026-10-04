@@ -19,7 +19,8 @@ export function hrefForTarget(target: NotificationTarget | null | undefined, me:
     .filter(([, value]) => typeof value === 'number' && Number.isFinite(value))
     .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
     .join('&');
-  return (query ? `${base}?${query}` : base) as Href;
+  if (!query) return base;
+  return `${base}${base.includes('?') ? '&' : '?'}${query}` as Href;
 }
 
 /**

@@ -423,16 +423,17 @@ export function navigationFor(me: MeResponse | null | undefined): Navigation | n
 // ---------------------------------------------------------------------------
 
 /**
- * Features a group has no screen of its own for, shown inside another of its screens instead.
- * Supervisors have no More: their Attendance Monitoring tab ("students") also covers progress
- * and, view only, their students' reports (Modules 10/11).
+ * Features a group has no screen of its own for, shown inside another of its screens instead
+ * (`query` picks the view there). Supervisors have no More: their Attendance Monitoring tab
+ * ("students") also has the Progress Monitoring view and, view only, their students' reports
+ * (Modules 10/11).
  */
-const HOSTED_IN: Record<NavGroup, Partial<Record<FeatureKey, FeatureKey>>> = {
+const HOSTED_IN: Record<NavGroup, Partial<Record<FeatureKey, { host: FeatureKey; query?: string }>>> = {
   student: {},
   supervisor: {
-    'attendance-monitoring': 'students',
-    progress: 'students',
-    'report-reviews': 'students',
+    'attendance-monitoring': { host: 'students', query: 'view=attendance' },
+    progress: { host: 'students', query: 'view=progress' },
+    'report-reviews': { host: 'students' },
   },
   staff: {},
 };
@@ -455,6 +456,8 @@ export function hrefForFeature(key: string, me: MeResponse | null | undefined): 
   if (direct) return direct.href;
   const root = ROOT_HREF[key];
   if (root) return root;
-  const host = HOSTED_IN[navigation.group][key];
-  return host ? (find(host)?.href ?? null) : null;
+  const hosted = HOSTED_IN[navigation.group][key];
+  const hostHref = hosted ? find(hosted.host)?.href : undefined;
+  if (!hosted || typeof hostHref !== 'string') return null;
+  return (hosted.query ? `${hostHref}?${hosted.query}` : hostHref) as Href;
 }
