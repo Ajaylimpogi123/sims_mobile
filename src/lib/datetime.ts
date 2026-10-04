@@ -144,3 +144,18 @@ export function todayApiDate(now: DateInput = new Date()): string {
   const p = manilaParts(now);
   return p ? `${p.year}-${String(p.month + 1).padStart(2, '0')}-${String(p.day).padStart(2, '0')}` : '';
 }
+
+/** "08:05" or "08:05:00" (a wall-clock time, no date) → "8:05 AM". */
+export function formatClock(value: string): string {
+  const match = /^(\d{1,2}):(\d{2})/.exec(value.trim());
+  if (!match) return value;
+  const hours = Number(match[1]);
+  const hour12 = hours % 12 === 0 ? 12 : hours % 12;
+  return `${hour12}:${match[2]} ${hours < 12 ? 'AM' : 'PM'}`;
+}
+
+/** Manila "HH:mm" of an API date-time (ISO with offset or naive Manila), for a time input. */
+export function toApiClock(input: DateInput): string | null {
+  const p = manilaParts(input);
+  return p ? `${String(p.hours).padStart(2, '0')}:${String(p.minutes).padStart(2, '0')}` : null;
+}
