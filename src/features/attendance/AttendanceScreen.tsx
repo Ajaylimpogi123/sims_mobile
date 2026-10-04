@@ -14,13 +14,12 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { SkeletonBlock, SkeletonPulse } from '@/components/ui/Skeleton';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { formatDate, formatLongDate, formatTime } from '@/lib/datetime';
+import { formatLongDate, formatTime } from '@/lib/datetime';
 import { formatNumber, TABULAR } from '@/lib/format';
 import { colors } from '@/theme/colors';
 
-import { AttendancePhoto } from './AttendancePhoto';
+import { AttendanceDayCard } from './AttendanceDayCard';
 import { takeAttendanceFlash } from './flash';
-import { openInMaps } from './photo';
 
 const LEG_LABEL: Record<AttendanceLeg, string> = { time_in: 'Time In', time_out: 'Time Out' };
 
@@ -114,87 +113,6 @@ function TodayCard({ today, onAction }: { today: AttendanceToday; onAction: (act
             </Text>
           </Pressable>
         </View>
-      ) : null}
-    </Card>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// History rows (website: the attendance table, one card per day)
-// ---------------------------------------------------------------------------
-
-function HistoryLeg({ record, leg }: { record: AttendanceRecord; leg: AttendanceLeg }) {
-  const time = record[leg];
-  const status = record[`${leg}_status`];
-  const latitude = record[`${leg}_latitude`];
-  const longitude = record[`${leg}_longitude`];
-  const accuracy = record[`${leg}_accuracy`];
-  const hasLocation = latitude !== null && longitude !== null;
-
-  return (
-    <View className="flex-row items-center gap-3 py-2">
-      {time ? (
-        <AttendancePhoto url={record[`${leg}_photo_url`]} label={`${LEG_LABEL[leg]} photo, ${formatDate(record.date)}`} />
-      ) : (
-        <View className="h-12 w-12" />
-      )}
-      <View className="flex-1 gap-0.5">
-        <Text className="text-xs text-gray-500">{LEG_LABEL[leg]}</Text>
-        <Text className={`text-base ${time ? 'font-medium text-gray-900' : 'text-gray-500'}`} style={TABULAR}>
-          {time ? formatTime(time) : '-'}
-        </Text>
-      </View>
-      {hasLocation ? (
-        <Pressable
-          onPress={() => openInMaps(latitude, longitude)}
-          accessibilityRole="link"
-          accessibilityLabel={`View ${LEG_LABEL[leg]} location on the map${accuracy !== null ? `, accurate to ${Math.round(accuracy)} metres` : ''}`}
-          className="min-h-11 items-end justify-center rounded-lg px-1 active:bg-brand-50">
-          <View className="flex-row items-center gap-1">
-            <Ionicons name="location-outline" size={14} color={colors.brand700} />
-            <Text className="text-sm font-medium text-brand-700 underline">View map</Text>
-          </View>
-          {accuracy !== null ? (
-            <Text className="text-xs text-gray-500" style={TABULAR}>
-              ±{Math.round(accuracy)} m
-            </Text>
-          ) : null}
-        </Pressable>
-      ) : time ? (
-        <Text className="text-xs text-gray-500">No location</Text>
-      ) : null}
-      <View className="w-20 items-end">{status ? <StatusBadge status={status} /> : null}</View>
-    </View>
-  );
-}
-
-function HistoryCard({ record }: { record: AttendanceRecord }) {
-  return (
-    <Card className="mx-4 mb-3">
-      <View className="mb-1 flex-row items-center gap-2">
-        <Text className="flex-1 text-base font-semibold text-gray-900">{formatDate(record.date)}</Text>
-        {record.is_emergency ? (
-          <View className="rounded-full bg-red-100 px-2 py-0.5">
-            <Text className="text-xs font-medium text-red-700">Emergency</Text>
-          </View>
-        ) : null}
-        <Text className="text-sm text-gray-600" style={TABULAR}>
-          {record.rendered_hours !== null ? `${formatNumber(record.rendered_hours)} hrs` : '-'}
-        </Text>
-      </View>
-      <HistoryLeg record={record} leg="time_in" />
-      <View className="h-px bg-gray-100" />
-      <HistoryLeg record={record} leg="time_out" />
-      {record.time_in_status === 'rejected' && record.time_in_rejection_reason ? (
-        <Text className="mt-1 text-sm text-red-600">Time-in rejected: {record.time_in_rejection_reason}</Text>
-      ) : null}
-      {record.time_out_status === 'rejected' && record.time_out_rejection_reason ? (
-        <Text className="mt-1 text-sm text-red-600">Time-out rejected: {record.time_out_rejection_reason}</Text>
-      ) : null}
-      {record.is_emergency && record.note ? (
-        <Text className="mt-1 text-sm text-gray-600" numberOfLines={4}>
-          Emergency: {record.note}
-        </Text>
       ) : null}
     </Card>
   );
@@ -322,7 +240,7 @@ export function AttendanceScreen() {
       contentContainerClassName="pb-10"
       data={items}
       keyExtractor={(item) => String(item.id)}
-      renderItem={({ item }) => <HistoryCard record={item} />}
+      renderItem={({ item }) => <AttendanceDayCard record={item} />}
       ListHeaderComponent={header}
       ListEmptyComponent={empty}
       ListFooterComponent={
