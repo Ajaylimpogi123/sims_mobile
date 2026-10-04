@@ -153,6 +153,20 @@ function RootNavigator() {
           }}
         />
       </Stack.Protected>
+      {/* Supervisors and Admins (access.ts "approvals"; never Coordinators): one record's evidence, above the tabs. */}
+      <Stack.Protected guard={signedIn && !!group && !!me && canUse('approvals', me)}>
+        <Stack.Screen
+          name="approval/[id]"
+          options={{
+            headerShown: true,
+            title: 'Attendance Evidence',
+            animation: 'slide_from_right',
+            headerStyle: { backgroundColor: colors.brand700 },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: '600' },
+          }}
+        />
+      </Stack.Protected>
       {/* Supervisors, Coordinators, Admins (access.ts): opened from Home, above the role's tabs. */}
       <Stack.Protected guard={signedIn && !!group && !!me && canUse('analytics', me)}>
         <Stack.Screen

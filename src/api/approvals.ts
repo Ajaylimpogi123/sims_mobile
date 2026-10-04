@@ -181,6 +181,7 @@ export function useDecideApproval() {
         // Gone, or no longer this supervisor's student.
         removeRecord(queryClient, input.id);
         refreshAfterDecision(queryClient);
+        void queryClient.invalidateQueries({ queryKey: approvalKeys.detail(input.id) });
       } else if (apiError.kind === 'network' || apiError.kind === 'timeout') {
         // The decision may have reached the server before the connection dropped: re-check.
         refreshAfterDecision(queryClient);

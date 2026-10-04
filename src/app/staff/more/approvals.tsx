@@ -1,5 +1,3 @@
-import { FeaturePlaceholder } from '@/components/FeaturePlaceholder';
+import { ApprovalsScreen } from '@/features/approvals/ApprovalsScreen';
 
-export default function MoreApprovals() {
-  return <FeaturePlaceholder feature="approvals" />;
-}
+export default ApprovalsScreen;
