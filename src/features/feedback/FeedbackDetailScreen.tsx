@@ -60,7 +60,7 @@ function HeaderCard({ item }: { item: FeedbackSummary }) {
 }
 
 /** One category's criteria with their ratings and comments (website: CriteriaRatingGroup, read-only). */
-function CategorySection({ group }: { group: FeedbackCategory }) {
+export function CategorySection({ group }: { group: FeedbackCategory }) {
   return (
     <View className="gap-2">
       <Text accessibilityRole="header" className="px-1 text-sm font-semibold text-gray-900">
@@ -87,7 +87,7 @@ function CategorySection({ group }: { group: FeedbackCategory }) {
 }
 
 /** Website ReadOnlyText: shown only when there is text. */
-function TextSection({ label, value }: { label: string; value: string | null }) {
+export function TextSection({ label, value }: { label: string; value: string | null }) {
   if (!value) return null;
   return (
     <Card title={label}>
