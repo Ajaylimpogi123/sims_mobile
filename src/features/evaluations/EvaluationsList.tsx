@@ -6,7 +6,8 @@ import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, Tex
 
 import { toApiError } from '@/api/errors';
 import { evaluationKeys, NO_EVALUATION_FILTERS, useEvaluations } from '@/api/evaluations';
-import type { EvaluationFilters, EvaluationStatus, EvaluationSummary } from '@/api/types';
+import { ROLE_SUPERVISOR, type EvaluationFilters, type EvaluationStatus, type EvaluationSummary } from '@/api/types';
+import { useAuth } from '@/auth/AuthProvider';
 import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -119,7 +120,9 @@ export function EvaluationsList() {
   const lastOpen = useRef(0);
 
   const items = evaluations.data?.pages.flatMap((page) => page.data) ?? [];
-  const canCreate = evaluations.data?.pages[0]?.can_create === true;
+  const { me } = useAuth();
+  // Website: only Supervisors get "New Evaluation" (the API also allows Admins; the app follows the website).
+  const canCreate = me?.user.role_id === ROLE_SUPERVISOR && evaluations.data?.pages[0]?.can_create === true;
 
   useFocusEffect(
     useCallback(() => {
