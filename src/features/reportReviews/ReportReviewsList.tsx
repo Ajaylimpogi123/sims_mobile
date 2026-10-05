@@ -223,7 +223,7 @@ export function ReportReviewsList({ studentId, top }: ReportReviewsListProps) {
       ) : null}
       {!forStudent ? (
         <View className="px-4">
-          <SearchField placeholder="Search by student name or number..." onSearch={(search) => setFilters((f) => ({ ...f, search }))} />
+          <SearchField placeholder="Search by student name or number..." maxLength={255} onSearch={(search) => setFilters((f) => ({ ...f, search }))} />
         </View>
       ) : null}
       <ReportFilterChips filters={filters} onChange={setFilters} />

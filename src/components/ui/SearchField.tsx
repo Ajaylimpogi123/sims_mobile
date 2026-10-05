@@ -11,10 +11,12 @@ interface SearchFieldProps {
   onSearch: (value: string) => void;
   initialValue?: string;
   delayMs?: number;
+  /** Server limit for the search text, if any. */
+  maxLength?: number;
 }
 
 /** The website's table filter input: search icon, × to clear, debounced so each keystroke isn't a request. */
-export function SearchField({ placeholder, onSearch, initialValue = '', delayMs = 350 }: SearchFieldProps) {
+export function SearchField({ placeholder, onSearch, initialValue = '', delayMs = 350, maxLength }: SearchFieldProps) {
   const [text, setText] = useState(initialValue);
   const callback = useRef(onSearch);
   callback.current = onSearch;
@@ -35,6 +37,7 @@ export function SearchField({ placeholder, onSearch, initialValue = '', delayMs 
       <TextInput
         value={text}
         onChangeText={setText}
+        maxLength={maxLength}
         placeholder={placeholder}
         placeholderTextColor={colors.gray400}
         accessibilityLabel={placeholder}
