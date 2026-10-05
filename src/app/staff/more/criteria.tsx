@@ -1,5 +1,4 @@
-import { FeaturePlaceholder } from '@/components/FeaturePlaceholder';
+import { CriteriaScreen } from '@/features/evaluations/CriteriaScreen';
 
-export default function MoreCriteria() {
-  return <FeaturePlaceholder feature="criteria" />;
-}
+/** Admin: Evaluation Criteria from More. */
+export default CriteriaScreen;

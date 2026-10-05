@@ -245,6 +245,20 @@ function RootNavigator() {
           }}
         />
       </Stack.Protected>
+      {/* Admins (access.ts "criteria", /me can_manage_criteria): the Add / Edit Evaluation Criterion form, above the tabs. */}
+      <Stack.Protected guard={signedIn && group === 'staff' && !!me && canUse('criteria', me)}>
+        <Stack.Screen
+          name="criterion-form"
+          options={{
+            headerShown: true,
+            title: 'Add Evaluation Criterion',
+            animation: 'slide_from_bottom',
+            headerStyle: { backgroundColor: colors.brand700 },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: '600' },
+          }}
+        />
+      </Stack.Protected>
       {/* Supervisors, Coordinators, Admins (access.ts): opened from Home, above the role's tabs. */}
       <Stack.Protected guard={signedIn && !!group && !!me && canUse('analytics', me)}>
         <Stack.Screen
