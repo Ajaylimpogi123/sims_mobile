@@ -10,7 +10,7 @@ import { STATUS_LABEL } from './format';
  * green. Same here, so the shared map stays as it is for every other screen.
  */
 const STYLES: Record<EvaluationStatus, { box: string; text: string }> = {
-  draft: { box: 'bg-gray-100', text: 'text-gray-600' },
+  draft: { box: 'bg-gray-100', text: 'text-gray-700' },
   submitted: { box: 'bg-amber-100', text: 'text-amber-700' },
   locked: { box: 'bg-green-100', text: 'text-green-700' },
 };
