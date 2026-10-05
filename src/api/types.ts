@@ -465,6 +465,49 @@ export interface ReportSaveResponse {
 }
 
 // ---------------------------------------------------------------------------
+// Report Reviews (Module 11): Supervisor own students (view only), Coordinator + Admin review.
+// ---------------------------------------------------------------------------
+
+export interface ReviewReportStudent {
+  /** students.id (the same id /monitoring/students returns) */
+  id: number;
+  user_id: number;
+  name: string;
+  student_number: string | null;
+  course: string | null;
+  section: string | null;
+  company: IdName | null;
+}
+
+/** The Module 7 report (can_edit / can_delete always false for staff) plus its student and the review flag. */
+export interface ReviewReport extends Report {
+  student: ReviewReportStudent;
+  /** Coordinator / Admin and still pending. UI hint only; the server re-checks. */
+  can_review: boolean;
+}
+
+export interface ReviewReportFilters {
+  status: ReportStatus | null;
+  type: ReportType | null;
+  /** students.id; a filter only (the server still scopes a Supervisor to their own students). */
+  studentId: number | null;
+  /** Student name or number, "contains" (max 255). */
+  search: string;
+}
+
+// GET /report-reviews — pending first, then period_start desc, then id desc.
+export interface ReviewReportsPage {
+  data: ReviewReport[];
+  meta: { per_page: number; next_cursor: string | null; has_more: boolean };
+}
+
+// POST /report-reviews/{id}/review; 422 code report_not_pending carries the fresh `report` too.
+export interface ReviewReportResponse {
+  message: string;
+  report: ReviewReport;
+}
+
+// ---------------------------------------------------------------------------
 // My Feedback (Module 8): GET /feedback, GET /feedback/{id}. Student only.
 // ---------------------------------------------------------------------------
 
