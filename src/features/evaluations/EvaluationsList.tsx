@@ -15,12 +15,12 @@ import { ErrorState } from '@/components/ui/ErrorState';
 import { FilterChip } from '@/components/ui/FilterChip';
 import { SearchField } from '@/components/ui/SearchField';
 import { SkeletonBlock, SkeletonPulse } from '@/components/ui/Skeleton';
-import { StatusBadge } from '@/components/ui/StatusBadge';
 import { TABULAR } from '@/lib/format';
 import { colors } from '@/theme/colors';
 
 import { formatFeedbackPeriod, formatRating } from '../feedback/format';
 
+import { EvaluationStatusBadge } from './EvaluationStatusBadge';
 import { takeEvaluationsFlash } from './flash';
 import { STATUS_LABEL } from './format';
 
@@ -61,7 +61,7 @@ function EvaluationCard({ item, highlighted, onOpen }: { item: EvaluationSummary
             {[item.student?.student_number, item.company?.name].filter(Boolean).join(' · ') || '—'}
           </Text>
         </View>
-        <StatusBadge status={item.status} />
+        <EvaluationStatusBadge status={item.status} />
         <Ionicons name="chevron-forward" size={18} color={colors.gray400} />
       </View>
       <View className="flex-row flex-wrap items-center gap-1.5">

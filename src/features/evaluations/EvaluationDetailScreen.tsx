@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { SkeletonBlock, SkeletonPulse } from '@/components/ui/Skeleton';
-import { StatusBadge } from '@/components/ui/StatusBadge';
 import { formatDateTime } from '@/lib/datetime';
 import { TABULAR } from '@/lib/format';
 import { colors } from '@/theme/colors';
@@ -21,6 +20,7 @@ import { colors } from '@/theme/colors';
 import { CategorySection, TextSection } from '../feedback/FeedbackDetailScreen';
 import { formatFeedbackPeriod, formatRating } from '../feedback/format';
 
+import { EvaluationStatusBadge } from './EvaluationStatusBadge';
 import { takeEvaluationsFlash } from './flash';
 
 const TITLE = 'Evaluation Detail';
@@ -67,7 +67,7 @@ function HeaderCard({ item }: { item: EvaluationSummary }) {
             {formatFeedbackPeriod(item)}
           </Text>
         </View>
-        <StatusBadge status={item.status} />
+        <EvaluationStatusBadge status={item.status} />
       </View>
       <View className="mt-3 gap-1.5">
         {item.student?.student_number ? <Meta icon="id-card-outline" text={item.student.student_number} /> : null}

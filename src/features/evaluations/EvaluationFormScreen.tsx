@@ -29,6 +29,7 @@ import { TextField } from '@/components/ui/TextField';
 import { TABULAR } from '@/lib/format';
 import { colors } from '@/theme/colors';
 
+import { EvaluationStatusBadge } from './EvaluationStatusBadge';
 import { setEvaluationsFlash } from './flash';
 import { responseErrorsByCriterion } from './format';
 import { RatingPicker } from './RatingPicker';
@@ -408,9 +409,12 @@ function EvaluationForm({ title, criteria, students, evaluation }: EvaluationFor
       <ScrollView ref={scrollRef} className="flex-1" contentContainerClassName="gap-5 p-4 pb-8" keyboardShouldPersistTaps="handled">
         {evaluation ? (
           <View className="gap-0.5">
-            <Text accessibilityRole="header" className="text-base font-semibold text-gray-900">
-              {evaluation.student?.name ?? '—'}
-            </Text>
+            <View className="flex-row items-start justify-between gap-3">
+              <Text accessibilityRole="header" className="flex-1 text-base font-semibold text-gray-900">
+                {evaluation.student?.name ?? '—'}
+              </Text>
+              <EvaluationStatusBadge status={evaluation.status} />
+            </View>
             <Text className="text-sm text-gray-500">
               {evaluation.company?.name || '—'} · Supervisor: {evaluation.supervisor?.name || '—'}
             </Text>
