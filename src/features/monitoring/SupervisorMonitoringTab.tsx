@@ -3,41 +3,51 @@ import { useEffect, useLayoutEffect, useState } from 'react';
 
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
 
+import { ReportReviewsList } from '../reportReviews/ReportReviewsList';
+
 import { StudentList, type MonitoringKind } from './StudentListScreen';
 
-const OPTIONS: { value: MonitoringKind; label: string }[] = [
+type TabView = MonitoringKind | 'reports';
+
+const OPTIONS: { value: TabView; label: string }[] = [
   { value: 'attendance', label: 'Attendance' },
   { value: 'progress', label: 'Progress' },
+  { value: 'reports', label: 'Reports' },
 ];
 
-const TITLE: Record<MonitoringKind, string> = { attendance: 'Attendance Monitoring', progress: 'Progress Monitoring' };
+const TITLE: Record<TabView, string> = {
+  attendance: 'Attendance Monitoring',
+  progress: 'Progress Monitoring',
+  reports: 'Report Reviews',
+};
+
+function isView(value: unknown): value is TabView {
+  return value === 'attendance' || value === 'progress' || value === 'reports';
+}
 
 /**
- * The supervisor's Students tab: the website's two sidebar pages, Attendance Monitoring and
- * Progress Monitoring, behind one switch (supervisors have no More). `?view=progress` /
- * `?view=attendance` (a link, see HOSTED_IN in access.ts) picks one.
+ * The supervisor's Students tab: the website's sidebar pages Attendance Monitoring, Progress
+ * Monitoring and Report Reviews (view only) behind one switch (supervisors have no More).
+ * `?view=attendance|progress|reports` (a link, see HOSTED_IN in access.ts) picks one.
  */
 export function SupervisorMonitoringTab() {
   const router = useRouter();
   const navigation = useNavigation();
   const params = useLocalSearchParams<{ view?: string }>();
-  const [kind, setKind] = useState<MonitoringKind>('attendance');
+  const [view, setView] = useState<TabView>(() => (isView(params.view) ? params.view : 'attendance'));
 
   useEffect(() => {
-    if (params.view !== 'attendance' && params.view !== 'progress') return;
-    setKind(params.view);
+    if (!isView(params.view)) return;
+    setView(params.view);
     router.setParams({ view: undefined });
   }, [params.view, router]);
 
   useLayoutEffect(() => {
-    navigation.setOptions({ title: TITLE[kind] });
-  }, [navigation, kind]);
+    navigation.setOptions({ title: TITLE[view] });
+  }, [navigation, view]);
 
-  return (
-    <StudentList
-      key={kind}
-      kind={kind}
-      top={<SegmentedControl label="View" options={OPTIONS} value={kind} onChange={setKind} />}
-    />
-  );
+  const top = <SegmentedControl label="View" options={OPTIONS} value={view} onChange={setView} />;
+
+  if (view === 'reports') return <ReportReviewsList top={top} />;
+  return <StudentList key={view} kind={view} top={top} />;
 }

@@ -433,7 +433,7 @@ const HOSTED_IN: Record<NavGroup, Partial<Record<FeatureKey, { host: FeatureKey;
   supervisor: {
     'attendance-monitoring': { host: 'students', query: 'view=attendance' },
     progress: { host: 'students', query: 'view=progress' },
-    'report-reviews': { host: 'students' },
+    'report-reviews': { host: 'students', query: 'view=reports' },
   },
   staff: {},
 };
