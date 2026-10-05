@@ -1,6 +1,6 @@
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { Alert, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { Alert, RefreshControl, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MESSAGES, toApiError } from '@/api/errors';
