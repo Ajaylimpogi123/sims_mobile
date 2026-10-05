@@ -122,8 +122,12 @@ export function EvaluationFormScreen() {
   const criteria = useEvaluationCriteria();
   const students = useEvaluableStudents(!editing);
   const evaluation = useEvaluation(id);
+  // Once the form is up it stays up: a save / submit refreshes the evaluation (e.g. to submitted)
+  // or a background refetch fails, and the form itself shows that, not this gate.
+  const started = useRef(false);
 
-  const failed = (editing && id === null) || (editing && evaluation.isError) || criteria.isError || (!editing && students.isError);
+  const failed =
+    !started.current && ((editing && id === null) || (editing && evaluation.isError) || criteria.isError || (!editing && students.isError));
   if (failed) {
     const error = editing && id === null ? null : toApiError(editing && evaluation.isError ? evaluation.error : criteria.isError ? criteria.error : students.error);
     return (
@@ -164,10 +168,11 @@ export function EvaluationFormScreen() {
     );
   }
 
-  if (editing && evaluation.data && !evaluation.data.can_edit) {
+  if (!started.current && editing && evaluation.data && !evaluation.data.can_edit) {
     return <NotEditable title={title} message={evaluation.data.status === 'draft' ? "You don't have permission to do that." : NOT_EDITABLE} />;
   }
 
+  started.current = true;
   return (
     <EvaluationForm
       title={title}
