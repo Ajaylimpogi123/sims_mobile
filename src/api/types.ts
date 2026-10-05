@@ -670,3 +670,113 @@ export interface MonitoredStudentWriteResponse {
   message: string;
   student: MonitoredStudent;
 }
+
+// ---------------------------------------------------------------------------
+// Supervisor Evaluations & Evaluation Criteria (Module 12).
+// Supervisor: own students, create / edit draft / submit. Coordinator: view only.
+// Admin: all, create / edit draft / submit, lock / reopen, criteria.
+// The can_* flags are UI hints; the server re-checks everything.
+// ---------------------------------------------------------------------------
+
+export type EvaluationStatus = 'draft' | 'submitted' | 'locked';
+
+export interface EvaluationSummary {
+  id: number;
+  status: EvaluationStatus;
+  /** "YYYY-MM-DD" (Manila) */
+  period_start: string;
+  period_end: string;
+  /** Average of the 1-5 ratings, 2 dp. */
+  overall_rating: number | null;
+  rating_max: number;
+  student: { id: number; user_id: number; name: string; student_number: string | null };
+  company: { id: number; name: string } | null;
+  supervisor: { id: number; name: string } | null;
+  /** ISO 8601 with +08:00 */
+  submitted_at: string | null;
+  locked_at: string | null;
+  locked_by: { id: number; name: string } | null;
+  created_at: string | null;
+  updated_at: string | null;
+  can_edit: boolean;
+  can_submit: boolean;
+  can_lock: boolean;
+  can_reopen: boolean;
+}
+
+export interface EvaluationResponseInput {
+  evaluation_criteria_id: number;
+  rating: number;
+  comment: string | null;
+}
+
+export interface EvaluationDetail extends EvaluationSummary {
+  strengths: string | null;
+  areas_for_improvement: string | null;
+  recommendations: string | null;
+  supervisor_remarks: string | null;
+  /** The evaluation's own saved ratings (including deactivated criteria), grouped by category. */
+  categories: FeedbackCategory[];
+  /** Saved responses, to prefill the edit form. */
+  responses: EvaluationResponseInput[];
+}
+
+export interface EvaluationFilters {
+  status: EvaluationStatus | null;
+  /** students.id (a supervisor's Students tab could pass it; the server still scopes). */
+  studentId: number | null;
+  /** Student name or number, "contains" (max 255). */
+  search: string;
+}
+
+// GET /evaluations — period_start desc, then id desc.
+export interface EvaluationsPage {
+  data: EvaluationSummary[];
+  meta: { per_page: number; next_cursor: string | null; has_more: boolean };
+  /** Supervisor / Admin: may start a new evaluation. */
+  can_create: boolean;
+}
+
+/** An active criterion the form rates. */
+export interface EvaluationCriterion {
+  id: number;
+  label: string;
+  description: string | null;
+  sort_order: number;
+}
+
+// GET /evaluations/criteria — active only, category asc then sort_order.
+export interface EvaluationCriteriaResponse {
+  rating_max: number;
+  categories: { category: string; criteria: EvaluationCriterion[] }[];
+}
+
+/** GET /evaluations/students: whom the user may start an evaluation for (Supervisor: own; Admin: all). */
+export interface EvaluableStudent {
+  id: number;
+  user_id: number;
+  name: string;
+  student_number: string | null;
+  company: { id: number; name: string } | null;
+}
+
+// POST /evaluations, PATCH /evaluations/{id}, POST /evaluations/{id}/{submit|lock|reopen}.
+// A state refusal is 422 code evaluation_rule with the fresh `evaluation` (no `errors`).
+export interface EvaluationWriteResponse {
+  message: string;
+  evaluation: EvaluationDetail;
+}
+
+/** Evaluation Criteria management (Admin): every criterion, active or not. */
+export interface ManagedCriterion extends EvaluationCriterion {
+  category: string;
+  is_active: boolean;
+  responses_count: number;
+}
+
+export interface CriterionWriteResponse {
+  message: string;
+  criterion: ManagedCriterion | null;
+  /** DELETE only: false when it had responses and was deactivated instead. */
+  deleted?: boolean;
+}
