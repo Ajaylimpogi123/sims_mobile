@@ -1,5 +1,6 @@
-import { FeaturePlaceholder } from '@/components/FeaturePlaceholder';
+import { EvaluationsList } from '@/features/evaluations/EvaluationsList';
 
+/** Supervisor: the Evaluations tab (own students). */
 export default function SupervisorEvaluations() {
-  return <FeaturePlaceholder feature="evaluations" />;
+  return <EvaluationsList />;
 }

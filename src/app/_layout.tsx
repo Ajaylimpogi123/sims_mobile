@@ -219,6 +219,32 @@ function RootNavigator() {
           }}
         />
       </Stack.Protected>
+      {/* Supervisors, Coordinators (view only), Admins (access.ts "evaluations"): one evaluation and the New / Edit
+          Evaluation form, above the tabs. Buttons follow the API's can_create / can_edit / can_submit / can_lock / can_reopen. */}
+      <Stack.Protected guard={signedIn && !!group && !!me && canUse('evaluations', me)}>
+        <Stack.Screen
+          name="evaluation/[id]"
+          options={{
+            headerShown: true,
+            title: 'Evaluation Detail',
+            animation: 'slide_from_right',
+            headerStyle: { backgroundColor: colors.brand700 },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: '600' },
+          }}
+        />
+        <Stack.Screen
+          name="evaluation-form"
+          options={{
+            headerShown: true,
+            title: 'New Evaluation',
+            animation: 'slide_from_bottom',
+            headerStyle: { backgroundColor: colors.brand700 },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: '600' },
+          }}
+        />
+      </Stack.Protected>
       {/* Supervisors, Coordinators, Admins (access.ts): opened from Home, above the role's tabs. */}
       <Stack.Protected guard={signedIn && !!group && !!me && canUse('analytics', me)}>
         <Stack.Screen
