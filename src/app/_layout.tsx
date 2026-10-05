@@ -193,6 +193,32 @@ function RootNavigator() {
           }}
         />
       </Stack.Protected>
+      {/* Supervisors (view only), Coordinators, Admins (access.ts "report-reviews"): one report with the Review form
+          when the API says can_review, and one student's reports, above the tabs. */}
+      <Stack.Protected guard={signedIn && !!group && !!me && canUse('report-reviews', me)}>
+        <Stack.Screen
+          name="report-review/[id]"
+          options={{
+            headerShown: true,
+            title: 'Report',
+            animation: 'slide_from_right',
+            headerStyle: { backgroundColor: colors.brand700 },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: '600' },
+          }}
+        />
+        <Stack.Screen
+          name="student-reports/[id]"
+          options={{
+            headerShown: true,
+            title: 'Reports',
+            animation: 'slide_from_right',
+            headerStyle: { backgroundColor: colors.brand700 },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: '600' },
+          }}
+        />
+      </Stack.Protected>
       {/* Supervisors, Coordinators, Admins (access.ts): opened from Home, above the role's tabs. */}
       <Stack.Protected guard={signedIn && !!group && !!me && canUse('analytics', me)}>
         <Stack.Screen

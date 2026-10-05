@@ -1,5 +1,6 @@
-import { FeaturePlaceholder } from '@/components/FeaturePlaceholder';
+import { ReportReviewsList } from '@/features/reportReviews/ReportReviewsList';
 
+/** Coordinator: the Reports tab (Report Reviews). */
 export default function StaffReportReviews() {
-  return <FeaturePlaceholder feature="report-reviews" />;
+  return <ReportReviewsList />;
 }
