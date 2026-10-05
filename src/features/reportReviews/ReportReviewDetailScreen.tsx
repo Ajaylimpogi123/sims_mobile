@@ -150,7 +150,7 @@ function ReportReviewDetail({ id }: { id: number }) {
   }
 
   const goneMeanwhile = query.isRefetchError && toApiError(query.error).kind === 'not_found';
-  const canReview = report.can_review && !goneMeanwhile;
+  const canReview = report.can_review && !goneMeanwhile && problem !== GONE_MESSAGE;
   const chars = [...comment].length;
   const tooLong = chars > REVIEW_COMMENT_MAX;
 
@@ -165,7 +165,7 @@ function ReportReviewDetail({ id }: { id: number }) {
         refreshControl={<RefreshControl refreshing={pulling} onRefresh={() => void refresh()} colors={[colors.brand700]} />}>
         {done ? <Banner tone="success" message={done} /> : null}
         {problem ? <Banner message={problem} /> : null}
-        {goneMeanwhile ? (
+        {goneMeanwhile && problem !== GONE_MESSAGE ? (
           <Banner tone="warning" message={GONE_MESSAGE} />
         ) : query.isRefetchError ? (
           <Banner tone="warning" message={`Showing saved data. ${toApiError(query.error).message}`} />
