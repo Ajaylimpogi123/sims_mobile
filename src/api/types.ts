@@ -781,3 +781,64 @@ export interface CriterionWriteResponse {
   /** DELETE only: false when it had responses and was deactivated instead. */
   deleted?: boolean;
 }
+
+// ---------------------------------------------------------------------------
+// User Management (Module 13): Coordinator + Admin, /me staff.can_manage_users.
+// Coordinators never see Administrator accounts (404) or the Administrator role.
+// ---------------------------------------------------------------------------
+
+export type UserStatus = 'active' | 'inactive';
+
+export interface RoleOption {
+  id: number;
+  role_name: string;
+}
+
+/** One account in GET /users and GET /users/{id}. The flags are the server's decision. */
+export interface ManagedUser {
+  id: number;
+  name: string;
+  email: string;
+  role_id: number;
+  /** Role display name, e.g. "Supervisor" (same as /me). */
+  role: string | null;
+  status: UserStatus;
+  /** ISO 8601 */
+  created_at: string | null;
+  /** The signed-in user's own account. */
+  is_self: boolean;
+  can_edit: boolean;
+  /** False on yourself. */
+  can_toggle_status: boolean;
+  /** Roles the edit form may pick for THIS user ([] when !can_edit). */
+  assignable_roles: RoleOption[];
+}
+
+export interface UserFilters {
+  search: string;
+  roleId: number | null;
+  status: UserStatus | null;
+}
+
+/** GET /users: page pagination, newest first. */
+export interface UsersPage {
+  data: ManagedUser[];
+  meta: { current_page: number; last_page: number; per_page: number; total: number; has_more: boolean };
+  can_create: boolean;
+  /** Roles for "Filter by Role" (ordered by name; Administrator hidden from coordinators). */
+  roles: RoleOption[];
+  /** Roles the create form may pick (never Student; no Administrator for coordinators). */
+  create_roles: RoleOption[];
+}
+
+/** GET /users/roles */
+export interface UserRolesResponse {
+  roles: RoleOption[];
+  create_roles: RoleOption[];
+}
+
+/** POST /users, PATCH /users/{id}, POST /users/{id}/{activate|deactivate}. */
+export interface UserWriteResponse {
+  message: string;
+  user: ManagedUser;
+}
