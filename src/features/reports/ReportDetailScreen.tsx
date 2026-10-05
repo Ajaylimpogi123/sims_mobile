@@ -1,4 +1,3 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import { Alert, RefreshControl, ScrollView, Text, View } from 'react-native';
@@ -6,19 +5,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MESSAGES, toApiError } from '@/api/errors';
 import { useDeleteReport, useReport } from '@/api/reports';
-import type { Report } from '@/api/types';
 import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { SkeletonBlock, SkeletonPulse } from '@/components/ui/Skeleton';
-import { StatusBadge } from '@/components/ui/StatusBadge';
-import { formatDateTime } from '@/lib/datetime';
 import { colors } from '@/theme/colors';
 
 import { AttachmentCard } from './AttachmentCard';
 import { setReportsFlash, takeReportsFlash } from './flash';
-import { formatPeriod, TYPE_LABEL } from './format';
+import { TYPE_LABEL } from './format';
+import { ReportContentCard, ReportSummaryCard, ReviewerCard } from './ReportParts';
 
 function DetailSkeleton() {
   return (
@@ -36,36 +32,6 @@ function DetailSkeleton() {
         </View>
       </View>
     </SkeletonPulse>
-  );
-}
-
-function Meta({ icon, text }: { icon: keyof typeof Ionicons.glyphMap; text: string }) {
-  return (
-    <View className="flex-row items-center gap-2">
-      <Ionicons name={icon} size={16} color={colors.gray500} />
-      <Text className="flex-1 text-sm text-gray-600">{text}</Text>
-    </View>
-  );
-}
-
-function ReviewerCard({ report }: { report: Report }) {
-  if (report.status !== 'reviewed') {
-    return (
-      <Card title="Reviewer Comment">
-        <Text className="text-sm text-gray-500">Not reviewed yet.</Text>
-      </Card>
-    );
-  }
-  const reviewedBy = [report.reviewer?.name ? `Reviewed by ${report.reviewer.name}` : 'Reviewed', report.reviewed_at ? formatDateTime(report.reviewed_at) : null]
-    .filter(Boolean)
-    .join(' · ');
-  return (
-    <Card title="Reviewer Comment">
-      <Text selectable className={`text-base leading-6 ${report.reviewer_comment ? 'text-gray-900' : 'text-gray-500'}`}>
-        {report.reviewer_comment || 'No comment.'}
-      </Text>
-      <Text className="mt-3 text-xs text-gray-500">{reviewedBy}</Text>
-    </Card>
   );
 }
 
@@ -192,24 +158,8 @@ function ReportDetail({ id }: { id: number }) {
           <Banner tone="warning" message={`Showing saved data. ${toApiError(query.error).message}`} />
         ) : null}
 
-        <Card>
-          <View className="flex-row items-start justify-between gap-3">
-            <Text accessibilityRole="header" className="flex-1 text-xl font-semibold text-gray-900">
-              {formatPeriod(report)}
-            </Text>
-            <StatusBadge status={report.status} />
-          </View>
-          <View className="mt-3 gap-1.5">
-            <Meta icon="document-text-outline" text={`${TYPE_LABEL[report.type]} report`} />
-            <Meta icon="time-outline" text={`Submitted ${formatDateTime(report.created_at)}`} />
-          </View>
-        </Card>
-
-        <Card title="Accomplishment Details">
-          <Text selectable className="text-base leading-6 text-gray-900">
-            {report.content}
-          </Text>
-        </Card>
+        <ReportSummaryCard report={report} />
+        <ReportContentCard report={report} />
 
         {report.attachment ? <AttachmentCard attachment={report.attachment} /> : null}
 

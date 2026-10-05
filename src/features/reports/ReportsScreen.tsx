@@ -1,12 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
 
 import { isNoStudentProfile } from '@/api/attendance';
 import { toApiError } from '@/api/errors';
 import { NO_REPORT_FILTERS, useReports } from '@/api/reports';
-import type { Report, ReportFilters, ReportStatus, ReportType } from '@/api/types';
+import type { Report, ReportFilters } from '@/api/types';
 import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -17,50 +17,7 @@ import { colors } from '@/theme/colors';
 
 import { takeReportsFlash } from './flash';
 import { formatPeriod, KIND_LABEL, STATUS_LABEL, TYPE_LABEL } from './format';
-
-// ---------------------------------------------------------------------------
-// Filters (the API's type / status filters; the website lists everything)
-// ---------------------------------------------------------------------------
-
-function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityState={{ selected }}
-      hitSlop={{ top: 6, bottom: 6 }}
-      className={`h-9 justify-center rounded-full border px-3.5 ${selected ? 'border-brand-700 bg-brand-50' : 'border-gray-300 bg-white active:bg-gray-100'}`}>
-      <Text className={`text-sm ${selected ? 'font-semibold text-brand-700' : 'font-medium text-gray-700'}`}>{label}</Text>
-    </Pressable>
-  );
-}
-
-function FilterChips({ filters, onChange }: { filters: ReportFilters; onChange: (filters: ReportFilters) => void }) {
-  const statuses: (ReportStatus | null)[] = [null, 'pending', 'reviewed'];
-  const types: ReportType[] = ['daily', 'weekly'];
-  return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="items-center gap-2 px-4" accessibilityLabel="Filter reports">
-      {statuses.map((status) => (
-        <Chip
-          key={status ?? 'all'}
-          label={status ? STATUS_LABEL[status] : 'All'}
-          selected={filters.status === status}
-          onPress={() => onChange({ ...filters, status })}
-        />
-      ))}
-      <View className="mx-1 h-5 w-px bg-gray-300" />
-      {types.map((type) => (
-        <Chip
-          key={type}
-          label={TYPE_LABEL[type]}
-          selected={filters.type === type}
-          // Tap the selected type again to show both.
-          onPress={() => onChange({ ...filters, type: filters.type === type ? null : type })}
-        />
-      ))}
-    </ScrollView>
-  );
-}
+import { ReportFilterChips } from './ReportParts';
 
 // ---------------------------------------------------------------------------
 // Rows (website: one table row → one card)
@@ -200,7 +157,7 @@ export function ReportsScreen() {
           ) : null}
         </View>
       ) : null}
-      {!noProfile ? <FilterChips filters={filters} onChange={setFilters} /> : null}
+      {!noProfile ? <ReportFilterChips filters={filters} onChange={setFilters} /> : null}
     </View>
   );
 
