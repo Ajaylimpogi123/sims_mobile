@@ -799,7 +799,7 @@ export interface ManagedUser {
   id: number;
   name: string;
   email: string;
-  role_id: number;
+  role_id: number | null;
   /** Role display name, e.g. "Supervisor" (same as /me). */
   role: string | null;
   status: UserStatus;
