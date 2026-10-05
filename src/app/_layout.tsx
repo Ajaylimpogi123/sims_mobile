@@ -259,6 +259,32 @@ function RootNavigator() {
           }}
         />
       </Stack.Protected>
+      {/* Coordinators and Admins (access.ts "users", /me can_manage_users): one account and the Register / Edit User
+          form, above the tabs. Buttons follow the API's can_create / can_edit / can_toggle_status. */}
+      <Stack.Protected guard={signedIn && group === 'staff' && !!me && canUse('users', me)}>
+        <Stack.Screen
+          name="user/[id]"
+          options={{
+            headerShown: true,
+            title: 'User',
+            animation: 'slide_from_right',
+            headerStyle: { backgroundColor: colors.brand700 },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: '600' },
+          }}
+        />
+        <Stack.Screen
+          name="user-form"
+          options={{
+            headerShown: true,
+            title: 'User Registration',
+            animation: 'slide_from_bottom',
+            headerStyle: { backgroundColor: colors.brand700 },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: '600' },
+          }}
+        />
+      </Stack.Protected>
       {/* Supervisors, Coordinators, Admins (access.ts): opened from Home, above the role's tabs. */}
       <Stack.Protected guard={signedIn && !!group && !!me && canUse('analytics', me)}>
         <Stack.Screen

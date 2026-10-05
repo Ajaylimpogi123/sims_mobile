@@ -1,5 +1,4 @@
-import { FeaturePlaceholder } from '@/components/FeaturePlaceholder';
+import { UsersScreen } from '@/features/users/UsersScreen';
 
-export default function MoreUsers() {
-  return <FeaturePlaceholder feature="users" />;
-}
+/** Coordinator / Admin: User Management from More. */
+export default UsersScreen;
