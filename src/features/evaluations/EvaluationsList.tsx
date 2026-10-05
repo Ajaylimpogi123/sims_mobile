@@ -38,7 +38,7 @@ function EvaluationCard({ item, highlighted, onOpen }: { item: EvaluationSummary
   const period = formatFeedbackPeriod(item);
   const rating = formatRating(item.overall_rating);
   const label = [
-    item.student.name,
+    item.student?.name ?? '—',
     period,
     `Overall Rating ${rating} out of ${item.rating_max}`,
     STATUS_LABEL[item.status] ?? item.status,
@@ -54,10 +54,10 @@ function EvaluationCard({ item, highlighted, onOpen }: { item: EvaluationSummary
       <View className="flex-row items-start gap-2">
         <View className="flex-1 gap-0.5">
           <Text className="text-base font-semibold text-gray-900" numberOfLines={1}>
-            {item.student.name}
+            {item.student?.name ?? '—'}
           </Text>
           <Text className="text-sm text-gray-600" numberOfLines={1}>
-            {[item.student.student_number, item.company?.name].filter(Boolean).join(' · ') || '—'}
+            {[item.student?.student_number, item.company?.name].filter(Boolean).join(' · ') || '—'}
           </Text>
         </View>
         <StatusBadge status={item.status} />

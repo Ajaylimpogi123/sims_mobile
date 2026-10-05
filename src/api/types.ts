@@ -689,7 +689,8 @@ export interface EvaluationSummary {
   /** Average of the 1-5 ratings, 2 dp. */
   overall_rating: number | null;
   rating_max: number;
-  student: { id: number; user_id: number; name: string; student_number: string | null };
+  /** Never null in practice (the API allows it). */
+  student: { id: number; user_id: number; name: string; student_number: string | null } | null;
   company: { id: number; name: string } | null;
   supervisor: { id: number; name: string } | null;
   /** ISO 8601 with +08:00 */

@@ -61,7 +61,7 @@ function HeaderCard({ item }: { item: EvaluationSummary }) {
       <View className="flex-row items-start justify-between gap-3">
         <View className="flex-1 gap-0.5">
           <Text accessibilityRole="header" className="text-xl font-semibold text-gray-900">
-            {item.student.name}
+            {item.student?.name ?? '—'}
           </Text>
           <Text className="text-sm text-gray-600" style={TABULAR}>
             {formatFeedbackPeriod(item)}
@@ -70,7 +70,7 @@ function HeaderCard({ item }: { item: EvaluationSummary }) {
         <StatusBadge status={item.status} />
       </View>
       <View className="mt-3 gap-1.5">
-        {item.student.student_number ? <Meta icon="id-card-outline" text={item.student.student_number} /> : null}
+        {item.student?.student_number ? <Meta icon="id-card-outline" text={item.student.student_number} /> : null}
         <Meta icon="business-outline" text={item.company?.name || '—'} />
         <Meta icon="person-outline" text={`Supervisor: ${item.supervisor?.name || '—'}`} />
         {item.submitted_at ? <Meta icon="time-outline" text={`Submitted ${formatDateTime(item.submitted_at)}`} /> : null}

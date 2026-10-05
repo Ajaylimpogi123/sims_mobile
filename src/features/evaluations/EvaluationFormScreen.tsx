@@ -80,7 +80,7 @@ function initValues(criteria: EvaluationCriteriaResponse, evaluation: Evaluation
     }
   }
   return {
-    studentId: evaluation?.student.id ?? null,
+    studentId: evaluation?.student?.id ?? null,
     start: evaluation?.period_start ?? null,
     end: evaluation?.period_end ?? null,
     text: {
@@ -409,7 +409,7 @@ function EvaluationForm({ title, criteria, students, evaluation }: EvaluationFor
         {evaluation ? (
           <View className="gap-0.5">
             <Text accessibilityRole="header" className="text-base font-semibold text-gray-900">
-              {evaluation.student.name}
+              {evaluation.student?.name ?? '—'}
             </Text>
             <Text className="text-sm text-gray-500">
               {evaluation.company?.name || '—'} · Supervisor: {evaluation.supervisor?.name || '—'}
