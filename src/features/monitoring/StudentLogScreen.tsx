@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toApiError } from '@/api/errors';
 import { monitoringKeys, useAttendanceLog, useDeleteEntry, useMonitoredStudent } from '@/api/monitoring';
 import type { MonitoredStudent, MonitoringAttendance } from '@/api/types';
+import { useAuth } from '@/auth/AuthProvider';
 import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -15,6 +16,7 @@ import { SkeletonBlock, SkeletonPulse } from '@/components/ui/Skeleton';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { formatLongDate } from '@/lib/datetime';
 import { TABULAR } from '@/lib/format';
+import { canUse } from '@/navigation/access';
 import { colors } from '@/theme/colors';
 
 import { NoticeBar } from '../approvals/NoticeBar';
@@ -33,7 +35,16 @@ const GONE_MESSAGE = 'This attendance entry is no longer available. The log has 
 // Student header: who, hours, progress, Set Required Hours
 // ---------------------------------------------------------------------------
 
-function StudentSummary({ student, onSetHours }: { student: MonitoredStudent; onSetHours: () => void }) {
+function StudentSummary({
+  student,
+  onSetHours,
+  onOpenReports,
+}: {
+  student: MonitoredStudent;
+  onSetHours: () => void;
+  /** Report Reviews for this student; omitted when the role can't open it. */
+  onOpenReports?: () => void;
+}) {
   return (
     <View className="gap-3 rounded-2xl border border-gray-200 bg-white p-4">
       <View className="flex-row items-start gap-2">
@@ -61,6 +72,15 @@ function StudentSummary({ student, onSetHours }: { student: MonitoredStudent; on
       <HoursProgressBar rendered={student.rendered_hours} required={student.required_hours} percent={student.progress_percent} />
       {student.can_edit_required_hours ? (
         <Button label="Set Required Hours" variant="outline" icon="hourglass-outline" onPress={onSetHours} />
+      ) : null}
+      {onOpenReports ? (
+        <Button
+          label="Reports"
+          variant="outline"
+          icon="document-text-outline"
+          onPress={onOpenReports}
+          accessibilityHint={`Opens ${student.name}'s daily and weekly reports`}
+        />
       ) : null}
     </View>
   );
@@ -116,6 +136,7 @@ export function StudentLogScreen() {
   const params = useLocalSearchParams<{ id: string; attendance_id?: string }>();
   const id = params.id && /^\d+$/.test(params.id) ? Number(params.id) : null;
 
+  const { me } = useAuth();
   const studentQuery = useMonitoredStudent(id);
   const log = useAttendanceLog(id);
   const deleteEntry = useDeleteEntry();
@@ -224,10 +245,18 @@ export function StudentLogScreen() {
   }
 
   const canWrite = student?.can_edit_attendance === true;
+  const canOpenReports = !!me && canUse('report-reviews', me);
+
+  const openReports = (target: MonitoredStudent) => {
+    const now = Date.now();
+    if (now - lastOpen.current < 1000) return;
+    lastOpen.current = now;
+    router.push({ pathname: '/student-reports/[id]', params: { id: String(target.id), name: target.name } });
+  };
 
   const header = (
     <View className="gap-4 px-4 pb-3 pt-4">
-      {student ? <StudentSummary student={student} onSetHours={() => setHoursOpen(true)} /> : <SummarySkeleton />}
+      {student ? <StudentSummary student={student} onSetHours={() => setHoursOpen(true)} onOpenReports={canOpenReports ? () => openReports(student) : undefined} /> : <SummarySkeleton />}
       {studentQuery.isRefetchError || log.isRefetchError ? (
         <Banner tone="warning" message={`Showing saved data. ${toApiError(studentQuery.error ?? log.error).message}`} />
       ) : null}
