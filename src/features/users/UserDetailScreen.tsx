@@ -129,7 +129,8 @@ export function UserDetailScreen() {
       setUsersFlash(response.message);
     } catch (error) {
       const failure = toApiError(error);
-      setProblem(failure.kind === 'not_found' ? USER_NOT_FOUND : failure.message);
+      // 422 errors.status, e.g. "At least one active Administrator is required."
+      setProblem(failure.kind === 'not_found' ? USER_NOT_FOUND : (failure.fieldErrors.status ?? failure.message));
     } finally {
       inFlight.current = false;
     }
