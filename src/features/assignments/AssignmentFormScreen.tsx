@@ -215,9 +215,12 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
 
   const companies = options.companies;
   const selectedCompany = useMemo(() => companies.find((c) => c.id === values.company_id) ?? null, [companies, values.company_id]);
-  // Website (StudentModal rosterFor): active roster supervisors, plus the student's current one even if inactive.
+  // Active roster supervisors. The student's current supervisor, if inactive, is listed only for the student's
+  // current company: after a company change the server refuses them (supervisor_inactive), so they're dropped.
   const rosterFor = (company: AssignmentCompanyOption | null | undefined) =>
-    (company?.supervisors ?? []).filter((s) => s.status === 'active' || s.id === start.supervisor_id);
+    (company?.supervisors ?? []).filter(
+      (s) => s.status === 'active' || (s.id === start.supervisor_id && company?.id === start.company_id),
+    );
   const roster = rosterFor(selectedCompany);
   const statuses = options.internship_statuses.length > 0 ? options.internship_statuses : INTERNSHIP_STATUSES;
 
