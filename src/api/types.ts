@@ -842,3 +842,74 @@ export interface UserWriteResponse {
   message: string;
   user: ManagedUser;
 }
+
+// ---------------------------------------------------------------------------
+// Company Management & Supervisor Roster (Module 14): Coordinator + Admin,
+// /me staff.can_manage_companies.
+// ---------------------------------------------------------------------------
+
+export type CompanyStatus = 'active' | 'inactive';
+
+/** A Supervisor account that can be added to a roster (GET /companies/{id}/supervisors/available). */
+export interface AvailableSupervisor {
+  id: number;
+  name: string;
+  email: string;
+  /** Inactive supervisors are listed too, as on the website. */
+  status: 'active' | 'inactive';
+}
+
+/** A supervisor on a company's roster (sorted by name). */
+export interface RosterSupervisor extends AvailableSupervisor {
+  /** How many of THIS company's students this person supervises (kept when removed from the roster). */
+  students_count: number;
+}
+
+export type CompanyDeleteBlockedReason = 'company_has_students' | 'company_has_evaluations';
+
+/** One company in GET /companies and GET /companies/{id}. The flags are the server's decision. */
+export interface ManagedCompany {
+  id: number;
+  company_name: string;
+  address: string | null;
+  contact_person: string | null;
+  contact_number: string | null;
+  email: string | null;
+  industry: string | null;
+  /** Internship slots (total). */
+  slots: number;
+  /** Students assigned to this company (slots used). */
+  students_count: number;
+  /** max(0, slots - students_count) */
+  slots_available: number;
+  status: CompanyStatus;
+  supervisors: RosterSupervisor[];
+  supervisors_count: number;
+  /** ISO 8601 */
+  created_at: string | null;
+  updated_at: string | null;
+  can_edit: boolean;
+  can_toggle_status: boolean;
+  can_manage_roster: boolean;
+  can_delete: boolean;
+  /** Why Delete is refused (null when can_delete). */
+  delete_blocked_reason: CompanyDeleteBlockedReason | null;
+}
+
+export interface CompanyFilters {
+  search: string;
+  status: CompanyStatus | null;
+}
+
+/** GET /companies: page pagination, ordered by company name. */
+export interface CompaniesPage {
+  data: ManagedCompany[];
+  meta: { current_page: number; last_page: number; per_page: number; total: number; has_more: boolean };
+  can_create: boolean;
+}
+
+/** POST /companies, PATCH /companies/{id}, activate/deactivate, roster attach/detach. */
+export interface CompanyWriteResponse {
+  message: string;
+  company: ManagedCompany;
+}
