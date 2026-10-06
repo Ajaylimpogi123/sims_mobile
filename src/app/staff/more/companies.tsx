@@ -1,5 +1,4 @@
-import { FeaturePlaceholder } from '@/components/FeaturePlaceholder';
+import { CompaniesScreen } from '@/features/companies/CompaniesScreen';
 
-export default function MoreCompanies() {
-  return <FeaturePlaceholder feature="companies" />;
-}
+/** Coordinator / Admin: Company Management from More (when it isn't a tab). */
+export default CompaniesScreen;

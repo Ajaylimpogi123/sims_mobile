@@ -285,6 +285,32 @@ function RootNavigator() {
           }}
         />
       </Stack.Protected>
+      {/* Coordinators and Admins (access.ts "companies", /me can_manage_companies): one company with its supervisor
+          roster and the Add / Edit Company form, above the tabs. Buttons follow the API's per-company flags. */}
+      <Stack.Protected guard={signedIn && group === 'staff' && !!me && canUse('companies', me)}>
+        <Stack.Screen
+          name="company/[id]"
+          options={{
+            headerShown: true,
+            title: 'Company',
+            animation: 'slide_from_right',
+            headerStyle: { backgroundColor: colors.brand700 },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: '600' },
+          }}
+        />
+        <Stack.Screen
+          name="company-form"
+          options={{
+            headerShown: true,
+            title: 'Add Company',
+            animation: 'slide_from_bottom',
+            headerStyle: { backgroundColor: colors.brand700 },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: '600' },
+          }}
+        />
+      </Stack.Protected>
       {/* Supervisors, Coordinators, Admins (access.ts): opened from Home, above the role's tabs. */}
       <Stack.Protected guard={signedIn && !!group && !!me && canUse('analytics', me)}>
         <Stack.Screen

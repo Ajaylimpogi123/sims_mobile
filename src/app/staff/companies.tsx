@@ -1,5 +1,4 @@
-import { FeaturePlaceholder } from '@/components/FeaturePlaceholder';
+import { CompaniesScreen } from '@/features/companies/CompaniesScreen';
 
-export default function StaffCompanies() {
-  return <FeaturePlaceholder feature="companies" />;
-}
+/** Coordinator / Admin: Company Management as a bottom tab. */
+export default CompaniesScreen;
