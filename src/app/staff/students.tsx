@@ -1,5 +1,4 @@
-import { FeaturePlaceholder } from '@/components/FeaturePlaceholder';
+import { AssignmentsScreen } from '@/features/assignments/AssignmentsScreen';
 
-export default function StaffStudents() {
-  return <FeaturePlaceholder feature="students" />;
-}
+/** Coordinator / Admin: Internship Assignment as a bottom tab. */
+export default AssignmentsScreen;

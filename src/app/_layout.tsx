@@ -311,6 +311,32 @@ function RootNavigator() {
           }}
         />
       </Stack.Protected>
+      {/* Coordinators and Admins (access.ts "students", /me can_assign_internships): one student's profile and
+          assignment, and the edit form, above the tabs. Buttons follow the API's can_edit / can_toggle_status. */}
+      <Stack.Protected guard={signedIn && group === 'staff' && !!me && canUse('students', me)}>
+        <Stack.Screen
+          name="assignment/[id]"
+          options={{
+            headerShown: true,
+            title: 'Student',
+            animation: 'slide_from_right',
+            headerStyle: { backgroundColor: colors.brand700 },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: '600' },
+          }}
+        />
+        <Stack.Screen
+          name="assignment-form"
+          options={{
+            headerShown: true,
+            title: 'Edit Student',
+            animation: 'slide_from_bottom',
+            headerStyle: { backgroundColor: colors.brand700 },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontWeight: '600' },
+          }}
+        />
+      </Stack.Protected>
       {/* Supervisors, Coordinators, Admins (access.ts): opened from Home, above the role's tabs. */}
       <Stack.Protected guard={signedIn && !!group && !!me && canUse('analytics', me)}>
         <Stack.Screen
