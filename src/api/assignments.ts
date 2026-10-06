@@ -80,7 +80,10 @@ export interface AssignmentInput {
   internship_schedule: string;
 }
 
-/** Every field, every time (as the website form sends it); a blank schedule goes as null. */
+/**
+ * Every field, every time, as the website form sends it (supervisor_id as-is: the server accepts an
+ * unchanged supervisor even without a company); a blank schedule goes as null.
+ */
 function body(input: AssignmentInput) {
   const schedule = input.internship_schedule.trim();
   return {
@@ -90,7 +93,7 @@ function body(input: AssignmentInput) {
     course: input.course.trim(),
     section: input.section.trim(),
     company_id: input.company_id,
-    supervisor_id: input.company_id === null ? null : input.supervisor_id,
+    supervisor_id: input.supervisor_id,
     internship_status: input.internship_status,
     internship_schedule: schedule === '' ? null : schedule,
   };

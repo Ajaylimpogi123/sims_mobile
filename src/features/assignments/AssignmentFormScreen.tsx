@@ -258,8 +258,14 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
         disabled: !current && companyInactive,
       };
     }),
-    ...(keptSupervisor ? [{ value: keptSupervisor.id, label: keptSupervisor.name, hint: "Not on this company's roster" }] : []),
+    ...(keptSupervisor
+      ? [{ value: keptSupervisor.id, label: keptSupervisor.name, hint: selectedCompany ? "Not on this company's roster" : 'Current supervisor' }]
+      : []),
   ];
+
+  // Without a company the picker only offers the student's existing supervisor (to keep or clear), as the
+  // server accepts that unchanged value; otherwise it waits for a company like the website.
+  const supervisorPickable = !!selectedCompany || keptSupervisor !== null;
 
   const clear = (...fields: Field[]) =>
     setErrors((old) => {
@@ -438,11 +444,17 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
             <PickerField
               label="Supervisor"
               icon="person-outline"
-              value={selectedCompany ? (selectedSupervisor ? `${selectedSupervisor.name}${selectedSupervisor.status === 'inactive' ? ' (inactive)' : ''}` : 'Unassigned') : null}
+              value={supervisorPickable ? (selectedSupervisor ? `${selectedSupervisor.name}${selectedSupervisor.status === 'inactive' ? ' (inactive)' : ''}` : 'Unassigned') : null}
               placeholder={selectedCompany ? 'Select a supervisor' : 'Assign a company first'}
-              detail={selectedSupervisor && keptSupervisor?.id === selectedSupervisor.id ? "Not on this company's roster" : null}
+              detail={
+                selectedSupervisor && keptSupervisor?.id === selectedSupervisor.id
+                  ? selectedCompany
+                    ? "Not on this company's roster"
+                    : 'Kept from before; no company assigned'
+                  : null
+              }
               onPress={() => setPicker('supervisor')}
-              disabled={submitting || !selectedCompany}
+              disabled={submitting || !supervisorPickable}
               error={errors.supervisor_id}
             />
             {selectedCompany && roster.length === 0 ? (
