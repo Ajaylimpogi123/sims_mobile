@@ -54,7 +54,7 @@ function StudentCard({ item, onOpen }: { item: AssignmentStudent; onOpen: () => 
   const company = item.company?.company_name ?? 'Unassigned';
   const supervisor = item.supervisor?.name ?? 'Unassigned';
   const label = [
-    item.name,
+    item.name ?? item.student_number,
     item.student_number,
     `Company ${company}`,
     `Supervisor ${supervisor}`,
@@ -73,7 +73,7 @@ function StudentCard({ item, onOpen }: { item: AssignmentStudent; onOpen: () => 
       className="mx-4 mb-3 gap-1.5 rounded-2xl border border-gray-200 bg-white p-4 active:bg-gray-50">
       <View className="flex-row items-center gap-2">
         <Text className="flex-1 text-base font-semibold text-gray-900" numberOfLines={1}>
-          {item.name}
+          {item.name ?? item.student_number}
         </Text>
         <StatusBadge status={item.internship_status} />
         <Ionicons name="chevron-forward" size={18} color={colors.gray400} />

@@ -936,8 +936,9 @@ export interface AssignmentSupervisor {
 export interface AssignmentStudent {
   id: number;
   user_id: number;
-  name: string;
-  email: string;
+  /** null only if the account is missing. */
+  name: string | null;
+  email: string | null;
   /** Account status. */
   status: 'active' | 'inactive';
   student_number: string;

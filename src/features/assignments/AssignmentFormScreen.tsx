@@ -103,7 +103,7 @@ export function AssignmentFormScreen() {
 
   const error = studentQuery.isError ? toApiError(studentQuery.error) : null;
   const student = studentQuery.data ?? cached;
-  const title = student?.name ?? 'Edit Student';
+  const title = student?.name || 'Edit Student';
 
   if (id === null || error?.kind === 'not_found') {
     return (
@@ -215,7 +215,10 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
 
   const companies = options.companies;
   const selectedCompany = useMemo(() => companies.find((c) => c.id === values.company_id) ?? null, [companies, values.company_id]);
-  const roster = useMemo(() => selectedCompany?.supervisors ?? [], [selectedCompany]);
+  // Website (StudentModal rosterFor): active roster supervisors, plus the student's current one even if inactive.
+  const rosterFor = (company: AssignmentCompanyOption | null | undefined) =>
+    (company?.supervisors ?? []).filter((s) => s.status === 'active' || s.id === start.supervisor_id);
+  const roster = rosterFor(selectedCompany);
   const statuses = options.internship_statuses.length > 0 ? options.internship_statuses : INTERNSHIP_STATUSES;
 
   // The student's own supervisor stays selectable while the company is unchanged, even if they
@@ -229,19 +232,20 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
 
   // New picks follow the server's rules: an active company with a free slot, an active supervisor, and no new
   // supervisor at an inactive company. The student's current company / supervisor always stay selectable.
-  const companyOptions: SelectOption[] = companies.map((company) => {
-    const current = company.id === start.company_id;
-    const inactive = company.status === 'inactive';
-    const full = !current && company.slots_available <= 0;
-    const notes = [current ? 'Current company' : null, inactive ? 'Inactive' : null, full ? 'No available slots' : null];
-    return {
-      value: company.id,
-      label: company.company_name,
-      meta: slotCount(company),
-      hint: notes.filter(Boolean).join(' · ') || undefined,
-      disabled: !current && (inactive || full),
-    };
-  });
+  // Like the website, inactive companies are hidden unless current (then labelled "(inactive)").
+  const companyOptions: SelectOption[] = companies
+    .filter((company) => company.status === 'active' || company.id === start.company_id)
+    .map((company) => {
+      const current = company.id === start.company_id;
+      const full = !current && company.slots_available <= 0;
+      return {
+        value: company.id,
+        label: company.status === 'active' ? company.company_name : `${company.company_name} (inactive)`,
+        meta: slotCount(company),
+        hint: (current ? 'Current company' : full ? 'No available slots' : undefined),
+        disabled: full,
+      };
+    });
   const companyInactive = selectedCompany?.status === 'inactive';
   const supervisorOptions: SelectOption[] = [
     ...roster.map((s) => {
@@ -249,9 +253,9 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
       const inactive = s.status === 'inactive';
       return {
         value: s.id,
-        label: s.name,
-        hint: [s.email, current ? 'Current supervisor' : null, inactive ? 'Inactive' : null].filter(Boolean).join(' · '),
-        disabled: !current && (inactive || companyInactive),
+        label: inactive ? `${s.name} (inactive)` : s.name,
+        hint: [s.email, current ? 'Current supervisor' : null].filter(Boolean).join(' · '),
+        disabled: !current && companyInactive,
       };
     }),
     ...(keptSupervisor ? [{ value: keptSupervisor.id, label: keptSupervisor.name, hint: "Not on this company's roster" }] : []),
@@ -276,7 +280,7 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
       const company = companies.find((c) => c.id === companyId);
       const stillValid =
         old.supervisor_id !== null &&
-        ((company?.supervisors ?? []).some((s) => s.id === old.supervisor_id) ||
+        (rosterFor(company).some((s) => s.id === old.supervisor_id) ||
           (companyId === start.company_id && old.supervisor_id === start.supervisor_id));
       return { ...old, company_id: companyId, supervisor_id: stillValid ? old.supervisor_id : null };
     });
@@ -419,11 +423,11 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
           <PickerField
             label="Company"
             icon="business-outline"
-            value={selectedCompany ? selectedCompany.company_name : values.company_id === null ? 'Unassigned' : null}
+            value={selectedCompany ? `${selectedCompany.company_name}${selectedCompany.status === 'inactive' ? ' (inactive)' : ''}` : values.company_id === null ? 'Unassigned' : null}
             placeholder="Select a company"
             detail={
               selectedCompany
-                ? `${slotCount(selectedCompany)} slots filled${selectedCompany.status === 'inactive' ? ' · Inactive' : ''}`
+                ? `${slotCount(selectedCompany)} slots filled`
                 : null
             }
             onPress={() => setPicker('company')}
@@ -434,7 +438,7 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
             <PickerField
               label="Supervisor"
               icon="person-outline"
-              value={selectedCompany ? (selectedSupervisor?.name ?? 'Unassigned') : null}
+              value={selectedCompany ? (selectedSupervisor ? `${selectedSupervisor.name}${selectedSupervisor.status === 'inactive' ? ' (inactive)' : ''}` : 'Unassigned') : null}
               placeholder={selectedCompany ? 'Select a supervisor' : 'Assign a company first'}
               detail={selectedSupervisor && keptSupervisor?.id === selectedSupervisor.id ? "Not on this company's roster" : null}
               onPress={() => setPicker('supervisor')}
@@ -442,7 +446,7 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
               error={errors.supervisor_id}
             />
             {selectedCompany && roster.length === 0 ? (
-              <Text className="text-xs text-gray-500">No supervisors on this company&apos;s roster yet</Text>
+              <Text className="text-xs text-gray-500">No active supervisors on this company&apos;s roster</Text>
             ) : companyInactive ? (
               <Text className="text-xs text-amber-700">This company is inactive. Activate it in Company Management before assigning a new supervisor.</Text>
             ) : null}
@@ -490,7 +494,7 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
         selected={values.supervisor_id}
         onSelect={(value) => set('supervisor_id', value)}
         onClose={() => setPicker(null)}
-        emptyText="No supervisors on this company's roster yet"
+        emptyText="No active supervisors on this company's roster"
       />
     </KeyboardAvoidingView>
   );

@@ -45,13 +45,13 @@ function HeaderCard({ student }: { student: AssignmentStudent }) {
     <Card>
       <View className="flex-row items-start justify-between gap-3">
         <Text accessibilityRole="header" className="flex-1 text-xl font-semibold text-gray-900">
-          {student.name}
+          {student.name ?? student.student_number}
         </Text>
         <StatusBadge status={student.status} />
       </View>
       <View className="mt-2 flex-row items-center gap-2">
         <Ionicons name="mail-outline" size={16} color={colors.gray500} />
-        <Text className="flex-1 text-sm text-gray-600">{student.email}</Text>
+        <Text className="flex-1 text-sm text-gray-600">{student.email ?? '-'}</Text>
       </View>
     </Card>
   );
@@ -204,8 +204,8 @@ export function AssignmentDetailScreen() {
     Alert.alert(
       isActive ? 'Deactivate Account?' : 'Activate Account?',
       isActive
-        ? `Deactivate "${target.name}"? They will no longer be able to log in, and they will be signed out of the mobile app.`
-        : `Reactivate "${target.name}"? They will be able to log in again.`,
+        ? `Deactivate "${target.name ?? target.student_number}"? They will no longer be able to log in, and they will be signed out of the mobile app.`
+        : `Reactivate "${target.name ?? target.student_number}"? They will be able to log in again.`,
       [
         { text: 'Cancel', style: 'cancel' },
         { text: isActive ? 'Deactivate' : 'Activate', style: isActive ? 'destructive' : 'default', onPress: () => void toggle(target, !isActive) },
