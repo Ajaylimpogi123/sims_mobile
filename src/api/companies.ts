@@ -165,7 +165,7 @@ export function useAvailableSupervisors(id: number | null, enabled: boolean) {
 /**
  * Everything a company write changes: the lists, the detail and its roster picker, Home's counts,
  * the Analytics company filter options and monitoring screens that show company names.
- * (Internship Assignment, Module 15, will read companies through these same keys.)
+ * Also Internship Assignment's lists and company options (slot counts, rosters).
  */
 export function refreshAfterCompanyWrite(queryClient: QueryClient, id?: number) {
   void queryClient.invalidateQueries({ queryKey: companyKeys.lists });
@@ -176,6 +176,8 @@ export function refreshAfterCompanyWrite(queryClient: QueryClient, id?: number) 
   void queryClient.invalidateQueries({ queryKey: dashboardKeys.dashboard });
   void queryClient.invalidateQueries({ queryKey: dashboardKeys.filterOptions });
   void queryClient.invalidateQueries({ queryKey: monitoringKeys.all });
+  // assignmentKeys.all (src/api/assignments.ts), by value: that file imports this one.
+  void queryClient.invalidateQueries({ queryKey: ['assignments'] });
 }
 
 export function useCreateCompany() {
@@ -216,6 +218,7 @@ export function useDeleteCompany() {
       void queryClient.invalidateQueries({ queryKey: dashboardKeys.filterOptions });
       void queryClient.invalidateQueries({ queryKey: monitoringKeys.all });
       queryClient.removeQueries({ queryKey: companyKeys.available(id), exact: true });
+      void queryClient.invalidateQueries({ queryKey: ['assignments'] });
     },
   });
 }

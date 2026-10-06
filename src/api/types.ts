@@ -913,3 +913,79 @@ export interface CompanyWriteResponse {
   message: string;
   company: ManagedCompany;
 }
+
+// ---------------------------------------------------------------------------
+// Internship Assignment (Module 15): Coordinator + Admin, /me staff.can_assign_internships.
+// `id` is the STUDENT record id (not the user id).
+// ---------------------------------------------------------------------------
+
+export interface AssignmentCompany {
+  id: number;
+  company_name: string;
+  status: CompanyStatus;
+}
+
+export interface AssignmentSupervisor {
+  id: number;
+  name: string;
+  email: string;
+  status: 'active' | 'inactive';
+}
+
+/** One student in GET /assignments and GET /assignments/{id}. The flags are the server's decision. */
+export interface AssignmentStudent {
+  id: number;
+  user_id: number;
+  name: string;
+  email: string;
+  /** Account status. */
+  status: 'active' | 'inactive';
+  student_number: string;
+  course: string;
+  section: string;
+  company: AssignmentCompany | null;
+  supervisor: AssignmentSupervisor | null;
+  /** null when no supervisor; false = the supervisor was later removed from the company's roster (still valid). */
+  supervisor_on_roster: boolean | null;
+  internship_status: InternshipStatus;
+  internship_schedule: string | null;
+  /** ISO 8601 */
+  created_at: string | null;
+  updated_at: string | null;
+  can_edit: boolean;
+  can_toggle_status: boolean;
+}
+
+/** `company_id` / `supervisor_id`: an id, 'none' (unassigned) or null (no filter). */
+export interface AssignmentFilters {
+  search: string;
+  internship_status: InternshipStatus | null;
+  status: 'active' | 'inactive' | null;
+  company_id: number | 'none' | null;
+}
+
+/** GET /assignments: page pagination, newest student profile first. */
+export interface AssignmentsPage {
+  data: AssignmentStudent[];
+  meta: { current_page: number; last_page: number; per_page: number; total: number; has_more: boolean };
+}
+
+/** A company in GET /assignments/options, with its roster (both sorted by name). */
+export interface AssignmentCompanyOption extends AssignmentCompany {
+  slots: number;
+  students_count: number;
+  slots_available: number;
+  supervisors: AssignmentSupervisor[];
+}
+
+/** GET /assignments/options */
+export interface AssignmentOptions {
+  companies: AssignmentCompanyOption[];
+  internship_statuses: { value: InternshipStatus; label: string }[];
+}
+
+/** PATCH /assignments/{id}, POST /assignments/{id}/{activate|deactivate}. */
+export interface AssignmentWriteResponse {
+  message: string;
+  student: AssignmentStudent;
+}

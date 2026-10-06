@@ -130,11 +130,13 @@ export function useUserRoles(enabled = true) {
 // Mutations
 // ---------------------------------------------------------------------------
 
-/** Everything a user write changes: the lists, the detail and Home's counts. */
+/** Everything a user write changes: the lists, the detail, Home's counts and Internship Assignment rows (name, email, status). */
 export function refreshAfterUserWrite(queryClient: QueryClient, id?: number) {
   void queryClient.invalidateQueries({ queryKey: userKeys.lists });
   if (id !== undefined) void queryClient.invalidateQueries({ queryKey: userKeys.detail(id) });
   void queryClient.invalidateQueries({ queryKey: dashboardKeys.dashboard });
+  // assignmentKeys.all (src/api/assignments.ts), by value: that file imports this one.
+  void queryClient.invalidateQueries({ queryKey: ['assignments'] });
 }
 
 export function useCreateUser() {
