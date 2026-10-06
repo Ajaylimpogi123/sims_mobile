@@ -10,6 +10,10 @@ export interface SelectOption {
   label: string;
   /** Extra text that search also matches (e.g. a student number). */
   hint?: string;
+  /** Short right-aligned text, e.g. a slot count "3 / 5". */
+  meta?: string;
+  /** Shown but not selectable (e.g. a company with no slots left); `hint` should say why. */
+  disabled?: boolean;
 }
 
 interface SelectSheetProps {
@@ -21,12 +25,14 @@ interface SelectSheetProps {
   selected: number | null;
   onSelect: (value: number | null) => void;
   onClose: () => void;
+  /** Shown under the "all" row when there are no options at all, e.g. "No supervisors on this company's roster yet". */
+  emptyText?: string;
 }
 
 const SEARCH_FROM = 8;
 
 /** Bottom sheet list picker (the website's <select>), with search when the list is long. */
-export function SelectSheet({ visible, title, allLabel, options, selected, onSelect, onClose }: SelectSheetProps) {
+export function SelectSheet({ visible, title, allLabel, options, selected, onSelect, onClose, emptyText }: SelectSheetProps) {
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
 
@@ -35,7 +41,7 @@ export function SelectSheet({ visible, title, allLabel, options, selected, onSel
     const matches = q
       ? options.filter((o) => o.label.toLowerCase().includes(q) || o.hint?.toLowerCase().includes(q))
       : options;
-    return [{ value: null, label: allLabel } as { value: number | null; label: string; hint?: string }, ...matches];
+    return [{ value: null, label: allLabel } as Omit<SelectOption, 'value'> & { value: number | null }, ...matches];
   }, [allLabel, options, query]);
 
   const close = () => {
@@ -79,24 +85,36 @@ export function SelectSheet({ visible, title, allLabel, options, selected, onSel
             keyboardShouldPersistTaps="handled"
             renderItem={({ item }) => {
               const isSelected = item.value === selected;
+              const off = !!item.disabled && !isSelected;
               return (
                 <Pressable
                   onPress={() => {
+                    if (off) return;
                     onSelect(item.value);
                     close();
                   }}
+                  disabled={off}
                   accessibilityRole="radio"
-                  accessibilityState={{ checked: isSelected }}
-                  android_ripple={{ color: 'rgba(0,0,0,0.06)' }}
-                  className="min-h-12 flex-row items-center gap-3 px-4 py-3">
+                  accessibilityState={{ checked: isSelected, disabled: off }}
+                  accessibilityLabel={[item.label, item.meta, item.hint].filter(Boolean).join(', ')}
+                  android_ripple={off ? undefined : { color: 'rgba(0,0,0,0.06)' }}
+                  className={`min-h-12 flex-row items-center gap-3 px-4 py-3 ${off ? 'opacity-50' : ''}`}>
                   <View className="flex-1">
                     <Text className={`text-base ${isSelected ? 'font-medium text-brand-700' : 'text-gray-900'}`}>{item.label}</Text>
                     {item.hint ? <Text className="text-xs text-gray-500">{item.hint}</Text> : null}
                   </View>
+                  {item.meta ? (
+                    <Text className="text-xs font-medium text-gray-600" style={{ fontVariant: ['tabular-nums'] }}>
+                      {item.meta}
+                    </Text>
+                  ) : null}
                   {isSelected ? <Ionicons name="checkmark" size={20} color={colors.brand700} /> : null}
                 </Pressable>
               );
             }}
+            ListFooterComponent={
+              options.length === 0 && emptyText ? <Text className="px-4 py-3 text-sm text-gray-500">{emptyText}</Text> : null
+            }
             ListEmptyComponent={<Text className="px-4 py-6 text-center text-sm text-gray-500">No matches.</Text>}
           />
         </View>
