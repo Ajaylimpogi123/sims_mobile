@@ -15,7 +15,7 @@ const styles: Record<Tone, { box: string; text: string; icon: keyof typeof Ionic
 export function Banner({ message, tone = 'error' }: { message: string; tone?: Tone }) {
   const s = styles[tone];
   return (
-    <View accessibilityRole="alert" className={`flex-row items-start gap-2 rounded-xl border p-3 ${s.box}`}>
+    <View accessibilityRole="alert" className={`flex-row items-start gap-2 rounded-md border p-3 ${s.box}`}>
       <Ionicons name={s.icon} size={20} color={s.color} />
       <Text className={`flex-1 text-sm leading-5 ${s.text}`}>{message}</Text>
     </View>

@@ -41,7 +41,7 @@ function ReportRow({ report, onPress }: { report: Report; onPress: () => void })
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityHint="Opens the report"
-      className="mx-4 mb-3 rounded-2xl border border-gray-200 bg-white p-4 active:bg-gray-50">
+      className="mx-4 mb-3 rounded-xl border border-gray-200 bg-white p-4 active:bg-gray-50">
       <View className="flex-row items-start gap-3">
         <View className="flex-1 gap-1">
           <Text className="text-base font-semibold text-gray-900">{period}</Text>
@@ -74,7 +74,7 @@ function ListSkeleton() {
   return (
     <SkeletonPulse label="Loading reports">
       {[0, 1, 2, 3].map((i) => (
-        <View key={i} className="mx-4 mb-3 gap-3 rounded-2xl border border-gray-200 bg-white p-4">
+        <View key={i} className="mx-4 mb-3 gap-3 rounded-xl border border-gray-200 bg-white p-4">
           <View className="flex-row justify-between">
             <SkeletonBlock className="h-5 w-1/2" />
             <SkeletonBlock className="h-5 w-16 rounded-full" />
@@ -215,7 +215,7 @@ export function ReportsScreen() {
           onPress={() => open('/report-form')}
           accessibilityRole="button"
           accessibilityLabel="New Report"
-          className="absolute bottom-5 right-4 h-14 flex-row items-center gap-2 rounded-2xl bg-brand-700 px-5 active:bg-brand-800"
+          className="absolute bottom-5 right-4 h-14 flex-row items-center gap-2 rounded-xl bg-brand-700 px-5 active:bg-brand-800"
           style={{ elevation: 4, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 6, shadowOffset: { width: 0, height: 2 } }}>
           <Ionicons name="add" size={22} color={colors.white} />
           <Text className="text-base font-semibold text-white">New Report</Text>

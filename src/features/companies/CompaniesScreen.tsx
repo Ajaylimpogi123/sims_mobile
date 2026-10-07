@@ -59,7 +59,7 @@ function CompanyCard({ item, onOpen }: { item: ManagedCompany; onOpen: () => voi
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityHint="Opens the company"
-      className="mx-4 mb-3 gap-1 rounded-2xl border border-gray-200 bg-white p-4 active:bg-gray-50">
+      className="mx-4 mb-3 gap-1 rounded-xl border border-gray-200 bg-white p-4 active:bg-gray-50">
       <View className="flex-row items-center gap-2">
         <Text className="flex-1 text-base font-semibold text-gray-900" numberOfLines={2}>
           {item.company_name}
@@ -89,7 +89,7 @@ function ListSkeleton() {
   return (
     <SkeletonPulse label="Loading companies">
       {[0, 1, 2, 3, 4].map((i) => (
-        <View key={i} className="mx-4 mb-3 gap-2 rounded-2xl border border-gray-200 bg-white p-4">
+        <View key={i} className="mx-4 mb-3 gap-2 rounded-xl border border-gray-200 bg-white p-4">
           <View className="flex-row justify-between">
             <SkeletonBlock className="h-5 w-1/2" />
             <SkeletonBlock className="h-5 w-14 rounded-full" />
@@ -256,7 +256,7 @@ export function CompaniesScreen() {
           }}
           accessibilityRole="button"
           accessibilityLabel="Add Company"
-          className="absolute bottom-5 right-4 h-14 flex-row items-center gap-2 rounded-2xl bg-brand-700 px-5 active:bg-brand-800"
+          className="absolute bottom-5 right-4 h-14 flex-row items-center gap-2 rounded-xl bg-brand-700 px-5 active:bg-brand-800"
           style={{ elevation: 4, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 6, shadowOffset: { width: 0, height: 2 } }}>
           <Ionicons name="add" size={22} color={colors.white} />
           <Text className="text-base font-semibold text-white">Add Company</Text>

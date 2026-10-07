@@ -102,9 +102,9 @@ function SkeletonRows() {
     <Animated.View style={{ opacity }} accessibilityLabel="Loading notifications" accessible>
       {[0, 1, 2, 3, 4, 5].map((i) => (
         <View key={i} className="gap-2 border-b border-gray-100 bg-white px-4 py-4">
-          <View className={`h-4 rounded bg-gray-200 ${i % 2 ? 'w-1/2' : 'w-2/3'}`} />
-          <View className="h-3 w-full rounded bg-gray-100" />
-          <View className="h-3 w-1/4 rounded bg-gray-100" />
+          <View className={`h-4 rounded-md bg-gray-200 ${i % 2 ? 'w-1/2' : 'w-2/3'}`} />
+          <View className="h-3 w-full rounded-md bg-gray-100" />
+          <View className="h-3 w-1/4 rounded-md bg-gray-100" />
         </View>
       ))}
     </Animated.View>
@@ -209,7 +209,7 @@ export function NotificationsScreen() {
               accessibilityRole="button"
               accessibilityState={{ disabled: markAllRead.isPending, busy: markAllRead.isPending }}
               hitSlop={8}
-              className="min-h-11 flex-row items-center gap-2 rounded-lg px-2 active:bg-brand-50">
+              className="min-h-11 flex-row items-center gap-2 rounded-md px-2 active:bg-brand-50">
               {markAllRead.isPending ? <ActivityIndicator size="small" color={colors.brand700} /> : null}
               <Text className="text-sm font-medium text-brand-700">Mark all as read</Text>
             </Pressable>

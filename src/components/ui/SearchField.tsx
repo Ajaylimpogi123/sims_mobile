@@ -33,7 +33,7 @@ export function SearchField({ placeholder, onSearch, initialValue = '', delayMs 
   }, [text, delayMs]);
 
   return (
-    <View className="h-12 flex-row items-center rounded-xl border border-gray-300 bg-white pl-3">
+    <View className="h-12 flex-row items-center rounded-md border border-gray-300 bg-white pl-3">
       <Ionicons name="search-outline" size={18} color={colors.gray500} />
       <TextInput
         value={text}

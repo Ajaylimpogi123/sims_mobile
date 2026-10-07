@@ -432,7 +432,7 @@ function EvaluationForm({ title, criteria, students, evaluation }: EvaluationFor
               accessibilityRole="button"
               accessibilityLabel={`Student: ${student ? student.name : 'Select a student'}`}
               accessibilityHint={errors.student_id ?? 'Opens the list of students'}
-              className={`min-h-12 flex-row items-center gap-2 rounded-xl border bg-white px-3 py-2 ${errors.student_id ? 'border-red-500' : 'border-gray-300'} ${draftId !== null ? 'opacity-60' : ''}`}>
+              className={`min-h-12 flex-row items-center gap-2 rounded-md border bg-white px-3 py-2 ${errors.student_id ? 'border-red-500' : 'border-gray-300'} ${draftId !== null ? 'opacity-60' : ''}`}>
               <Ionicons name="person-outline" size={18} color={colors.gray500} />
               <View className="flex-1">
                 <Text className={`text-base ${student ? 'text-gray-900' : 'text-gray-400'}`} numberOfLines={1}>
@@ -497,7 +497,7 @@ function EvaluationForm({ title, criteria, students, evaluation }: EvaluationFor
               <Text accessibilityRole="header" className="px-1 text-sm font-semibold text-gray-900">
                 {group.category}
               </Text>
-              <View className="rounded-2xl border border-gray-200 bg-white px-4">
+              <View className="rounded-xl border border-gray-200 bg-white px-4">
                 {group.criteria.map((criterion, index) => {
                   const value = values.responses[criterion.id] ?? { rating: null, comment: '' };
                   return (

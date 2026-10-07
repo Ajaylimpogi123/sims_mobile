@@ -21,7 +21,7 @@ export const TextField = forwardRef<TextInput, TextFieldProps>(function TextFiel
     <View className="gap-1.5">
       <Text className="text-sm font-medium text-gray-700">{label}</Text>
       <View
-        className={`flex-row rounded-xl border bg-white px-3 ${multiline ? 'min-h-24 items-start py-2' : 'h-12 items-center'} ${error ? 'border-red-500' : 'border-gray-300'}`}>
+        className={`flex-row rounded-md border bg-white px-3 ${multiline ? 'min-h-24 items-start py-2' : 'h-12 items-center'} ${error ? 'border-red-500' : 'border-gray-300'}`}>
         <TextInput
           ref={ref}
           placeholderTextColor={colors.gray400}

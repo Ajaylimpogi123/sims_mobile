@@ -110,7 +110,7 @@ function TodayCard({ today, onAction }: { today: AttendanceToday; onAction: (act
           <Pressable
             onPress={() => onAction('emergency_time_out')}
             accessibilityRole="button"
-            className="min-h-11 flex-row items-center gap-2 rounded-lg active:bg-red-50">
+            className="min-h-11 flex-row items-center gap-2 rounded-md active:bg-red-50">
             <Ionicons name="warning-outline" size={18} color={colors.red600} />
             <Text className="flex-1 text-sm font-medium text-red-600">
               Report Emergency (time out without an approved time-in)
@@ -126,7 +126,7 @@ function HistorySkeleton() {
   return (
     <SkeletonPulse label="Loading attendance history">
       {[0, 1, 2].map((i) => (
-        <View key={i} className="mx-4 mb-3 gap-3 rounded-2xl border border-gray-200 bg-white p-4">
+        <View key={i} className="mx-4 mb-3 gap-3 rounded-xl border border-gray-200 bg-white p-4">
           <SkeletonBlock className="h-4 w-1/3" />
           <View className="flex-row items-center gap-3">
             <SkeletonBlock className="h-12 w-12 rounded-lg" />
@@ -146,12 +146,12 @@ function TodaySkeleton() {
   return (
     <SkeletonPulse label="Loading today's attendance">
       <View className="gap-4">
-        <SkeletonBlock className="h-20 w-full rounded-2xl" />
-        <View className="gap-3 rounded-2xl border border-gray-200 bg-white p-4">
+        <SkeletonBlock className="h-20 w-full rounded-xl" />
+        <View className="gap-3 rounded-xl border border-gray-200 bg-white p-4">
           <SkeletonBlock className="h-5 w-2/3" />
           <SkeletonBlock className="h-4 w-full" />
           <SkeletonBlock className="h-4 w-full" />
-          <SkeletonBlock className="h-12 w-full rounded-xl" />
+          <SkeletonBlock className="h-12 w-full rounded-md" />
         </View>
       </View>
     </SkeletonPulse>

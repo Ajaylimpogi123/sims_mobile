@@ -28,6 +28,13 @@ module.exports = {
       fontFamily: {
         sans: [figtree.normal],
       },
+      // The website's shadcn radius scale (--radius: 0.625rem), so a class means the same on both:
+      // rounded-sm 6px, rounded-md 8px (buttons, inputs, alerts), rounded-lg 10px, rounded-xl 12px (cards).
+      borderRadius: {
+        sm: '6px',
+        md: '8px',
+        lg: '10px',
+      },
     },
   },
   plugins: [

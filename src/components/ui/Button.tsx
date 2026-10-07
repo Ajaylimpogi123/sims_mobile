@@ -61,7 +61,7 @@ export function Button({
       accessibilityHint={accessibilityHint}
       disabled={inactive}
       onPress={onPress}
-      className={`h-12 flex-row items-center justify-center gap-2 rounded-xl px-5 ${containerByVariant[variant]} ${inactive ? 'opacity-60' : ''} ${className}`}>
+      className={`h-12 flex-row items-center justify-center gap-2 rounded-md px-5 ${containerByVariant[variant]} ${inactive ? 'opacity-60' : ''} ${className}`}>
       {loading ? (
         <ActivityIndicator size="small" color={contentColorByVariant[variant]} />
       ) : icon ? (

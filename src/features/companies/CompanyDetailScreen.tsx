@@ -62,7 +62,7 @@ function HeaderCard({ company }: { company: ManagedCompany }) {
         <StatusBadge status={company.status} />
       </View>
       <View className="mt-4 flex-row gap-3">
-        <View className="flex-1 rounded-xl bg-gray-50 p-3" accessible accessibilityLabel={`Slots: ${company.students_count} of ${company.slots} used`}>
+        <View className="flex-1 rounded-lg bg-gray-50 p-3" accessible accessibilityLabel={`Slots: ${company.students_count} of ${company.slots} used`}>
           <Text className="text-xs text-gray-500">Slots</Text>
           <Text className="text-lg font-semibold text-gray-900" style={TABULAR}>
             {slotsLabel(company)}
@@ -71,7 +71,7 @@ function HeaderCard({ company }: { company: ManagedCompany }) {
             {plural(company.slots_available, 'slot', 'slots')} available
           </Text>
         </View>
-        <View className="flex-1 rounded-xl bg-gray-50 p-3" accessible accessibilityLabel={`Assigned students: ${company.students_count}`}>
+        <View className="flex-1 rounded-lg bg-gray-50 p-3" accessible accessibilityLabel={`Assigned students: ${company.students_count}`}>
           <Text className="text-xs text-gray-500">Assigned Students</Text>
           <Text className="text-lg font-semibold text-gray-900" style={TABULAR}>
             {company.students_count}
@@ -106,7 +106,7 @@ function RosterRow({
   onRemove: () => void;
 }) {
   return (
-    <View className="min-h-14 flex-row items-center gap-3 rounded-xl border border-gray-200 px-3 py-2">
+    <View className="min-h-14 flex-row items-center gap-3 rounded-lg border border-gray-200 px-3 py-2">
       <View className="flex-1 gap-0.5">
         <View className="flex-row items-center gap-2">
           <Text className="flex-shrink text-sm font-medium text-gray-900" numberOfLines={1}>
@@ -147,11 +147,11 @@ function RosterRow({
 function DetailSkeleton() {
   return (
     <SkeletonPulse label="Loading company">
-      <View className="gap-3 rounded-2xl border border-gray-200 bg-white p-4">
+      <View className="gap-3 rounded-xl border border-gray-200 bg-white p-4">
         <SkeletonBlock className="h-6 w-1/2" />
         <View className="flex-row gap-3">
-          <SkeletonBlock className="h-16 flex-1 rounded-xl" />
-          <SkeletonBlock className="h-16 flex-1 rounded-xl" />
+          <SkeletonBlock className="h-16 flex-1 rounded-lg" />
+          <SkeletonBlock className="h-16 flex-1 rounded-lg" />
         </View>
         <SkeletonBlock className="h-4 w-2/3" />
         <SkeletonBlock className="h-4 w-1/2" />

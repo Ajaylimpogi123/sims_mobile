@@ -116,17 +116,17 @@ function DetailSkeleton() {
   return (
     <SkeletonPulse label="Loading the attendance record">
       <View className="gap-4 p-4">
-        <View className="gap-2 rounded-2xl border border-gray-200 bg-white p-4">
+        <View className="gap-2 rounded-xl border border-gray-200 bg-white p-4">
           <SkeletonBlock className="h-6 w-2/3" />
           <SkeletonBlock className="h-4 w-1/2" />
         </View>
-        <View className="gap-3 rounded-2xl border border-gray-200 bg-white p-4">
+        <View className="gap-3 rounded-xl border border-gray-200 bg-white p-4">
           <SkeletonBlock className="h-5 w-1/3" />
-          <SkeletonBlock className="h-60 w-full rounded-xl" />
+          <SkeletonBlock className="h-60 w-full rounded-lg" />
           <SkeletonBlock className="h-4 w-full" />
           <View className="flex-row gap-3">
-            <SkeletonBlock className="h-12 flex-1 rounded-xl" />
-            <SkeletonBlock className="h-12 flex-1 rounded-xl" />
+            <SkeletonBlock className="h-12 flex-1 rounded-md" />
+            <SkeletonBlock className="h-12 flex-1 rounded-md" />
           </View>
         </View>
       </View>

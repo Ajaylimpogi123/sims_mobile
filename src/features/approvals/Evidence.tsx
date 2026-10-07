@@ -63,7 +63,7 @@ export function MapLink({ item, leg }: { item: ApprovalItem; leg: AttendanceLeg 
       accessibilityRole="link"
       accessibilityLabel={`View ${legLabel(item, leg)} location on the map${accuracy !== null ? `, accurate to ${Math.round(accuracy)} metres` : ''}`}
       accessibilityHint="Opens Google Maps"
-      className="min-h-11 items-end justify-center rounded-lg px-1 active:bg-brand-50">
+      className="min-h-11 items-end justify-center rounded-md px-1 active:bg-brand-50">
       <View className="flex-row items-center gap-1">
         <Ionicons name="location-outline" size={14} color={colors.brand700} />
         <Text className="text-sm font-medium text-brand-700 underline">View map</Text>

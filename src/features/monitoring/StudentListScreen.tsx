@@ -82,7 +82,7 @@ function StudentCard({ student, kind, onOpen }: { student: MonitoredStudent; kin
       accessibilityRole="button"
       accessibilityLabel={`${student.name}, ${meta}`}
       accessibilityHint="Opens the attendance log"
-      className="mx-4 mb-3 gap-3 rounded-2xl border border-gray-200 bg-white p-4 active:bg-gray-50">
+      className="mx-4 mb-3 gap-3 rounded-xl border border-gray-200 bg-white p-4 active:bg-gray-50">
       <View className="flex-row items-start gap-2">
         <View className="flex-1 gap-0.5">
           <Text className="text-base font-semibold text-gray-900" numberOfLines={1}>
@@ -104,7 +104,7 @@ function ListSkeleton({ label }: { label: string }) {
   return (
     <SkeletonPulse label={label}>
       {[0, 1, 2, 3].map((i) => (
-        <View key={i} className="mx-4 mb-3 gap-3 rounded-2xl border border-gray-200 bg-white p-4">
+        <View key={i} className="mx-4 mb-3 gap-3 rounded-xl border border-gray-200 bg-white p-4">
           <View className="flex-row justify-between">
             <SkeletonBlock className="h-5 w-1/2" />
             <SkeletonBlock className="h-5 w-16 rounded-full" />

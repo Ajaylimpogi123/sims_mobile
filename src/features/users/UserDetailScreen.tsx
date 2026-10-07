@@ -57,7 +57,7 @@ function HeaderCard({ user }: { user: ManagedUser }) {
 function DetailSkeleton() {
   return (
     <SkeletonPulse label="Loading user">
-      <View className="gap-3 rounded-2xl border border-gray-200 bg-white p-4">
+      <View className="gap-3 rounded-xl border border-gray-200 bg-white p-4">
         <SkeletonBlock className="h-6 w-1/2" />
         <SkeletonBlock className="h-4 w-2/3" />
         <SkeletonBlock className="h-4 w-1/3" />

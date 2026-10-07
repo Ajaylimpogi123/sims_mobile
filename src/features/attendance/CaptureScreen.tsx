@@ -306,7 +306,7 @@ function Capture({ action }: { action: AttendanceAction }) {
         {/* Photo: live front camera only, no gallery. */}
         <View className="gap-2">
           <Text className="text-sm font-medium text-gray-700">Photo</Text>
-          <View className="aspect-[3/4] w-full items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-black">
+          <View className="aspect-[3/4] w-full items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-black">
             {photo ? (
               <Image
                 source={{ uri: photo.uri }}

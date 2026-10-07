@@ -73,7 +73,7 @@ function FormSkeleton() {
         {[0, 1, 2, 3, 4].map((i) => (
           <View key={i} className="gap-2">
             <SkeletonBlock className="h-4 w-24" />
-            <SkeletonBlock className="h-12 w-full rounded-xl" />
+            <SkeletonBlock className="h-12 w-full rounded-md" />
           </View>
         ))}
       </View>

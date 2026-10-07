@@ -18,7 +18,7 @@ export function SegmentedControl<T extends string>({ label, options, value, onCh
       <View
         accessibilityRole="radiogroup"
         accessibilityLabel={label}
-        className={`h-12 flex-row rounded-xl border bg-gray-100 p-1 ${error ? 'border-red-500' : 'border-gray-200'}`}>
+        className={`h-12 flex-row rounded-lg border bg-gray-100 p-1 ${error ? 'border-red-500' : 'border-gray-200'}`}>
         {options.map((option) => {
           const selected = option.value === value;
           return (
@@ -28,7 +28,7 @@ export function SegmentedControl<T extends string>({ label, options, value, onCh
               disabled={disabled}
               accessibilityRole="radio"
               accessibilityState={{ checked: selected, disabled }}
-              className={`flex-1 items-center justify-center rounded-lg ${selected ? 'border border-gray-200 bg-white' : 'active:bg-gray-200'}`}>
+              className={`flex-1 items-center justify-center rounded-md ${selected ? 'border border-gray-200 bg-white' : 'active:bg-gray-200'}`}>
               <Text className={`text-sm ${selected ? 'font-semibold text-brand-700' : 'font-medium text-gray-600'}`}>{option.label}</Text>
             </Pressable>
           );

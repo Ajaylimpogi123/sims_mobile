@@ -119,7 +119,7 @@ function Body({ evaluation }: { evaluation: EvaluationDetail }) {
 
 function BodySkeleton() {
   return (
-    <View className="gap-3 rounded-2xl border border-gray-200 bg-white p-4">
+    <View className="gap-3 rounded-xl border border-gray-200 bg-white p-4">
       <SkeletonBlock className="h-4 w-1/3" />
       <SkeletonBlock className="h-8 w-48" />
       <SkeletonBlock className="h-4 w-1/2" />

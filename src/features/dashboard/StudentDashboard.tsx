@@ -23,7 +23,7 @@ function CardLink({ label, onPress }: { label: string; onPress: () => void }) {
       onPress={onPress}
       accessibilityRole="link"
       hitSlop={8}
-      className="-my-1 min-h-8 justify-center rounded-lg px-2 active:bg-brand-50">
+      className="-my-1 min-h-8 justify-center rounded-md px-2 active:bg-brand-50">
       <Text className="text-sm font-medium text-brand-700">{label}</Text>
     </Pressable>
   );

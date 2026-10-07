@@ -56,7 +56,7 @@ function RolePicker({
   return (
     <View className="gap-1.5">
       <Text className="text-sm font-medium text-gray-700">Role</Text>
-      <View accessibilityRole="radiogroup" accessibilityLabel="Role" className={`overflow-hidden rounded-xl border bg-white ${error ? 'border-red-500' : 'border-gray-300'}`}>
+      <View accessibilityRole="radiogroup" accessibilityLabel="Role" className={`overflow-hidden rounded-md border bg-white ${error ? 'border-red-500' : 'border-gray-300'}`}>
         {roles.map((role, index) => {
           const selected = role.id === value;
           return (
@@ -88,7 +88,7 @@ function FormSkeleton() {
         {[0, 1, 2].map((i) => (
           <View key={i} className="gap-2">
             <SkeletonBlock className="h-4 w-20" />
-            <SkeletonBlock className="h-12 w-full rounded-xl" />
+            <SkeletonBlock className="h-12 w-full rounded-md" />
           </View>
         ))}
       </View>

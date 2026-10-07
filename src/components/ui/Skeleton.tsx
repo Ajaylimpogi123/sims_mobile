@@ -36,5 +36,5 @@ export function SkeletonPulse({ children, label }: { children: ReactNode; label:
 
 /** A grey block; size it with className (e.g. "h-4 w-1/2"). */
 export function SkeletonBlock({ className = '' }: { className?: string }) {
-  return <View className={`rounded bg-gray-200 ${className}`} />;
+  return <View className={`rounded-md bg-gray-200 ${className}`} />;
 }

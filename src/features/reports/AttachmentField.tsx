@@ -53,7 +53,7 @@ function SmallAction({ label, onPress, tone = 'brand', disabled }: { label: stri
       disabled={disabled}
       accessibilityRole="button"
       hitSlop={6}
-      className={`min-h-11 justify-center rounded-lg px-2 ${tone === 'red' ? 'active:bg-red-50' : 'active:bg-brand-50'} ${disabled ? 'opacity-50' : ''}`}>
+      className={`min-h-11 justify-center rounded-md px-2 ${tone === 'red' ? 'active:bg-red-50' : 'active:bg-brand-50'} ${disabled ? 'opacity-50' : ''}`}>
       <Text className={`text-sm font-medium ${tone === 'red' ? 'text-red-600' : 'text-brand-700'}`}>{label}</Text>
     </Pressable>
   );
@@ -99,12 +99,12 @@ export function AttachmentField({
       <Text className="text-sm font-medium text-gray-700">Attachment (optional)</Text>
 
       {preparing ? (
-        <View className="h-20 flex-row items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white" accessibilityLiveRegion="polite">
+        <View className="h-20 flex-row items-center justify-center gap-2 rounded-md border border-gray-200 bg-white" accessibilityLiveRegion="polite">
           <ActivityIndicator color={colors.brand700} />
           <Text className="text-sm text-gray-600">Preparing attachment…</Text>
         </View>
       ) : picked ? (
-        <View className={`flex-row items-center gap-1 rounded-xl border bg-white py-2 pl-3 pr-1 ${error ? 'border-red-500' : 'border-gray-300'}`}>
+        <View className={`flex-row items-center gap-1 rounded-md border bg-white py-2 pl-3 pr-1 ${error ? 'border-red-500' : 'border-gray-300'}`}>
           {picked.mimeType !== 'application/pdf' ? <Thumbnail uri={picked.uri} /> : null}
           <AttachmentSummary
             name={picked.name}
@@ -116,7 +116,7 @@ export function AttachmentField({
           <SmallAction label="Remove" tone="red" onPress={onClearPicked} disabled={disabled} />
         </View>
       ) : showsExisting ? (
-        <View className={`flex-row items-center gap-1 rounded-xl border bg-white py-2 pl-3 pr-1 ${error ? 'border-red-500' : 'border-gray-300'}`}>
+        <View className={`flex-row items-center gap-1 rounded-md border bg-white py-2 pl-3 pr-1 ${error ? 'border-red-500' : 'border-gray-300'}`}>
           {existingSource ? <Thumbnail uri={existingSource.uri} headers={existingSource.headers} /> : null}
           <AttachmentSummary name={existing.name} kind={existing.kind} size={existing.size} meta="Current" />
           <SmallAction label="Replace" onPress={() => setSheetOpen(true)} disabled={disabled} />
@@ -125,7 +125,7 @@ export function AttachmentField({
       ) : (
         <>
           {removeExisting && existing ? (
-            <View className="flex-row items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 py-1 pl-3 pr-1">
+            <View className="flex-row items-center gap-2 rounded-md border border-amber-200 bg-amber-50 py-1 pl-3 pr-1">
               <Text className="flex-1 text-sm text-amber-800" numberOfLines={2}>
                 {existing.name} will be removed when you save.
               </Text>
@@ -141,7 +141,7 @@ export function AttachmentField({
                 accessibilityRole="button"
                 accessibilityLabel={source.label}
                 accessibilityHint={source.hint}
-                className={`h-20 flex-1 items-center justify-center gap-1.5 rounded-xl border border-dashed bg-white active:bg-gray-50 ${error ? 'border-red-500' : 'border-gray-300'} ${disabled ? 'opacity-50' : ''}`}>
+                className={`h-20 flex-1 items-center justify-center gap-1.5 rounded-md border border-dashed bg-white active:bg-gray-50 ${error ? 'border-red-500' : 'border-gray-300'} ${disabled ? 'opacity-50' : ''}`}>
                 <Ionicons name={source.icon} size={22} color={colors.brand700} />
                 <Text className="text-xs font-medium text-gray-700">{source.label}</Text>
               </Pressable>

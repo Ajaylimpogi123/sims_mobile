@@ -46,7 +46,7 @@ function DayLeg({ record, leg, showMocked }: { record: AttendanceRecord; leg: At
             accessibilityRole="link"
             accessibilityLabel={`View ${LEG_LABEL[leg]} location on the map${accuracy !== null ? `, accurate to ${Math.round(accuracy)} metres` : ''}`}
             accessibilityHint="Opens Google Maps"
-            className="min-h-11 items-end justify-center rounded-lg px-1 active:bg-brand-50">
+            className="min-h-11 items-end justify-center rounded-md px-1 active:bg-brand-50">
             <View className="flex-row items-center gap-1">
               <Ionicons name="location-outline" size={14} color={colors.brand700} />
               <Text className="text-sm font-medium text-brand-700 underline">View map</Text>
@@ -86,7 +86,7 @@ interface AttendanceDayCardProps {
 /** One attendance day (website: one attendance table row) as a card: date, hours, In and Out legs with evidence. */
 export function AttendanceDayCard({ record, showMocked = false, meta, highlighted = false, children }: AttendanceDayCardProps) {
   return (
-    <View className={`mx-4 mb-3 rounded-2xl border p-4 ${highlighted ? 'border-amber-400 bg-amber-50' : 'border-gray-200 bg-white'}`}>
+    <View className={`mx-4 mb-3 rounded-xl border p-4 ${highlighted ? 'border-amber-400 bg-amber-50' : 'border-gray-200 bg-white'}`}>
       <View className="mb-1 flex-row items-center gap-2">
         <View className="flex-1 gap-0.5">
           <Text className="text-base font-semibold text-gray-900">{formatDate(record.date)}</Text>

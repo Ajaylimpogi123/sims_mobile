@@ -75,13 +75,13 @@ function ApprovalCard({
 }) {
   const meta = studentMeta(item);
   return (
-    <View className={`mx-4 mb-3 gap-3 rounded-2xl border p-4 ${highlighted ? 'border-amber-400 bg-amber-50' : 'border-gray-200 bg-white'}`}>
+    <View className={`mx-4 mb-3 gap-3 rounded-xl border p-4 ${highlighted ? 'border-amber-400 bg-amber-50' : 'border-gray-200 bg-white'}`}>
       <Pressable
         onPress={onOpen}
         accessibilityRole="button"
         accessibilityLabel={`${item.student.name}${meta ? `, ${meta}` : ''}, ${formatDate(item.date)}`}
         accessibilityHint="Opens the photo and location evidence"
-        className="-m-2 flex-row items-center gap-2 rounded-xl p-2 active:bg-gray-50">
+        className="-m-2 flex-row items-center gap-2 rounded-lg p-2 active:bg-gray-50">
         <View className="flex-1 gap-0.5">
           <Text className="text-base font-semibold text-gray-900" numberOfLines={1}>
             {item.student.name}
@@ -108,7 +108,7 @@ function ListSkeleton() {
   return (
     <SkeletonPulse label="Loading pending approvals">
       {[0, 1, 2].map((i) => (
-        <View key={i} className="mx-4 mb-3 gap-3 rounded-2xl border border-gray-200 bg-white p-4">
+        <View key={i} className="mx-4 mb-3 gap-3 rounded-xl border border-gray-200 bg-white p-4">
           <View className="flex-row justify-between">
             <SkeletonBlock className="h-5 w-1/2" />
             <SkeletonBlock className="h-4 w-20" />
@@ -119,8 +119,8 @@ function ListSkeleton() {
             <SkeletonBlock className="h-4 flex-1" />
           </View>
           <View className="flex-row gap-3">
-            <SkeletonBlock className="h-12 flex-1 rounded-xl" />
-            <SkeletonBlock className="h-12 flex-1 rounded-xl" />
+            <SkeletonBlock className="h-12 flex-1 rounded-md" />
+            <SkeletonBlock className="h-12 flex-1 rounded-md" />
           </View>
         </View>
       ))}

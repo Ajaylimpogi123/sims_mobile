@@ -67,7 +67,7 @@ export function CategorySection({ group }: { group: FeedbackCategory }) {
       <Text accessibilityRole="header" className="px-1 text-sm font-semibold text-gray-900">
         {group.category}
       </Text>
-      <View className="rounded-2xl border border-gray-200 bg-white px-4">
+      <View className="rounded-xl border border-gray-200 bg-white px-4">
         {group.criteria.map((criterion, index) => (
           <View key={criterion.id} className={`gap-2 py-4 ${index > 0 ? 'border-t border-gray-200' : ''}`}>
             <View className="gap-0.5">
@@ -119,7 +119,7 @@ function Body({ evaluation }: { evaluation: FeedbackDetail }) {
 
 function HeaderSkeleton() {
   return (
-    <View className="gap-3 rounded-2xl border border-gray-200 bg-white p-4">
+    <View className="gap-3 rounded-xl border border-gray-200 bg-white p-4">
       <SkeletonBlock className="h-6 w-2/3" />
       <SkeletonBlock className="h-4 w-1/2" />
       <SkeletonBlock className="h-4 w-1/2" />
@@ -130,7 +130,7 @@ function HeaderSkeleton() {
 
 function BodySkeleton() {
   return (
-    <View className="gap-3 rounded-2xl border border-gray-200 bg-white p-4">
+    <View className="gap-3 rounded-xl border border-gray-200 bg-white p-4">
       <SkeletonBlock className="h-4 w-1/3" />
       <SkeletonBlock className="h-8 w-48" />
       <SkeletonBlock className="h-4 w-1/2" />

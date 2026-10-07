@@ -107,7 +107,7 @@ export function FilterBar({ filters, onChange, options, showSupervisor, errors }
         <Pressable
           onPress={() => onChange({ date_from: null, date_to: null, company_id: null, supervisor_id: null, student_id: null })}
           accessibilityRole="button"
-          className="mt-3 min-h-11 flex-row items-center justify-center gap-1.5 rounded-xl border border-gray-300 bg-white active:bg-gray-50">
+          className="mt-3 min-h-11 flex-row items-center justify-center gap-1.5 rounded-md border border-gray-300 bg-white active:bg-gray-50">
           <Ionicons name="close" size={16} color={colors.gray500} />
           <Text className="text-sm font-medium text-gray-700">Clear Filters</Text>
         </Pressable>

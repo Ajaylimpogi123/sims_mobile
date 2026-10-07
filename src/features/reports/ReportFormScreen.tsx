@@ -129,9 +129,9 @@ function EditReport({ id }: { id: number }) {
         <Stack.Screen options={{ title: 'Edit Report' }} />
         <SkeletonPulse label="Loading report">
           <View className="gap-4">
-            <SkeletonBlock className="h-12 w-full rounded-xl" />
-            <SkeletonBlock className="h-12 w-full rounded-xl" />
-            <SkeletonBlock className="h-40 w-full rounded-xl" />
+            <SkeletonBlock className="h-12 w-full rounded-md" />
+            <SkeletonBlock className="h-12 w-full rounded-md" />
+            <SkeletonBlock className="h-40 w-full rounded-md" />
           </View>
         </SkeletonPulse>
       </View>

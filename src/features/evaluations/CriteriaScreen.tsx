@@ -55,7 +55,7 @@ function ListSkeleton() {
     <SkeletonPulse label="Loading criteria">
       <View className="gap-3 px-4">
         {[0, 1].map((i) => (
-          <View key={i} className="gap-3 rounded-2xl border border-gray-200 bg-white p-4">
+          <View key={i} className="gap-3 rounded-xl border border-gray-200 bg-white p-4">
             <SkeletonBlock className="h-4 w-1/3" />
             <SkeletonBlock className="h-5 w-2/3" />
             <SkeletonBlock className="h-5 w-1/2" />
@@ -192,11 +192,11 @@ export function CriteriaScreen() {
           ListHeaderComponent={header}
           ListEmptyComponent={<EmptyState icon="list-outline" message="No criteria configured yet." />}
           renderSectionHeader={({ section }) => (
-            <Text accessibilityRole="header" className="mx-4 mt-3 rounded-t-2xl border border-gray-200 bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-900">
+            <Text accessibilityRole="header" className="mx-4 mt-3 rounded-t-xl border border-gray-200 bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-900">
               {section.title}
             </Text>
           )}
-          renderSectionFooter={() => <View className="mx-4 mb-1 h-3 rounded-b-2xl border-x border-b border-gray-200 bg-white" />}
+          renderSectionFooter={() => <View className="mx-4 mb-1 h-3 rounded-b-xl border-x border-b border-gray-200 bg-white" />}
           renderItem={({ item }) => <CriterionRow item={item} busy={busy} onPress={() => setSelected(item)} />}
           refreshControl={<RefreshControl refreshing={pulling} onRefresh={() => void refresh()} colors={[colors.brand700]} />}
         />
@@ -206,7 +206,7 @@ export function CriteriaScreen() {
         onPress={() => openForm()}
         accessibilityRole="button"
         accessibilityLabel="Add Criterion"
-        className="absolute bottom-5 right-4 h-14 flex-row items-center gap-2 rounded-2xl bg-brand-700 px-5 active:bg-brand-800"
+        className="absolute bottom-5 right-4 h-14 flex-row items-center gap-2 rounded-xl bg-brand-700 px-5 active:bg-brand-800"
         style={{ elevation: 4, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 6, shadowOffset: { width: 0, height: 2 } }}>
         <Ionicons name="add" size={22} color={colors.white} />
         <Text className="text-base font-semibold text-white">Add Criterion</Text>

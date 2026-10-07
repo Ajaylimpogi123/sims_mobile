@@ -56,7 +56,7 @@ export function LocationPanel({
   return (
     <View className="gap-2">
       <Text className="text-sm font-medium text-gray-700">Location</Text>
-      <View className="min-h-16 flex-row items-center gap-3 rounded-xl border border-gray-200 bg-white px-3 py-2.5">
+      <View className="min-h-16 flex-row items-center gap-3 rounded-lg border border-gray-200 bg-white px-3 py-2.5">
         <Ionicons name="location-outline" size={20} color={colors.gray500} />
         <View className="flex-1 gap-0.5" accessibilityLiveRegion="polite">
           {fix ? (
@@ -97,7 +97,7 @@ export function LocationPanel({
             accessibilityRole="button"
             accessibilityLabel={fix ? 'Refresh location' : 'Try again'}
             accessibilityState={{ disabled }}
-            className={`min-h-11 flex-row items-center gap-1.5 rounded-lg border border-gray-300 px-3 active:bg-gray-50 ${disabled ? 'opacity-50' : ''}`}>
+            className={`min-h-11 flex-row items-center gap-1.5 rounded-md border border-gray-300 px-3 active:bg-gray-50 ${disabled ? 'opacity-50' : ''}`}>
             <Ionicons name="refresh" size={16} color={colors.gray900} />
             <Text className="text-sm font-medium text-gray-900">{fix ? 'Refresh' : 'Try again'}</Text>
           </Pressable>

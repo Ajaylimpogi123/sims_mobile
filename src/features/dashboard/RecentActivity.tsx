@@ -90,7 +90,7 @@ export function RecentActivity({ items, me }: { items: ActivityItem[]; me: MeRes
       <Pressable
         onPress={() => router.push('/notifications')}
         accessibilityRole="link"
-        className="mt-1 min-h-11 items-center justify-center rounded-lg active:bg-brand-50">
+        className="mt-1 min-h-11 items-center justify-center rounded-md active:bg-brand-50">
         <Text className="text-sm font-medium text-brand-700">View all notifications</Text>
       </Pressable>
     </Card>

@@ -43,7 +43,7 @@ export function DateField({ label, value, onChange, placeholder = 'Any date', mi
   return (
     <View className="flex-1 gap-1.5">
       <Text className="text-sm font-medium text-gray-700">{label}</Text>
-      <View className={`h-12 flex-row items-center rounded-xl border bg-white ${error ? 'border-red-500' : 'border-gray-300'}`}>
+      <View className={`h-12 flex-row items-center rounded-md border bg-white ${error ? 'border-red-500' : 'border-gray-300'}`}>
         <Pressable
           onPress={open}
           accessibilityRole="button"

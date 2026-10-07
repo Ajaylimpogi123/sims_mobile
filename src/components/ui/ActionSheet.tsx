@@ -29,7 +29,7 @@ export function ActionSheet({ visible, title, options, onSelect, onClose }: Acti
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent>
       <View className="flex-1 justify-end">
         <Pressable className="absolute inset-0 bg-black/40" onPress={onClose} accessibilityRole="button" accessibilityLabel="Close" />
-        <View className="rounded-t-2xl bg-white" style={{ paddingBottom: insets.bottom + 8 }}>
+        <View className="rounded-t-xl bg-white" style={{ paddingBottom: insets.bottom + 8 }}>
           <View className="items-center pt-2">
             <View className="h-1 w-10 rounded-full bg-gray-300" />
           </View>

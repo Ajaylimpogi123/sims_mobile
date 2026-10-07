@@ -36,7 +36,7 @@ function FeedbackRow({ item, onPress }: { item: FeedbackSummary; onPress: () => 
       accessibilityRole="button"
       accessibilityLabel={`Evaluation ${period}, ${line}, ${item.status === 'locked' ? 'Locked' : 'Submitted'}, Overall Rating ${formatRating(item.overall_rating)} out of ${item.rating_max}`}
       accessibilityHint="Opens the evaluation"
-      className="mx-4 mb-3 gap-3 rounded-2xl border border-gray-200 bg-white p-4 active:bg-gray-50">
+      className="mx-4 mb-3 gap-3 rounded-xl border border-gray-200 bg-white p-4 active:bg-gray-50">
       <View className="flex-row items-start gap-3">
         <View className="flex-1 gap-1">
           <Text className="text-base font-semibold text-gray-900">{period}</Text>
@@ -53,7 +53,7 @@ function ListSkeleton() {
   return (
     <SkeletonPulse label="Loading feedback">
       {[0, 1, 2].map((i) => (
-        <View key={i} className="mx-4 mb-3 gap-3 rounded-2xl border border-gray-200 bg-white p-4">
+        <View key={i} className="mx-4 mb-3 gap-3 rounded-xl border border-gray-200 bg-white p-4">
           <View className="flex-row justify-between">
             <SkeletonBlock className="h-5 w-3/5" />
             <SkeletonBlock className="h-5 w-16 rounded-full" />

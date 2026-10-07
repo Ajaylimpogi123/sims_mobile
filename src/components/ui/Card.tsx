@@ -15,7 +15,7 @@ interface CardProps {
 
 export function Card({ children, className = '', title, description, right }: CardProps) {
   return (
-    <View className={`rounded-2xl border border-gray-200 bg-white p-4 ${className}`}>
+    <View className={`rounded-xl border border-gray-200 bg-white p-4 ${className}`}>
       {title ? (
         <View className="mb-3 flex-row items-start justify-between gap-3">
           <View className="flex-1 gap-0.5">

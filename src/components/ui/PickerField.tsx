@@ -30,7 +30,7 @@ export function PickerField({ label, value, placeholder, detail, onPress, disabl
         accessibilityLabel={`${label}: ${value ?? placeholder}`}
         accessibilityState={{ disabled }}
         accessibilityHint={error ?? undefined}
-        className={`min-h-12 flex-row items-center gap-2 rounded-xl border px-3 py-2 ${error ? 'border-red-500' : 'border-gray-300'} ${
+        className={`min-h-12 flex-row items-center gap-2 rounded-md border px-3 py-2 ${error ? 'border-red-500' : 'border-gray-300'} ${
           disabled ? 'bg-gray-100' : 'bg-white active:bg-gray-50'
         }`}>
         {icon ? <Ionicons name={icon} size={18} color={colors.gray500} /> : null}

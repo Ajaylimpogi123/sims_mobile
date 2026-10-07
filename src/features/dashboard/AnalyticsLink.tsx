@@ -18,7 +18,7 @@ export function AnalyticsLink({ me }: { me: MeResponse | null }) {
       accessibilityRole="button"
       accessibilityLabel={`View analytics. ${info.description}`}
       android_ripple={{ color: 'rgba(0,0,0,0.06)', foreground: true }}
-      className="flex-row items-center gap-3 overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 active:bg-gray-50">
+      className="flex-row items-center gap-3 overflow-hidden rounded-xl border border-gray-200 bg-white p-4 active:bg-gray-50">
       <View className="h-10 w-10 items-center justify-center rounded-lg bg-brand-50">
         <Ionicons name="bar-chart" size={20} color={colors.brand700} />
       </View>

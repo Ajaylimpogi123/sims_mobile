@@ -68,7 +68,7 @@ export function SupervisorPickerSheet({ visible, companyId, rosterIds, onPick, o
     <Modal visible={visible} transparent animationType="slide" onRequestClose={close} statusBarTranslucent>
       <View className="flex-1 justify-end">
         <Pressable className="absolute inset-0 bg-black/40" onPress={close} accessibilityRole="button" accessibilityLabel="Close" />
-        <View className="max-h-[75%] rounded-t-2xl bg-white" style={{ paddingBottom: insets.bottom + 8 }}>
+        <View className="max-h-[75%] rounded-t-xl bg-white" style={{ paddingBottom: insets.bottom + 8 }}>
           <View className="items-center pt-2">
             <View className="h-1 w-10 rounded-full bg-gray-300" />
           </View>
@@ -86,7 +86,7 @@ export function SupervisorPickerSheet({ visible, companyId, rosterIds, onPick, o
             </Pressable>
           </View>
           {options.length >= SEARCH_FROM ? (
-            <View className="mx-4 mb-2 h-11 flex-row items-center gap-2 rounded-xl border border-gray-300 px-3">
+            <View className="mx-4 mb-2 h-11 flex-row items-center gap-2 rounded-md border border-gray-300 px-3">
               <Ionicons name="search" size={18} color={colors.gray400} />
               <TextInput
                 value={query}

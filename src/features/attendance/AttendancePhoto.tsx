@@ -14,7 +14,7 @@ import { Text } from '@/components/ui/Text';
  */
 export function AttendancePhoto({ url, label, size = 'sm' }: { url: string | null; label: string; size?: 'sm' | 'lg' }) {
   // sm: 48dp thumbnail (lists) · lg: full-width preview (Pending Approvals evidence).
-  const box = size === 'lg' ? 'h-60 w-full rounded-xl' : 'h-12 w-12 rounded-lg';
+  const box = size === 'lg' ? 'h-60 w-full rounded-lg' : 'h-12 w-12 rounded-lg';
   const iconSize = size === 'lg' ? 28 : 18;
   const insets = useSafeAreaInsets();
   const [open, setOpen] = useState(false);

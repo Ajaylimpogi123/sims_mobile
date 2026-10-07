@@ -47,7 +47,7 @@ function StudentSummary({
   onOpenReports?: () => void;
 }) {
   return (
-    <View className="gap-3 rounded-2xl border border-gray-200 bg-white p-4">
+    <View className="gap-3 rounded-xl border border-gray-200 bg-white p-4">
       <View className="flex-row items-start gap-2">
         <View className="flex-1 gap-0.5">
           <Text accessibilityRole="header" className="text-base font-semibold text-gray-900">
@@ -90,7 +90,7 @@ function StudentSummary({
 function SummarySkeleton() {
   return (
     <SkeletonPulse label="Loading student">
-      <View className="gap-3 rounded-2xl border border-gray-200 bg-white p-4">
+      <View className="gap-3 rounded-xl border border-gray-200 bg-white p-4">
         <SkeletonBlock className="h-5 w-1/2" />
         <SkeletonBlock className="h-4 w-1/3" />
         <SkeletonBlock className="h-10 w-full" />
@@ -104,7 +104,7 @@ function LogSkeleton() {
   return (
     <SkeletonPulse label="Loading attendance log">
       {[0, 1].map((i) => (
-        <View key={i} className="mx-4 mb-3 gap-3 rounded-2xl border border-gray-200 bg-white p-4">
+        <View key={i} className="mx-4 mb-3 gap-3 rounded-xl border border-gray-200 bg-white p-4">
           <SkeletonBlock className="h-4 w-1/3" />
           <View className="flex-row items-center gap-3">
             <SkeletonBlock className="h-12 w-12 rounded-lg" />

@@ -155,7 +155,7 @@ function AnalyticsSkeleton() {
     <SkeletonPulse label="Loading analytics">
       <View className="gap-4">
         {[0, 1, 2].map((i) => (
-          <View key={i} className="gap-3 rounded-2xl border border-gray-200 bg-white p-4">
+          <View key={i} className="gap-3 rounded-xl border border-gray-200 bg-white p-4">
             <SkeletonBlock className="h-4 w-1/2" />
             <View className="h-40 flex-row items-end gap-4 px-6">
               {[0.5, 0.9, 0.35, 0.7].map((h, j) => (

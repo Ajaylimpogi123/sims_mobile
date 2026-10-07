@@ -51,7 +51,7 @@ function ReviewCard({ report, highlighted, showStudent, onOpen }: { report: Revi
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityHint={report.can_review ? 'Opens the report to review it' : 'Opens the report'}
-      className={`mx-4 mb-3 gap-2 rounded-2xl border p-4 ${highlighted ? 'border-amber-400 bg-amber-50' : 'border-gray-200 bg-white active:bg-gray-50'}`}>
+      className={`mx-4 mb-3 gap-2 rounded-xl border p-4 ${highlighted ? 'border-amber-400 bg-amber-50' : 'border-gray-200 bg-white active:bg-gray-50'}`}>
       <View className="flex-row items-start gap-2">
         <View className="flex-1 gap-0.5">
           {showStudent ? (
@@ -106,7 +106,7 @@ function ListSkeleton() {
   return (
     <SkeletonPulse label="Loading reports">
       {[0, 1, 2, 3].map((i) => (
-        <View key={i} className="mx-4 mb-3 gap-3 rounded-2xl border border-gray-200 bg-white p-4">
+        <View key={i} className="mx-4 mb-3 gap-3 rounded-xl border border-gray-200 bg-white p-4">
           <View className="flex-row justify-between">
             <SkeletonBlock className="h-5 w-1/2" />
             <SkeletonBlock className="h-5 w-16 rounded-full" />
