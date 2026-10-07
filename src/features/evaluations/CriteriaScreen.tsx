@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { Alert, Pressable, RefreshControl, SectionList, Text, View } from 'react-native';
+import { Alert, Pressable, RefreshControl, SectionList, View } from 'react-native';
 
 import { toApiError } from '@/api/errors';
 import { useDeleteCriterion, useManagedCriteria, useSetCriterionActive } from '@/api/evaluations';
@@ -16,6 +16,7 @@ import { TABULAR } from '@/lib/format';
 import { colors } from '@/theme/colors';
 
 import { takeCriteriaFlash } from './flash';
+import { Text } from '@/components/ui/Text';
 
 /** Website subtitle (EvaluationCriteria/Index.jsx). */
 const SUBTITLE = 'Configure the criteria supervisors rate students against — add, edit, or deactivate without touching the database';

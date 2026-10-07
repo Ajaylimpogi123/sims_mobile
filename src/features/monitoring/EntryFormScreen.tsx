@@ -1,7 +1,7 @@
 import { useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import { Alert, KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { toApiError } from '@/api/errors';
@@ -15,6 +15,7 @@ import { TimeField } from '@/components/ui/TimeField';
 import { formatLongDate, toApiClock, todayApiDate } from '@/lib/datetime';
 
 import { setMonitoringFlash } from './flash';
+import { Text } from '@/components/ui/Text';
 
 /** Laravel's wording for the same rules, so a client-side check reads like the server's 422. */
 const RULE_MESSAGES = {

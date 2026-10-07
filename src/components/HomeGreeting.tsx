@@ -1,7 +1,8 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { useAuth } from '@/auth/AuthProvider';
 import { formatLongDate, greeting } from '@/lib/datetime';
+import { Text } from '@/components/ui/Text';
 
 /** "Good morning, Juan" + today's date in Manila. */
 export function HomeGreeting() {

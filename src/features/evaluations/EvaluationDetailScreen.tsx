@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { Alert, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { Alert, RefreshControl, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MESSAGES, toApiError } from '@/api/errors';
@@ -22,6 +22,7 @@ import { formatFeedbackPeriod, formatRating } from '../feedback/format';
 
 import { EvaluationStatusBadge } from './EvaluationStatusBadge';
 import { takeEvaluationsFlash } from './flash';
+import { Text } from '@/components/ui/Text';
 
 const TITLE = 'Evaluation Detail';
 const NOT_FOUND = "We couldn't find that evaluation. It may have been removed or reassigned.";

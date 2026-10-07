@@ -1,10 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import DateTimePicker, { DateTimePickerAndroid, type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useState } from 'react';
-import { Platform, Pressable, Text, View } from 'react-native';
+import { Platform, Pressable, View } from 'react-native';
 
 import { formatClock } from '@/lib/datetime';
 import { colors } from '@/theme/colors';
+import { Text } from './Text';
 
 interface TimeFieldProps {
   label: string;

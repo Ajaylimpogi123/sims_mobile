@@ -1,7 +1,8 @@
 import { forwardRef, type ReactNode } from 'react';
-import { Text, TextInput, View, type TextInputProps } from 'react-native';
+import { View, type TextInputProps } from 'react-native';
 
 import { colors } from '@/theme/colors';
+import { Text, TextInput } from './Text';
 
 interface TextFieldProps extends Omit<TextInputProps, 'className'> {
   label: string;

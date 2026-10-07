@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState, type ReactElement, type ReactNode } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, View } from 'react-native';
 
 import { toApiError } from '@/api/errors';
 import { useMonitoringList } from '@/api/monitoring';
@@ -20,6 +20,7 @@ import { colors } from '@/theme/colors';
 import { HoursProgressBar } from '../dashboard/HoursProgressBar';
 
 import { hoursColumns, internshipStatus, studentMeta } from './format';
+import { Text } from '@/components/ui/Text';
 
 export type MonitoringKind = 'attendance' | 'progress';
 

@@ -1,10 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link } from 'expo-router';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
 import { useAuth, useNavigationAccess } from '@/auth/AuthProvider';
 import { Card } from '@/components/ui/Card';
 import { colors } from '@/theme/colors';
+import { Text } from '@/components/ui/Text';
 
 /** "More" tab for Coordinators and Administrators: the features that aren't bottom tabs. */
 export function MoreScreen() {

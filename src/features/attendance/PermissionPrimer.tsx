@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { ActivityIndicator, Linking, Text, View } from 'react-native';
+import { ActivityIndicator, Linking, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Banner } from '@/components/ui/Banner';
@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/Card';
 import { colors } from '@/theme/colors';
 
 import type { PermissionState } from './useCapturePermissions';
+import { Text } from '@/components/ui/Text';
 
 export const PERMISSION_MESSAGES = {
   cameraBlocked: 'Camera access was blocked. Open Settings, allow Camera for this app, then come back.',

@@ -9,7 +9,6 @@ import {
   Platform,
   Pressable,
   RefreshControl,
-  Text,
   ToastAndroid,
   View,
 } from 'react-native';
@@ -30,6 +29,7 @@ import { formatRelativeDateTime } from '@/lib/datetime';
 import { featureInfo } from '@/navigation/access';
 import { hrefForTarget, navigateToTarget } from '@/navigation/targets';
 import { colors } from '@/theme/colors';
+import { Text } from '@/components/ui/Text';
 
 function toast(message: string) {
   if (Platform.OS === 'android') ToastAndroid.show(message, ToastAndroid.SHORT);

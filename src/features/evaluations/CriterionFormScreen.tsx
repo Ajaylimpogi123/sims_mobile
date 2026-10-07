@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { toApiError } from '@/api/errors';
@@ -20,6 +20,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { TextField } from '@/components/ui/TextField';
 
 import { setCriteriaFlash } from './flash';
+import { Text } from '@/components/ui/Text';
 
 type Field = keyof CriterionInput;
 

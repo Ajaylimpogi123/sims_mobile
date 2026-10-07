@@ -1,11 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
 import { useState } from 'react';
-import { Modal, Pressable, Text, View } from 'react-native';
+import { Modal, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { authImageSource } from '@/api/images';
 import { colors } from '@/theme/colors';
+import { Text } from '@/components/ui/Text';
 
 /**
  * A leg's photo thumbnail (website: AttendanceEvidence), fetched with the Bearer token.

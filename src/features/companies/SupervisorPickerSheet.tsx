@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Modal, Pressable, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, FlatList, Modal, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAvailableSupervisors } from '@/api/companies';
@@ -9,6 +9,7 @@ import type { AvailableSupervisor } from '@/api/types';
 import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { colors } from '@/theme/colors';
+import { Text, TextInput } from '@/components/ui/Text';
 
 const SEARCH_FROM = 8;
 

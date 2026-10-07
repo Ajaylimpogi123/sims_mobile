@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, RefreshControl, ScrollView, View } from 'react-native';
 
 import { useMe } from '@/api/auth';
 import { toApiError } from '@/api/errors';
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { colors } from '@/theme/colors';
+import { Text } from '@/components/ui/Text';
 
 
 function initials(name: string): string {

@@ -1,11 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import type { ActionItem, MeResponse } from '@/api/types';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { hrefForTarget, openHref } from '@/navigation/targets';
 import { colors } from '@/theme/colors';
+import { Text } from '@/components/ui/Text';
 
 /** The website's "Alerts & Action Items" card. Rows with a target this role can open are tappable. */
 export function ActionItems({ items, me }: { items: ActionItem[]; me: MeResponse | null }) {

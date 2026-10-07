@@ -2,10 +2,11 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { notificationKeys, useUnreadCount } from '@/api/notifications';
 import { colors } from '@/theme/colors';
+import { Text } from '@/components/ui/Text';
 
 /**
  * Header bell with the unread badge (same red "9+" badge as the website's NotificationBell).

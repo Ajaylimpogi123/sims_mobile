@@ -1,8 +1,9 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import type { EvaluationStatus } from '@/api/types';
 
 import { STATUS_LABEL } from './format';
+import { Text } from '@/components/ui/Text';
 
 /**
  * The website's evaluation pages colour their status pill locally (SupervisorEvaluations/Index.jsx

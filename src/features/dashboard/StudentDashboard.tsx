@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { Href } from 'expo-router';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import type { AttendanceStatus, MeResponse, StudentDashboard as StudentData } from '@/api/types';
 import { Banner } from '@/components/ui/Banner';
@@ -14,6 +14,7 @@ import { openHref } from '@/navigation/targets';
 import { colors } from '@/theme/colors';
 
 import { HoursProgressBar } from './HoursProgressBar';
+import { Text } from '@/components/ui/Text';
 
 /** "View all" link in a card header, to a tab of this role. */
 function CardLink({ label, onPress }: { label: string; onPress: () => void }) {

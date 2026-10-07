@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, KeyboardAvoidingView, ScrollView, Text, TextInput, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -28,6 +28,7 @@ import { TextField } from '@/components/ui/TextField';
 
 import { INTERNSHIP_STATUSES } from './AssignmentsScreen';
 import { setAssignmentDetailFlash, setAssignmentsFlash, STUDENT_NOT_FOUND } from './flash';
+import { Text, TextInput } from '@/components/ui/Text';
 
 type Field = keyof AssignmentInput;
 const FIELDS: Field[] = [

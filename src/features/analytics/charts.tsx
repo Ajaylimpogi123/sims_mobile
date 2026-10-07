@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { Text, View, type LayoutChangeEvent } from 'react-native';
+import { View, type LayoutChangeEvent } from 'react-native';
 import { BarChart, LineChart, PieChart } from 'react-native-gifted-charts';
 
 import { Card } from '@/components/ui/Card';
@@ -7,6 +7,8 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { formatShortDate } from '@/lib/datetime';
 import { formatNumber, TABULAR } from '@/lib/format';
 import { chartColors } from '@/theme/colors';
+import { fonts } from '@/theme/fonts';
+import { Text } from '@/components/ui/Text';
 
 /**
  * Chart building blocks for Analytics (react-native-gifted-charts + react-native-svg, both work in
@@ -17,7 +19,7 @@ import { chartColors } from '@/theme/colors';
 
 const CHART_HEIGHT = 170;
 const Y_LABEL_WIDTH = 30;
-const AXIS_TEXT = { color: chartColors.axisText, fontSize: 11 };
+const AXIS_TEXT = { color: chartColors.axisText, fontSize: 11, fontFamily: fonts.regular };
 
 export interface Datum {
   label: string;

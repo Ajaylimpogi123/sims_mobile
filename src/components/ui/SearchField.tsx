@@ -1,8 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { colors } from '@/theme/colors';
+import { TextInput } from './Text';
 
 interface SearchFieldProps {
   /** Website placeholder, e.g. "Filter by student name..." */

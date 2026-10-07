@@ -1,10 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { Href } from 'expo-router';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { formatNumber, TABULAR } from '@/lib/format';
 import { openHref } from '@/navigation/targets';
 import { colors, kpiTones, type KpiTone } from '@/theme/colors';
+import { Text } from '@/components/ui/Text';
 
 export interface StatCardProps {
   title: string;

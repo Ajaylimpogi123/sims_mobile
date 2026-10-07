@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useRef, useState, type ReactNode } from 'react';
-import { Alert, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { Alert, RefreshControl, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { assignmentFromLists, useAssignment, useSetStudentActive } from '@/api/assignments';
@@ -19,6 +19,7 @@ import { TABULAR } from '@/lib/format';
 import { colors } from '@/theme/colors';
 
 import { setAssignmentsFlash, STUDENT_NOT_FOUND, takeAssignmentDetailFlash } from './flash';
+import { Text } from '@/components/ui/Text';
 
 const TITLE = 'Student';
 

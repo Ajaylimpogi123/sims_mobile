@@ -1,7 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { colors } from '@/theme/colors';
+import { Text } from './Text';
 
 /** Same parts as the website's EmptyState: optional icon, optional title, message. */
 export function EmptyState({

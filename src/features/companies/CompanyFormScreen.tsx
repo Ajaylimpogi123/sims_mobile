@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, KeyboardAvoidingView, ScrollView, Text, TextInput, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -25,6 +25,7 @@ import { SkeletonBlock, SkeletonPulse } from '@/components/ui/Skeleton';
 import { TextField } from '@/components/ui/TextField';
 
 import { COMPANY_NOT_FOUND, setCompaniesFlash, setCompanyDetailFlash } from './flash';
+import { Text, TextInput } from '@/components/ui/Text';
 
 type Field = keyof CompanyInput;
 const FIELDS: Field[] = ['company_name', 'address', 'contact_person', 'contact_number', 'email', 'industry', 'slots'];

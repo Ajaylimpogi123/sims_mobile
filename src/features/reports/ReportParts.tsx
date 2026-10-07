@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import type { Report, ReportFilters, ReportStatus, ReportType } from '@/api/types';
 import { Card } from '@/components/ui/Card';
@@ -10,6 +10,7 @@ import { formatDateTime } from '@/lib/datetime';
 import { colors } from '@/theme/colors';
 
 import { formatPeriod, STATUS_LABEL, TYPE_LABEL } from './format';
+import { Text } from '@/components/ui/Text';
 
 /**
  * Report pieces shared by the student's My Reports (Module 7) and staff Report Reviews (Module 11).

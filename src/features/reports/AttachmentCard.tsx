@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { toApiError } from '@/api/errors';
 import { authImageSource } from '@/api/images';
@@ -14,6 +14,7 @@ import { colors } from '@/theme/colors';
 
 import { formatFileSize, KIND_LABEL } from './format';
 import { ImageViewer } from './ImageViewer';
+import { Text } from '@/components/ui/Text';
 
 /** Icon + name + size of an attachment (detail card and form field). */
 export function AttachmentSummary({ name, kind, size, meta }: { name: string; kind: ReportAttachment['kind']; size: number | null; meta?: string }) {

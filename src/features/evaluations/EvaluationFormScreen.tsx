@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { toApiError } from '@/api/errors';
@@ -33,6 +33,7 @@ import { EvaluationStatusBadge } from './EvaluationStatusBadge';
 import { setEvaluationsFlash } from './flash';
 import { responseErrorsByCriterion } from './format';
 import { RatingPicker } from './RatingPicker';
+import { Text } from '@/components/ui/Text';
 
 /** Laravel's wording for the same rules, so a client-side check reads like the server's 422. */
 const RULE_MESSAGES = {

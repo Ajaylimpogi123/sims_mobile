@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -28,6 +28,7 @@ import { colors } from '@/theme/colors';
 import { slotsLabel } from './CompaniesScreen';
 import { SupervisorPickerSheet } from './SupervisorPickerSheet';
 import { COMPANY_NOT_FOUND, setCompaniesFlash, takeCompanyDetailFlash } from './flash';
+import { Text } from '@/components/ui/Text';
 
 const TITLE = 'Company';
 

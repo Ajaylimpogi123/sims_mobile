@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import type { ActionItem, ActivityItem, MeResponse, SupervisedStudentRow, SupervisorKpis } from '@/api/types';
 import { Card } from '@/components/ui/Card';
@@ -11,6 +11,7 @@ import { AnalyticsLink } from './AnalyticsLink';
 import { HoursProgressBar } from './HoursProgressBar';
 import { RecentActivity } from './RecentActivity';
 import { KpiGrid } from './StatCard';
+import { Text } from '@/components/ui/Text';
 
 interface Props {
   kpis: SupervisorKpis;

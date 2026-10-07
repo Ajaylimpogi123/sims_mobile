@@ -9,6 +9,7 @@ import { useUnreadCountPolling } from '@/api/notifications';
 import { useNavigationAccess } from '@/auth/AuthProvider';
 import type { FeatureKey } from '@/navigation/access';
 import { colors } from '@/theme/colors';
+import { fonts } from '@/theme/fonts';
 
 import { NotificationBell } from './NotificationBell';
 
@@ -39,11 +40,11 @@ export function RoleTabs({ routes }: { routes: TabRoute[] }) {
         screenOptions={{
           headerStyle: { backgroundColor: colors.brand700 },
           headerTintColor: colors.white,
-          headerTitleStyle: { fontWeight: '600' },
+          headerTitleStyle: { fontFamily: fonts.semibold },
           headerRight: () => <NotificationBell />,
           tabBarActiveTintColor: colors.brand700,
           tabBarInactiveTintColor: colors.gray500,
-          tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+          tabBarLabelStyle: { fontSize: 11, fontFamily: fonts.semibold },
         }}>
         {routes.map((route) => {
           const tab = navigation.tabs.find((t) => t.key === route.feature);
@@ -58,7 +59,7 @@ export function RoleTabs({ routes }: { routes: TabRoute[] }) {
                   headerShown: route.headerShown ?? true,
                   tabBarBadge:
                     route.feature === 'approvals' && pendingApprovals > 0 ? (pendingApprovals > 99 ? '99+' : pendingApprovals) : undefined,
-                  tabBarBadgeStyle: { backgroundColor: colors.red600, color: colors.white, fontSize: 10, fontWeight: '600' },
+                  tabBarBadgeStyle: { backgroundColor: colors.red600, color: colors.white, fontSize: 10, fontFamily: fonts.semibold },
                   tabBarIcon: ({ color, size, focused }) =>
                     tab ? <Ionicons name={focused ? tab.iconFocused : tab.icon} size={size} color={color} /> : null,
                 }}

@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import type { AnalyticsFilterOptions, AnalyticsFilters } from '@/api/types';
 import { Card } from '@/components/ui/Card';
@@ -8,6 +8,7 @@ import { DateField } from '@/components/ui/DateField';
 import { SelectSheet, type SelectOption } from '@/components/ui/SelectSheet';
 import { todayApiDate } from '@/lib/datetime';
 import { colors } from '@/theme/colors';
+import { Text } from '@/components/ui/Text';
 
 type SelectKey = 'company_id' | 'supervisor_id' | 'student_id';
 

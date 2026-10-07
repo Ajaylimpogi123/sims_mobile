@@ -1,9 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image, type ImageSource } from 'expo-image';
-import { Modal, Pressable, Text, View } from 'react-native';
+import { Modal, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors } from '@/theme/colors';
+import { Text } from '@/components/ui/Text';
 
 /** Full-screen image on black with its name and a close button (like the attendance photo viewer). */
 export function ImageViewer({

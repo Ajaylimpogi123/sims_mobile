@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, View } from 'react-native';
 
 import { isNoStudentProfile } from '@/api/attendance';
 import { toApiError } from '@/api/errors';
@@ -15,6 +15,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { colors } from '@/theme/colors';
 
 import { companySupervisorLine, formatFeedbackPeriod, formatRating } from './format';
+import { Text } from '@/components/ui/Text';
 
 function OverallRating({ item }: { item: FeedbackSummary }) {
   return (

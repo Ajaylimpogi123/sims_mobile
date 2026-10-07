@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Modal, Pressable, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { REJECT_REASON_MAX } from '@/api/approvals';
@@ -7,6 +7,7 @@ import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { formatNumber } from '@/lib/format';
+import { Text } from '@/components/ui/Text';
 
 /** Characters as the server counts them (code points, not UTF-16 units). */
 const countChars = (text: string) => Array.from(text).length;

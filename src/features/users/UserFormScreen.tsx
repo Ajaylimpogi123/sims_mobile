@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { toApiError } from '@/api/errors';
@@ -19,6 +19,7 @@ import { colors } from '@/theme/colors';
 
 import { USER_NOT_FOUND } from './UserDetailScreen';
 import { setUserDetailFlash, setUsersFlash } from './flash';
+import { Text, TextInput } from '@/components/ui/Text';
 
 type Field = keyof UserInput;
 const FIELDS: Field[] = ['name', 'email', 'role_id', 'password', 'password_confirmation'];

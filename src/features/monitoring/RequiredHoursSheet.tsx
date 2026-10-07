@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Modal, Pressable, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { toApiError } from '@/api/errors';
@@ -8,6 +8,7 @@ import type { MonitoredStudent } from '@/api/types';
 import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
+import { Text } from '@/components/ui/Text';
 
 /** Laravel's wording for the same rule, so the client check reads like the server's 422. */
 const INTEGER_MESSAGE = 'The required hours field must be an integer.';

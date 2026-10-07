@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, View } from 'react-native';
 
 import { isNoStudentProfile } from '@/api/attendance';
 import { toApiError } from '@/api/errors';
@@ -18,6 +18,7 @@ import { colors } from '@/theme/colors';
 import { takeReportsFlash } from './flash';
 import { formatPeriod, KIND_LABEL, STATUS_LABEL, TYPE_LABEL } from './format';
 import { ReportFilterChips } from './ReportParts';
+import { Text } from '@/components/ui/Text';
 
 // ---------------------------------------------------------------------------
 // Rows (website: one table row → one card)

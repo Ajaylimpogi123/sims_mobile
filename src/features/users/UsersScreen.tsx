@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useRef, useState, type ReactElement } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 
 import { toApiError } from '@/api/errors';
 import type { ManagedUser, UserFilters, UserStatus } from '@/api/types';
@@ -19,6 +19,7 @@ import { TABULAR } from '@/lib/format';
 import { colors } from '@/theme/colors';
 
 import { takeUsersFlash } from './flash';
+import { Text } from '@/components/ui/Text';
 
 /** Website subtitle (UserManagement/Index.jsx). */
 const SUBTITLE = 'Register users and manage accounts by role';

@@ -1,10 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import type { MeResponse } from '@/api/types';
 import { canUse, featureInfo } from '@/navigation/access';
 import { colors } from '@/theme/colors';
+import { Text } from '@/components/ui/Text';
 
 /** Entry to the Analytics screen (the website's Dashboard "Analytics" tab). Hidden for roles without it. */
 export function AnalyticsLink({ me }: { me: MeResponse | null }) {

@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState, type ReactElement } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 
 import { toApiError } from '@/api/errors';
 import { evaluationKeys, NO_EVALUATION_FILTERS, useEvaluations } from '@/api/evaluations';
@@ -23,6 +23,7 @@ import { formatFeedbackPeriod, formatRating } from '../feedback/format';
 import { EvaluationStatusBadge } from './EvaluationStatusBadge';
 import { takeEvaluationsFlash } from './flash';
 import { STATUS_LABEL } from './format';
+import { Text } from '@/components/ui/Text';
 
 const HIGHLIGHT_MS = 3000;
 

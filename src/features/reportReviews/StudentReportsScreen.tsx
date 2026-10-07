@@ -1,9 +1,10 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import { EmptyState } from '@/components/ui/EmptyState';
 
 import { ReportReviewsList } from './ReportReviewsList';
+import { Text } from '@/components/ui/Text';
 
 /**
  * Route entry: /student-reports/12?name=Juan%20Dela%20Cruz — one student's reports (Report Reviews

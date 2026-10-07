@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import type { AttendanceLeg, AttendanceRecord } from '@/api/types';
 import { StatusBadge } from '@/components/ui/StatusBadge';
@@ -12,6 +12,7 @@ import { MockedLocationBadge } from '../approvals/Evidence';
 
 import { AttendancePhoto } from './AttendancePhoto';
 import { openInMaps } from './photo';
+import { Text } from '@/components/ui/Text';
 
 const LEG_LABEL: Record<AttendanceLeg, string> = { time_in: 'Time In', time_out: 'Time Out' };
 

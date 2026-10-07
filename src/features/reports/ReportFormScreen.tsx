@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MESSAGES, toApiError, type ApiError } from '@/api/errors';
@@ -31,6 +31,7 @@ import { formatNumber } from '@/lib/format';
 import { AttachmentField } from './AttachmentField';
 import { setReportsFlash } from './flash';
 import { TYPE_LABEL } from './format';
+import { Text } from '@/components/ui/Text';
 
 /** The API's cap on Accomplishment Details. */
 const CONTENT_MAX = 16_000;

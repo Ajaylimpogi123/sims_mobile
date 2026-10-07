@@ -1,10 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ReactNode } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import { colors } from '@/theme/colors';
 
 import { Card } from './ui/Card';
+import { Text } from '@/components/ui/Text';
 
 interface PlaceholderScreenProps {
   icon: keyof typeof Ionicons.glyphMap;

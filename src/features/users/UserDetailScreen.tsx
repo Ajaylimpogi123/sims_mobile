@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { Alert, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { Alert, RefreshControl, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { toApiError } from '@/api/errors';
@@ -19,6 +19,7 @@ import { formatDate } from '@/lib/datetime';
 import { colors } from '@/theme/colors';
 
 import { setUsersFlash, takeUserDetailFlash } from './flash';
+import { Text } from '@/components/ui/Text';
 
 const TITLE = 'User';
 export const USER_NOT_FOUND = "We couldn't find that user. It may have been removed.";

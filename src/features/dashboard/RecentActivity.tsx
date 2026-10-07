@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import { router, type Href } from 'expo-router';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { dashboardKeys, setActivityRead } from '@/api/dashboard';
 import { useMarkRead } from '@/api/notifications';
@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { formatRelativeDateTime } from '@/lib/datetime';
 import { hrefForTarget, openHref } from '@/navigation/targets';
 import { colors } from '@/theme/colors';
+import { Text } from '@/components/ui/Text';
 
 /**
  * The website's "Recent Activity" card (notification rows). Own unread rows are marked read when

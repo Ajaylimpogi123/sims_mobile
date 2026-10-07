@@ -1,4 +1,5 @@
-import { Pressable, Text } from 'react-native';
+import { Pressable } from 'react-native';
+import { Text } from './Text';
 
 /** A selectable filter pill (status / type filters above a list). */
 export function FilterChip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {

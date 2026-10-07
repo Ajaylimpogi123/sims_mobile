@@ -1,7 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { ActivityIndicator, Pressable, Text } from 'react-native';
+import { ActivityIndicator, Pressable } from 'react-native';
 
 import { colors } from '@/theme/colors';
+import { Text } from './Text';
 
 type Variant = 'primary' | 'outline' | 'danger' | 'destructive';
 

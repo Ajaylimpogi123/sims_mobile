@@ -4,6 +4,7 @@ import { useNavigationAccess } from '@/auth/AuthProvider';
 import { NotificationBell } from '@/components/NotificationBell';
 import type { FeatureKey } from '@/navigation/access';
 import { colors } from '@/theme/colors';
+import { fonts } from '@/theme/fonts';
 
 /** Keeps the More list under any screen opened straight from elsewhere (e.g. a notification), so Back works. */
 export const unstable_settings = { initialRouteName: 'index' };
@@ -37,7 +38,7 @@ export default function MoreLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: colors.brand700 },
         headerTintColor: colors.white,
-        headerTitleStyle: { fontWeight: '600' },
+        headerTitleStyle: { fontFamily: fonts.semibold },
         headerRight: () => <NotificationBell />,
       }}>
       <Stack.Screen name="index" options={{ title: 'More' }} />

@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { RefreshControl, ScrollView, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, View } from 'react-native';
 
 import { MESSAGES, toApiError } from '@/api/errors';
 import { feedbackFromList, useFeedback } from '@/api/feedback';
@@ -18,6 +18,7 @@ import { colors } from '@/theme/colors';
 
 import { formatFeedbackPeriod, formatRating } from './format';
 import { RatingScale } from './RatingScale';
+import { Text } from '@/components/ui/Text';
 
 const NOT_FOUND = "We couldn't find that evaluation.";
 

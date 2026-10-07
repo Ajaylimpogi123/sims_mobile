@@ -3,7 +3,7 @@ import { CameraView } from 'expo-camera';
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, AppState, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, AppState, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -26,6 +26,7 @@ import { PermissionPrimer } from './PermissionPrimer';
 import { preparePhoto, type PreparedPhoto } from './photo';
 import { useCapturePermissions } from './useCapturePermissions';
 import { useLocationFix } from './useLocationFix';
+import { Text } from '@/components/ui/Text';
 
 /** Same titles, descriptions and submit labels as the website's CaptureDialog. */
 export const CAPTURE_MODES: Record<AttendanceAction, { title: string; description: string; submitLabel: string }> = {

@@ -1,7 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { colors } from '@/theme/colors';
+import { Text } from './Text';
 
 interface PickerFieldProps {
   label: string;

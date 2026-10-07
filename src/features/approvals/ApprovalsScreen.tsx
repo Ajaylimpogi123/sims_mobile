@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, View } from 'react-native';
 
 import { approvalKeys, useApprovals } from '@/api/approvals';
 import { toApiError } from '@/api/errors';
@@ -25,6 +25,7 @@ import { LegActions } from './LegActions';
 import { NoticeBar } from './NoticeBar';
 import { RejectSheet } from './RejectSheet';
 import { useApprovalActions, type ApprovalActions } from './useApprovalActions';
+import { Text } from '@/components/ui/Text';
 
 const HIGHLIGHT_MS = 3000;
 

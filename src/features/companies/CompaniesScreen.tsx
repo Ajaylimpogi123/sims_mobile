@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useRef, useState, type ReactElement } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 
 import { COMPANY_SEARCH_MAX, companyKeys, NO_COMPANY_FILTERS, useCompanies } from '@/api/companies';
 import { toApiError } from '@/api/errors';
@@ -19,6 +19,7 @@ import { TABULAR } from '@/lib/format';
 import { colors } from '@/theme/colors';
 
 import { takeCompaniesFlash } from './flash';
+import { Text } from '@/components/ui/Text';
 
 /** Website subtitle (CompanyManagement/Index.jsx). */
 const SUBTITLE = 'Manage internship partner companies and their available slots';

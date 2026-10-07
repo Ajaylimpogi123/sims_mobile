@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, RefreshControl, ScrollView, View } from 'react-native';
 
 import { EMPTY_ANALYTICS_FILTERS, useAnalytics, useAnalyticsFilterOptions } from '@/api/dashboard';
 import { toApiError } from '@/api/errors';
@@ -26,6 +26,7 @@ import {
   type LineSeries,
 } from './charts';
 import { FilterBar } from './FilterBar';
+import { Text } from '@/components/ui/Text';
 
 /** Series colours by status key, the same as the website's charts. */
 const OUTCOME_COLORS: Record<string, string> = { present: chartColors.positive, rejected: chartColors.rejected };

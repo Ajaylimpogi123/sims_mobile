@@ -1,12 +1,13 @@
 import { Image } from 'expo-image';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors } from '@/theme/colors';
 
 import { Banner } from './ui/Banner';
 import { Button } from './ui/Button';
+import { Text } from '@/components/ui/Text';
 
 interface SplashViewProps {
   /** Shown instead of the spinner, e.g. "Can't reach the server". */

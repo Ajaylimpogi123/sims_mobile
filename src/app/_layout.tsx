@@ -2,6 +2,7 @@ import '@/global.css';
 
 import { QueryClientProvider } from '@tanstack/react-query';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
@@ -14,6 +15,7 @@ import { config } from '@/config';
 import { canUse } from '@/navigation/access';
 import { queryClient } from '@/lib/query-client';
 import { colors } from '@/theme/colors';
+import { fontFiles, fonts } from '@/theme/fonts';
 
 void SplashScreen.preventAutoHideAsync();
 // Expo Go can't customize the splash screen (it logs a warning); real builds fade it out.
@@ -22,10 +24,18 @@ if (Constants.executionEnvironment !== ExecutionEnvironment.StoreClient) {
 }
 
 export default function RootLayout() {
-  // The native splash hands over to <SplashView>, which looks the same, as soon as JS is running.
+  // Figtree (the website's font). If a file fails to load, text falls back to the system font.
+  const [fontsLoaded, fontError] = useFonts(fontFiles);
+  const fontsReady = fontsLoaded || !!fontError;
+
+  // The native splash stays up until the fonts are ready, then hands over to <SplashView>, which looks the same.
   useEffect(() => {
-    SplashScreen.hide();
-  }, []);
+    if (fontsReady) SplashScreen.hide();
+  }, [fontsReady]);
+
+  if (!fontsReady) {
+    return null;
+  }
 
   if (config.configError) {
     return (
@@ -96,7 +106,7 @@ function RootNavigator() {
             animation: 'slide_from_right',
             headerStyle: { backgroundColor: colors.brand700 },
             headerTintColor: colors.white,
-            headerTitleStyle: { fontWeight: '600' },
+            headerTitleStyle: { fontFamily: fonts.semibold },
           }}
         />
       </Stack.Protected>
@@ -110,7 +120,7 @@ function RootNavigator() {
             animation: 'slide_from_bottom',
             headerStyle: { backgroundColor: colors.brand700 },
             headerTintColor: colors.white,
-            headerTitleStyle: { fontWeight: '600' },
+            headerTitleStyle: { fontFamily: fonts.semibold },
           }}
         />
       </Stack.Protected>
@@ -124,7 +134,7 @@ function RootNavigator() {
             animation: 'slide_from_right',
             headerStyle: { backgroundColor: colors.brand700 },
             headerTintColor: colors.white,
-            headerTitleStyle: { fontWeight: '600' },
+            headerTitleStyle: { fontFamily: fonts.semibold },
           }}
         />
         <Stack.Screen
@@ -135,7 +145,7 @@ function RootNavigator() {
             animation: 'slide_from_bottom',
             headerStyle: { backgroundColor: colors.brand700 },
             headerTintColor: colors.white,
-            headerTitleStyle: { fontWeight: '600' },
+            headerTitleStyle: { fontFamily: fonts.semibold },
           }}
         />
       </Stack.Protected>
@@ -149,7 +159,7 @@ function RootNavigator() {
             animation: 'slide_from_right',
             headerStyle: { backgroundColor: colors.brand700 },
             headerTintColor: colors.white,
-            headerTitleStyle: { fontWeight: '600' },
+            headerTitleStyle: { fontFamily: fonts.semibold },
           }}
         />
       </Stack.Protected>
@@ -163,7 +173,7 @@ function RootNavigator() {
             animation: 'slide_from_right',
             headerStyle: { backgroundColor: colors.brand700 },
             headerTintColor: colors.white,
-            headerTitleStyle: { fontWeight: '600' },
+            headerTitleStyle: { fontFamily: fonts.semibold },
           }}
         />
       </Stack.Protected>
@@ -178,7 +188,7 @@ function RootNavigator() {
             animation: 'slide_from_right',
             headerStyle: { backgroundColor: colors.brand700 },
             headerTintColor: colors.white,
-            headerTitleStyle: { fontWeight: '600' },
+            headerTitleStyle: { fontFamily: fonts.semibold },
           }}
         />
         <Stack.Screen
@@ -189,7 +199,7 @@ function RootNavigator() {
             animation: 'slide_from_bottom',
             headerStyle: { backgroundColor: colors.brand700 },
             headerTintColor: colors.white,
-            headerTitleStyle: { fontWeight: '600' },
+            headerTitleStyle: { fontFamily: fonts.semibold },
           }}
         />
       </Stack.Protected>
@@ -204,7 +214,7 @@ function RootNavigator() {
             animation: 'slide_from_right',
             headerStyle: { backgroundColor: colors.brand700 },
             headerTintColor: colors.white,
-            headerTitleStyle: { fontWeight: '600' },
+            headerTitleStyle: { fontFamily: fonts.semibold },
           }}
         />
         <Stack.Screen
@@ -215,7 +225,7 @@ function RootNavigator() {
             animation: 'slide_from_right',
             headerStyle: { backgroundColor: colors.brand700 },
             headerTintColor: colors.white,
-            headerTitleStyle: { fontWeight: '600' },
+            headerTitleStyle: { fontFamily: fonts.semibold },
           }}
         />
       </Stack.Protected>
@@ -230,7 +240,7 @@ function RootNavigator() {
             animation: 'slide_from_right',
             headerStyle: { backgroundColor: colors.brand700 },
             headerTintColor: colors.white,
-            headerTitleStyle: { fontWeight: '600' },
+            headerTitleStyle: { fontFamily: fonts.semibold },
           }}
         />
         <Stack.Screen
@@ -241,7 +251,7 @@ function RootNavigator() {
             animation: 'slide_from_bottom',
             headerStyle: { backgroundColor: colors.brand700 },
             headerTintColor: colors.white,
-            headerTitleStyle: { fontWeight: '600' },
+            headerTitleStyle: { fontFamily: fonts.semibold },
           }}
         />
       </Stack.Protected>
@@ -255,7 +265,7 @@ function RootNavigator() {
             animation: 'slide_from_bottom',
             headerStyle: { backgroundColor: colors.brand700 },
             headerTintColor: colors.white,
-            headerTitleStyle: { fontWeight: '600' },
+            headerTitleStyle: { fontFamily: fonts.semibold },
           }}
         />
       </Stack.Protected>
@@ -270,7 +280,7 @@ function RootNavigator() {
             animation: 'slide_from_right',
             headerStyle: { backgroundColor: colors.brand700 },
             headerTintColor: colors.white,
-            headerTitleStyle: { fontWeight: '600' },
+            headerTitleStyle: { fontFamily: fonts.semibold },
           }}
         />
         <Stack.Screen
@@ -281,7 +291,7 @@ function RootNavigator() {
             animation: 'slide_from_bottom',
             headerStyle: { backgroundColor: colors.brand700 },
             headerTintColor: colors.white,
-            headerTitleStyle: { fontWeight: '600' },
+            headerTitleStyle: { fontFamily: fonts.semibold },
           }}
         />
       </Stack.Protected>
@@ -296,7 +306,7 @@ function RootNavigator() {
             animation: 'slide_from_right',
             headerStyle: { backgroundColor: colors.brand700 },
             headerTintColor: colors.white,
-            headerTitleStyle: { fontWeight: '600' },
+            headerTitleStyle: { fontFamily: fonts.semibold },
           }}
         />
         <Stack.Screen
@@ -307,7 +317,7 @@ function RootNavigator() {
             animation: 'slide_from_bottom',
             headerStyle: { backgroundColor: colors.brand700 },
             headerTintColor: colors.white,
-            headerTitleStyle: { fontWeight: '600' },
+            headerTitleStyle: { fontFamily: fonts.semibold },
           }}
         />
       </Stack.Protected>
@@ -322,7 +332,7 @@ function RootNavigator() {
             animation: 'slide_from_right',
             headerStyle: { backgroundColor: colors.brand700 },
             headerTintColor: colors.white,
-            headerTitleStyle: { fontWeight: '600' },
+            headerTitleStyle: { fontFamily: fonts.semibold },
           }}
         />
         <Stack.Screen
@@ -333,7 +343,7 @@ function RootNavigator() {
             animation: 'slide_from_bottom',
             headerStyle: { backgroundColor: colors.brand700 },
             headerTintColor: colors.white,
-            headerTitleStyle: { fontWeight: '600' },
+            headerTitleStyle: { fontFamily: fonts.semibold },
           }}
         />
       </Stack.Protected>
@@ -347,7 +357,7 @@ function RootNavigator() {
             animation: 'slide_from_right',
             headerStyle: { backgroundColor: colors.brand700 },
             headerTintColor: colors.white,
-            headerTitleStyle: { fontWeight: '600' },
+            headerTitleStyle: { fontFamily: fonts.semibold },
           }}
         />
       </Stack.Protected>

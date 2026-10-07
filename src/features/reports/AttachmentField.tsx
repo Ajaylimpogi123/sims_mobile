@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, View } from 'react-native';
 
 import { authImageSource } from '@/api/images';
 import type { PickedFile } from '@/api/reports';
@@ -11,6 +11,7 @@ import { colors } from '@/theme/colors';
 
 import { ATTACHMENT_HINT, pickAttachment, type AttachmentSource } from './attachment';
 import { AttachmentSummary } from './AttachmentCard';
+import { Text } from '@/components/ui/Text';
 
 const SOURCES: { key: AttachmentSource; label: string; icon: keyof typeof Ionicons.glyphMap; hint: string }[] = [
   { key: 'camera', label: 'Take photo', icon: 'camera-outline', hint: 'Use the camera' },

@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Location from 'expo-location';
-import { ActivityIndicator, Linking, Platform, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Linking, Platform, Pressable, View } from 'react-native';
 
 import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
@@ -9,6 +9,7 @@ import { colors } from '@/theme/colors';
 
 import { formatAccuracy, formatCoordinates, openInMaps } from './photo';
 import { POOR_ACCURACY_M, type LocationFixState } from './useLocationFix';
+import { Text } from '@/components/ui/Text';
 
 const MESSAGES = {
   off: 'Location is turned off on this phone. Turn on Location, then press Try again.',

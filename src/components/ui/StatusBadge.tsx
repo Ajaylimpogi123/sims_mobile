@@ -1,4 +1,5 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from './Text';
 
 /**
  * Status pill, copied from the website's resources/js/Components/StatusBadge.jsx.

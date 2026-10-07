@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import type { ApprovalItem, AttendanceLeg } from '@/api/types';
 import { TABULAR } from '@/lib/format';
@@ -8,6 +8,7 @@ import { colors } from '@/theme/colors';
 import { openInMaps } from '../attendance/photo';
 
 import { isEmergencyLeg, legLabel } from './format';
+import { Text } from '@/components/ui/Text';
 
 /**
  * Website: MockedLocationBadge. Shown only when the phone reported a mocked location

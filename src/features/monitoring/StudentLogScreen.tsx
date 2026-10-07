@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState, type ReactElement } from 'react';
-import { ActivityIndicator, Alert, FlatList, RefreshControl, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, RefreshControl, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { toApiError } from '@/api/errors';
@@ -27,6 +27,7 @@ import { HoursProgressBar } from '../dashboard/HoursProgressBar';
 import { takeMonitoringFlash } from './flash';
 import { hoursColumns, internshipStatus, studentMeta } from './format';
 import { RequiredHoursSheet } from './RequiredHoursSheet';
+import { Text } from '@/components/ui/Text';
 
 const HIGHLIGHT_MS = 3000;
 const GONE_MESSAGE = 'This attendance entry is no longer available. The log has been refreshed.';

@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useRef, useState, type ReactElement } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 
 import { ASSIGNMENT_SEARCH_MAX, assignmentKeys, NO_ASSIGNMENT_FILTERS, useAssignmentOptions, useAssignments } from '@/api/assignments';
 import { toApiError } from '@/api/errors';
@@ -20,6 +20,7 @@ import { TABULAR } from '@/lib/format';
 import { colors } from '@/theme/colors';
 
 import { takeAssignmentsFlash } from './flash';
+import { Text } from '@/components/ui/Text';
 
 /** Website subtitle (InternshipAssignment/Index.jsx). */
 const SUBTITLE = "View and manage every student's profile, company/supervisor assignment, and internship status in one place";

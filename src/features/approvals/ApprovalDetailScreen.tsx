@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { RefreshControl, ScrollView, Text, View } from 'react-native';
+import { RefreshControl, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useApproval } from '@/api/approvals';
@@ -29,6 +29,7 @@ import { LegActions } from './LegActions';
 import { NoticeBar } from './NoticeBar';
 import { RejectSheet } from './RejectSheet';
 import { useApprovalActions, type ApprovalActions } from './useApprovalActions';
+import { Text } from '@/components/ui/Text';
 
 const LEGS: AttendanceLeg[] = ['time_in', 'time_out'];
 

@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, View } from 'react-native';
 
 import { attendanceKeys, isNoStudentProfile, useAttendanceHistory, useAttendanceToday } from '@/api/attendance';
 import { toApiError } from '@/api/errors';
@@ -20,6 +20,7 @@ import { colors } from '@/theme/colors';
 
 import { AttendanceDayCard } from './AttendanceDayCard';
 import { takeAttendanceFlash } from './flash';
+import { Text } from '@/components/ui/Text';
 
 /** How long a record opened from a notification stays highlighted (same as the other lists). */
 const HIGHLIGHT_MS = 3000;
