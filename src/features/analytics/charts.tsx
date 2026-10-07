@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { formatShortDate } from '@/lib/datetime';
 import { formatNumber, TABULAR } from '@/lib/format';
-import { chartColors } from '@/theme/colors';
+import { chartColors, colors } from '@/theme/colors';
 import { fonts } from '@/theme/fonts';
 import { Text } from '@/components/ui/Text';
 
@@ -104,7 +104,7 @@ export function ColumnChart({ data, color, width }: { data: Datum[]; color: stri
       barBorderTopLeftRadius={4}
       barBorderTopRightRadius={4}
       showValuesAsTopLabel
-      topLabelTextStyle={{ ...AXIS_TEXT, color: '#374151', fontVariant: ['tabular-nums'] }}
+      topLabelTextStyle={{ ...AXIS_TEXT, color: colors.gray700, fontVariant: ['tabular-nums'] }}
       disablePress
       disableScroll
     />
@@ -179,9 +179,9 @@ export function DonutChart({ data }: { data: Datum[] }) {
         donut
         radius={76}
         innerRadius={50}
-        innerCircleColor="#ffffff"
+        innerCircleColor={colors.white}
         strokeWidth={2}
-        strokeColor="#ffffff"
+        strokeColor={colors.white}
         centerLabelComponent={() => (
           <View className="items-center">
             <Text className="text-xl font-semibold text-gray-900" style={TABULAR}>
