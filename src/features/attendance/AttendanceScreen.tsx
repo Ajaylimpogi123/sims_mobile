@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
-import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from 'react-native';
 
 import { attendanceKeys, isNoStudentProfile, useAttendanceHistory, useAttendanceToday } from '@/api/attendance';
@@ -20,6 +20,9 @@ import { colors } from '@/theme/colors';
 
 import { AttendanceDayCard } from './AttendanceDayCard';
 import { takeAttendanceFlash } from './flash';
+
+/** How long a record opened from a notification stays highlighted (same as the other lists). */
+const HIGHLIGHT_MS = 3000;
 
 const LEG_LABEL: Record<AttendanceLeg, string> = { time_in: 'Time In', time_out: 'Time Out' };
 
@@ -158,15 +161,21 @@ function TodaySkeleton() {
 // Screen
 // ---------------------------------------------------------------------------
 
-/** Student "My Attendance" tab (website: Attendance/Index.jsx). */
+/**
+ * Student "My Attendance" tab (website: Attendance/Index.jsx). `?attendance_id=` (the attendance_reviewed
+ * notification) highlights that day and scrolls to it, like the website's /my-attendance?highlight=ID.
+ */
 export function AttendanceScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const params = useLocalSearchParams<{ attendance_id?: string }>();
   const today = useAttendanceToday();
   const history = useAttendanceHistory();
   const [pulling, setPulling] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
   const lastOpen = useRef(0);
+  const [highlightId, setHighlightId] = useState<number | null>(null);
+  const listRef = useRef<FlatList<AttendanceRecord>>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -195,6 +204,34 @@ export function AttendanceScreen() {
 
   const noProfile = isNoStudentProfile(today.error) || isNoStudentProfile(history.error);
   const items = noProfile ? [] : (history.data?.pages.flatMap((page) => page.data) ?? []);
+
+  // A notification ("Your time-in was approved") lands here with ?attendance_id=12, once the history is loaded.
+  const targetId = params.attendance_id;
+  const handledTarget = useRef<string | null>(null);
+  const loaded = !history.isPending;
+  useEffect(() => {
+    if (!targetId) {
+      // Cleared (below): the same notification may be tapped again later.
+      handledTarget.current = null;
+      return;
+    }
+    if (!loaded || handledTarget.current === targetId) return;
+    handledTarget.current = targetId;
+    router.setParams({ attendance_id: undefined });
+    if (!/^\d+$/.test(targetId)) return;
+    const id = Number(targetId);
+    const index = items.findIndex((item) => item.id === id);
+    // Not on the loaded pages (an older day): nothing to point at, the list stays as it is.
+    if (index < 0) return;
+    setHighlightId(id);
+    requestAnimationFrame(() => listRef.current?.scrollToIndex({ index, viewPosition: 0.2, animated: true }));
+  }, [targetId, loaded, items, router]);
+
+  useEffect(() => {
+    if (highlightId === null) return;
+    const timer = setTimeout(() => setHighlightId(null), HIGHLIGHT_MS);
+    return () => clearTimeout(timer);
+  }, [highlightId]);
 
   const header = (
     <View className="gap-4 p-4">
@@ -236,11 +273,13 @@ export function AttendanceScreen() {
 
   return (
     <FlatList
+      ref={listRef}
       className="flex-1 bg-gray-50"
       contentContainerClassName="pb-10"
       data={items}
       keyExtractor={(item) => String(item.id)}
-      renderItem={({ item }) => <AttendanceDayCard record={item} />}
+      renderItem={({ item }) => <AttendanceDayCard record={item} highlighted={item.id === highlightId} />}
+      extraData={highlightId}
       ListHeaderComponent={header}
       ListEmptyComponent={empty}
       ListFooterComponent={
@@ -259,6 +298,10 @@ export function AttendanceScreen() {
         if (history.hasNextPage && !history.isFetchingNextPage && !history.isFetchNextPageError) void history.fetchNextPage();
       }}
       onEndReachedThreshold={0.5}
+      onScrollToIndexFailed={({ index, averageItemLength }) => {
+        // Not measured yet: jump near it (below the header), then the highlight is visible on the way.
+        listRef.current?.scrollToOffset({ offset: Math.max(0, index * averageItemLength - 80), animated: true });
+      }}
       initialNumToRender={6}
       windowSize={7}
       refreshControl={<RefreshControl refreshing={pulling} onRefresh={() => void refresh()} colors={[colors.brand700]} />}
