@@ -8,7 +8,8 @@ type Variant = 'primary' | 'outline' | 'danger' | 'destructive';
 
 const containerByVariant: Record<Variant, string> = {
   primary: 'bg-brand-700 active:bg-brand-800',
-  outline: 'border border-brand-700 bg-white active:bg-brand-50',
+  /** The website's outline button: white with a gray border, dark label. */
+  outline: 'border border-gray-300 bg-white active:bg-gray-100',
   danger: 'border border-red-200 bg-white active:bg-red-50',
   /** Solid red, like the website's destructive button (e.g. Submit Emergency Time Out). */
   destructive: 'bg-red-600 active:bg-red-700',
@@ -16,14 +17,14 @@ const containerByVariant: Record<Variant, string> = {
 
 const labelByVariant: Record<Variant, string> = {
   primary: 'text-white',
-  outline: 'text-brand-700',
+  outline: 'text-gray-900',
   danger: 'text-red-600',
   destructive: 'text-white',
 };
 
 const contentColorByVariant: Record<Variant, string> = {
   primary: colors.white,
-  outline: colors.brand700,
+  outline: colors.gray900,
   danger: colors.red600,
   destructive: colors.white,
 };
@@ -67,7 +68,7 @@ export function Button({
       ) : icon ? (
         <Ionicons name={icon} size={18} color={contentColorByVariant[variant]} />
       ) : null}
-      <Text className={`text-base font-semibold ${labelByVariant[variant]}`}>{loading && loadingLabel ? loadingLabel : label}</Text>
+      <Text className={`text-sm font-medium ${labelByVariant[variant]}`}>{loading && loadingLabel ? loadingLabel : label}</Text>
     </Pressable>
   );
 }
