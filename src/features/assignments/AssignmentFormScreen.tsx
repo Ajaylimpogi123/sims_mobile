@@ -26,6 +26,7 @@ import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { SelectSheet, type SelectOption } from '@/components/ui/SelectSheet';
 import { SkeletonBlock, SkeletonPulse } from '@/components/ui/Skeleton';
 import { TextField } from '@/components/ui/TextField';
+import { REQUIRED_HOURS_MAX_LENGTH, requiredHoursError } from '@/lib/requiredHours';
 import { colors } from '@/theme/colors';
 
 import { INTERNSHIP_STATUSES } from './AssignmentsScreen';
@@ -61,9 +62,6 @@ const REQUIRED_HOURS_FOR_ONGOING_HINT = 'Set the required hours before marking t
 
 /** Website wording, also the server's 422 required_hours_locked message. */
 const REQUIRED_HOURS_LOCKED_HINT = "Required hours can't be cleared while the internship is Ongoing.";
-
-/** Laravel's wording for the same rule, so the client check reads like the server's 422. */
-const REQUIRED_HOURS_INTEGER = 'The required hours field must be an integer.';
 
 /** The form's text for a student's required hours: '' when not set (0 means not set, as on the server). */
 function requiredHoursText(hours: number | null | undefined): string | undefined {
@@ -362,8 +360,8 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
     for (const [field, message] of Object.entries(REQUIRED) as [Field, string][]) {
       if (!String(values[field] ?? '').trim()) found[field] = message;
     }
-    const hours = values.required_hours?.trim();
-    if (hours && !/^\d+$/.test(hours)) found.required_hours = REQUIRED_HOURS_INTEGER;
+    const hoursError = values.required_hours !== undefined ? requiredHoursError(values.required_hours) : null;
+    if (hoursError) found.required_hours = hoursError;
     setErrors(found);
     return Object.keys(found).length === 0;
   };
@@ -552,7 +550,7 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
                   clear('internship_status');
                 }}
                 keyboardType="number-pad"
-                maxLength={10}
+                maxLength={REQUIRED_HOURS_MAX_LENGTH}
                 returnKeyType="done"
                 editable={!submitting}
                 error={errors.required_hours}

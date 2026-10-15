@@ -9,9 +9,7 @@ import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { Text } from '@/components/ui/Text';
-
-/** Laravel's wording for the same rule, so the client check reads like the server's 422. */
-const INTEGER_MESSAGE = 'The required hours field must be an integer.';
+import { REQUIRED_HOURS_MAX_LENGTH, requiredHoursError } from '@/lib/requiredHours';
 
 interface RequiredHoursSheetProps {
   student: MonitoredStudent | null;
@@ -47,8 +45,9 @@ export function RequiredHoursSheet({ student, onClose, onSaved }: RequiredHoursS
   const save = async () => {
     if (inFlight.current || !student) return;
     const trimmed = value.trim();
-    if (trimmed && !/^\d+$/.test(trimmed)) {
-      setFieldError(INTEGER_MESSAGE);
+    const invalid = requiredHoursError(trimmed);
+    if (invalid) {
+      setFieldError(invalid);
       return;
     }
     inFlight.current = true;
@@ -94,7 +93,7 @@ export function RequiredHoursSheet({ student, onClose, onSaved }: RequiredHoursS
             autoFocus
             editable={!submitting}
             placeholder="Not set"
-            maxLength={10}
+            maxLength={REQUIRED_HOURS_MAX_LENGTH}
             returnKeyType="done"
             onSubmitEditing={() => void save()}
             error={fieldError}
