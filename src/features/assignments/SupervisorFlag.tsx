@@ -4,7 +4,7 @@ import type { AssignmentStudent } from '@/api/types';
 import { Text } from '@/components/ui/Text';
 
 /** Why a student without a working supervisor matters (form hint and student screen). Website wording. */
-export const NO_SUPERVISOR_HINT = "Without a supervisor, no one can approve this student's attendance or reports.";
+export const NO_SUPERVISOR_HINT = "Without a supervisor, no supervisor will see, approve or evaluate this student's work.";
 
 /** Form hint while the unchanged current supervisor is off the company's roster. Website wording. */
 export const OFF_ROSTER_HINT =
