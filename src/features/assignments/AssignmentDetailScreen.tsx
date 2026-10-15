@@ -19,7 +19,7 @@ import { TABULAR } from '@/lib/format';
 import { colors } from '@/theme/colors';
 
 import { setAssignmentsFlash, STUDENT_NOT_FOUND, takeAssignmentDetailFlash } from './flash';
-import { NO_SUPERVISOR_HINT, SupervisorFlag } from './SupervisorFlag';
+import { NO_SUPERVISOR_HINT, NOT_SUPERVISOR_HINT, SupervisorFlag, supervisorProblem } from './SupervisorFlag';
 import { Text } from '@/components/ui/Text';
 
 const TITLE = 'Student';
@@ -102,6 +102,8 @@ function AssignmentCard({ student }: { student: AssignmentStudent }) {
         </View>
         {student.supervisor_on_roster === false ? (
           <Text className="text-xs text-amber-700">No longer on this company&apos;s roster. The assignment stays until you change it.</Text>
+        ) : supervisorProblem(student) === 'not_supervisor' ? (
+          <Text className="text-xs text-amber-700">{NOT_SUPERVISOR_HINT}</Text>
         ) : student.needs_supervisor ? (
           <Text className="text-xs text-amber-700">{NO_SUPERVISOR_HINT}</Text>
         ) : null}

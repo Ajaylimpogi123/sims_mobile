@@ -28,7 +28,7 @@ import { TextField } from '@/components/ui/TextField';
 
 import { INTERNSHIP_STATUSES } from './AssignmentsScreen';
 import { setAssignmentDetailFlash, setAssignmentsFlash, STUDENT_NOT_FOUND } from './flash';
-import { NO_SUPERVISOR_HINT, OFF_ROSTER_HINT } from './SupervisorFlag';
+import { NO_SUPERVISOR_HINT, NOT_SUPERVISOR_HINT, OFF_ROSTER_HINT, supervisorProblem } from './SupervisorFlag';
 import { Text, TextInput } from '@/components/ui/Text';
 
 type Field = keyof AssignmentInput;
@@ -216,12 +216,18 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
   );
 
   const companies = options.companies;
+  /** The student's current supervisor account no longer has the Supervisor role (server's needs_supervisor). */
+  const currentNotSupervisor = supervisorProblem(student) === 'not_supervisor';
   const selectedCompany = useMemo(() => companies.find((c) => c.id === values.company_id) ?? null, [companies, values.company_id]);
   // Active roster supervisors. The student's current supervisor, if inactive, is listed only for the student's
   // current company: after a company change the server refuses them (supervisor_inactive), so they're dropped.
+  // A current supervisor whose account is no longer a Supervisor is never a roster choice: the server
+  // only lets the student keep them unchanged (shown as kept below), never take them to a new company.
   const rosterFor = (company: AssignmentCompanyOption | null | undefined) =>
     (company?.supervisors ?? []).filter(
-      (s) => s.status === 'active' || (s.id === start.supervisor_id && company?.id === start.company_id),
+      (s) =>
+        !(currentNotSupervisor && s.id === start.supervisor_id) &&
+        (s.status === 'active' || (s.id === start.supervisor_id && company?.id === start.company_id)),
     );
   const roster = rosterFor(selectedCompany);
   const statuses = options.internship_statuses.length > 0 ? options.internship_statuses : INTERNSHIP_STATUSES;
@@ -252,6 +258,7 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
       };
     });
   const companyInactive = selectedCompany?.status === 'inactive';
+  const keptSuffix = currentNotSupervisor ? ' (not a supervisor)' : ' (not on roster)';
   const supervisorOptions: SelectOption[] = [
     ...roster.map((s) => {
       const current = s.id === start.supervisor_id;
@@ -267,15 +274,15 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
       ? [
           {
             value: keptSupervisor.id,
-            // Website option text for an off-roster current supervisor.
-            label: selectedCompany ? `${keptSupervisor.name} (not on roster)` : keptSupervisor.name,
+            // Website option text for a kept current supervisor who is off the roster / no longer a Supervisor.
+            label: selectedCompany ? `${keptSupervisor.name}${keptSuffix}` : keptSupervisor.name,
             hint: 'Current supervisor',
           },
         ]
       : []),
   ];
-  /** The unchanged current supervisor, no longer on the chosen (unchanged) company's roster. */
-  const offRosterKept = !!selectedCompany && !!keptSupervisor && selectedSupervisor?.id === keptSupervisor.id;
+  /** The unchanged current supervisor is selected but off the (unchanged) company's roster or no longer a Supervisor. */
+  const keptFlagged = !!selectedCompany && !!keptSupervisor && selectedSupervisor?.id === keptSupervisor.id;
 
   // Without a company the picker only offers the student's existing supervisor (to keep or clear), as the
   // server accepts that unchanged value; otherwise it waits for a company like the website.
@@ -461,7 +468,7 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
               value={
                 supervisorPickable
                   ? selectedSupervisor
-                    ? `${selectedSupervisor.name}${offRosterKept ? ' (not on roster)' : selectedSupervisor.status === 'inactive' ? ' (inactive)' : ''}`
+                    ? `${selectedSupervisor.name}${keptFlagged ? keptSuffix : selectedSupervisor.status === 'inactive' ? ' (inactive)' : ''}`
                     : 'Unassigned'
                   : null
               }
@@ -476,8 +483,8 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
             {/* A warning only: saving without a supervisor is allowed. */}
             {selectedCompany && values.supervisor_id === null && !errors.supervisor_id ? (
               <Text className="text-xs text-amber-700">{NO_SUPERVISOR_HINT}</Text>
-            ) : offRosterKept && !errors.supervisor_id ? (
-              <Text className="text-xs text-amber-700">{OFF_ROSTER_HINT}</Text>
+            ) : keptFlagged && !errors.supervisor_id ? (
+              <Text className="text-xs text-amber-700">{currentNotSupervisor ? NOT_SUPERVISOR_HINT : OFF_ROSTER_HINT}</Text>
             ) : null}
             {selectedCompany && roster.length === 0 ? (
               <Text className="text-xs text-gray-500">No active supervisors on this company&apos;s roster</Text>
