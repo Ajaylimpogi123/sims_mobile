@@ -17,9 +17,12 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { formatNumber, TABULAR } from '@/lib/format';
 import { colors } from '@/theme/colors';
 
-import { HoursProgressBar } from '../dashboard/HoursProgressBar';
+import { NoticeBar } from '../approvals/NoticeBar';
+import type { Notice } from '../approvals/useApprovalActions';
+import { HoursProgressBar, REQUIRED_HOURS_NOT_SET } from '../dashboard/HoursProgressBar';
 
 import { hoursColumns, internshipStatus, studentMeta } from './format';
+import { RequiredHoursSheet } from './RequiredHoursSheet';
 import { Text } from '@/components/ui/Text';
 
 export type MonitoringKind = 'attendance' | 'progress';
@@ -35,7 +38,7 @@ const SUBTITLE: Record<MonitoringKind, string> = {
 // ---------------------------------------------------------------------------
 
 /** Attendance Monitoring row: Name, Company, Rendered / Required / Remaining Hours (+ status and bar). */
-function AttendanceBody({ student }: { student: MonitoredStudent }) {
+function AttendanceBody({ student, onSetHours }: { student: MonitoredStudent; onSetHours?: () => void }) {
   return (
     <>
       <View className="flex-row gap-2">
@@ -50,22 +53,27 @@ function AttendanceBody({ student }: { student: MonitoredStudent }) {
           </View>
         ))}
       </View>
-      {student.required_hours !== null ? (
-        <HoursProgressBar rendered={student.rendered_hours} required={student.required_hours} percent={student.progress_percent} hideCaption />
-      ) : null}
+      <HoursProgressBar
+        rendered={student.rendered_hours}
+        required={student.required_hours}
+        percent={student.progress_percent}
+        hideCaption
+        onSetRequired={onSetHours}
+      />
     </>
   );
 }
 
-/** Progress Monitoring row: Name, Company, Status, Progress ("120/486 hrs (25%)" or "—"), Remaining Hours. */
-function ProgressBody({ student }: { student: MonitoredStudent }) {
+/** Progress Monitoring row: Name, Company, Status, Progress ("120/486 hrs (25%)" or "Required hours not set"), Remaining Hours. */
+function ProgressBody({ student, onSetHours }: { student: MonitoredStudent; onSetHours?: () => void }) {
   return (
     <>
-      {student.required_hours !== null ? (
-        <HoursProgressBar rendered={student.rendered_hours} required={student.required_hours} percent={student.progress_percent} />
-      ) : (
-        <Text className="text-xs text-gray-500">Progress: —</Text>
-      )}
+      <HoursProgressBar
+        rendered={student.rendered_hours}
+        required={student.required_hours}
+        percent={student.progress_percent}
+        onSetRequired={onSetHours}
+      />
       <Text className="text-sm text-gray-600" style={TABULAR}>
         Remaining Hours:{' '}
         <Text className="font-medium text-gray-900">{student.remaining_hours !== null ? formatNumber(student.remaining_hours) : '—'}</Text>
@@ -74,14 +82,29 @@ function ProgressBody({ student }: { student: MonitoredStudent }) {
   );
 }
 
-function StudentCard({ student, kind, onOpen }: { student: MonitoredStudent; kind: MonitoringKind; onOpen: () => void }) {
+interface StudentCardProps {
+  student: MonitoredStudent;
+  kind: MonitoringKind;
+  onOpen: () => void;
+  onSetHours: () => void;
+}
+
+function StudentCard({ student, kind, onOpen, onSetHours }: StudentCardProps) {
   const meta = studentMeta(student);
+  // Website: a "Set" link next to "Required hours not set", only for roles that may edit them.
+  const canSet = student.required_hours === null && student.can_edit_required_hours;
+  const setHours = canSet ? onSetHours : undefined;
   return (
     <Pressable
       onPress={onOpen}
       accessibilityRole="button"
-      accessibilityLabel={`${student.name}, ${meta}`}
+      accessibilityLabel={`${student.name}, ${meta}${student.required_hours === null ? `, ${REQUIRED_HOURS_NOT_SET}` : ''}`}
       accessibilityHint="Opens the attendance log"
+      // The card is one screen-reader stop, so its inner "Set" link is also offered as an action.
+      accessibilityActions={canSet ? [{ name: 'setRequiredHours', label: 'Set Required Hours' }] : undefined}
+      onAccessibilityAction={(event) => {
+        if (event.nativeEvent.actionName === 'setRequiredHours') onSetHours();
+      }}
       className="mx-4 mb-3 gap-3 rounded-xl border border-gray-200 bg-white p-4 active:bg-gray-50">
       <View className="flex-row items-start gap-2">
         <View className="flex-1 gap-0.5">
@@ -95,7 +118,7 @@ function StudentCard({ student, kind, onOpen }: { student: MonitoredStudent; kin
         <StatusBadge status={internshipStatus(student)} />
         <Ionicons name="chevron-forward" size={18} color={colors.gray400} />
       </View>
-      {kind === 'attendance' ? <AttendanceBody student={student} /> : <ProgressBody student={student} />}
+      {kind === 'attendance' ? <AttendanceBody student={student} onSetHours={setHours} /> : <ProgressBody student={student} onSetHours={setHours} />}
     </Pressable>
   );
 }
@@ -139,6 +162,9 @@ export function StudentList({ kind, top }: StudentListProps) {
   const query = useMonitoringList(kind === 'attendance' ? 'students' : 'progress', search);
   const [pulling, setPulling] = useState(false);
   const lastOpen = useRef(0);
+  const [hoursStudent, setHoursStudent] = useState<MonitoredStudent | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
+  const dismissNotice = useCallback(() => setNotice(null), []);
 
   const items = query.data?.pages.flatMap((page) => page.data) ?? [];
   const total = query.data?.pages[0]?.meta.total;
@@ -208,34 +234,57 @@ export function StudentList({ kind, top }: StudentListProps) {
   }
 
   return (
-    <FlatList
-      className="flex-1 bg-gray-50"
-      contentContainerClassName="pb-8"
-      data={items}
-      keyExtractor={(item) => String(item.id)}
-      renderItem={({ item }) => <StudentCard student={item} kind={kind} onOpen={() => open(item.id)} />}
-      ListHeaderComponent={header}
-      ListEmptyComponent={empty}
-      ListFooterComponent={
-        query.isFetchingNextPage ? (
-          <View className="py-6">
-            <ActivityIndicator color={colors.brand700} accessibilityLabel="Loading more students" />
-          </View>
-        ) : query.isFetchNextPageError ? (
-          <View className="items-center gap-2 px-4 py-6">
-            <Text className="text-center text-sm text-gray-600">{toApiError(query.error).message}</Text>
-            <Button label="Try again" variant="outline" onPress={() => void query.fetchNextPage()} />
-          </View>
-        ) : null
-      }
-      onEndReached={() => {
-        if (query.hasNextPage && !query.isFetchingNextPage && !query.isFetchNextPageError) void query.fetchNextPage();
-      }}
-      onEndReachedThreshold={0.5}
-      keyboardShouldPersistTaps="handled"
-      initialNumToRender={8}
-      windowSize={7}
-      refreshControl={<RefreshControl refreshing={pulling} onRefresh={() => void refresh()} colors={[colors.brand700]} />}
-    />
+    <View className="flex-1 bg-gray-50">
+      <FlatList
+        className="flex-1"
+        contentContainerClassName="pb-8"
+        data={items}
+        keyExtractor={(item) => String(item.id)}
+        renderItem={({ item }) => (
+          <StudentCard
+            student={item}
+            kind={kind}
+            onOpen={() => open(item.id)}
+            onSetHours={() => {
+              setNotice(null);
+              setHoursStudent(item);
+            }}
+          />
+        )}
+        ListHeaderComponent={header}
+        ListEmptyComponent={empty}
+        ListFooterComponent={
+          query.isFetchingNextPage ? (
+            <View className="py-6">
+              <ActivityIndicator color={colors.brand700} accessibilityLabel="Loading more students" />
+            </View>
+          ) : query.isFetchNextPageError ? (
+            <View className="items-center gap-2 px-4 py-6">
+              <Text className="text-center text-sm text-gray-600">{toApiError(query.error).message}</Text>
+              <Button label="Try again" variant="outline" onPress={() => void query.fetchNextPage()} />
+            </View>
+          ) : null
+        }
+        onEndReached={() => {
+          if (query.hasNextPage && !query.isFetchingNextPage && !query.isFetchNextPageError) void query.fetchNextPage();
+        }}
+        onEndReachedThreshold={0.5}
+        keyboardShouldPersistTaps="handled"
+        initialNumToRender={8}
+        windowSize={7}
+        refreshControl={<RefreshControl refreshing={pulling} onRefresh={() => void refresh()} colors={[colors.brand700]} />}
+      />
+
+      <NoticeBar notice={notice} onDismiss={dismissNotice} />
+
+      <RequiredHoursSheet
+        student={hoursStudent}
+        onClose={() => setHoursStudent(null)}
+        onSaved={(message) => {
+          setHoursStudent(null);
+          setNotice({ tone: 'success', message });
+        }}
+      />
+    </View>
   );
 }
