@@ -951,6 +951,8 @@ export interface AssignmentSupervisor {
   status: 'active' | 'inactive';
 }
 
+export type SupervisorIssue = 'no_supervisor' | 'not_on_roster' | 'not_a_supervisor' | 'inactive';
+
 /** One student in GET /assignments and GET /assignments/{id}. The flags are the server's decision. */
 export interface AssignmentStudent {
   id: number;
@@ -968,12 +970,20 @@ export interface AssignmentStudent {
   /** null when no supervisor; false = the supervisor was later removed from the company's roster (still valid). */
   supervisor_on_roster: boolean | null;
   /**
-   * Has a company but no supervisor, or one no longer on its roster (never true without a company;
-   * an inactive supervisor alone doesn't count). Same rows as the needs_supervisor=1 filter.
+   * Has a company but no working supervisor: none, one off its roster, one whose account is no longer
+   * a Supervisor, or one whose account is inactive (never true without a company). Same rows as the
+   * needs_supervisor=1 filter.
    */
   needs_supervisor: boolean;
+  /**
+   * Why needs_supervisor is true (null exactly when it's false); first match wins in this order.
+   * Optional: an older server doesn't send it (the app then derives it from the other fields).
+   */
+  supervisor_issue?: SupervisorIssue | null;
   internship_status: InternshipStatus;
   internship_schedule: string | null;
+  /** null = not set. Moving a student into Ongoing needs it (422 code required_hours_missing). */
+  required_hours?: number | null;
   /** ISO 8601 */
   created_at: string | null;
   updated_at: string | null;

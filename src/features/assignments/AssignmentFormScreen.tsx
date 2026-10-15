@@ -1,3 +1,4 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -25,6 +26,7 @@ import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { SelectSheet, type SelectOption } from '@/components/ui/SelectSheet';
 import { SkeletonBlock, SkeletonPulse } from '@/components/ui/Skeleton';
 import { TextField } from '@/components/ui/TextField';
+import { colors } from '@/theme/colors';
 
 import { INTERNSHIP_STATUSES } from './AssignmentsScreen';
 import { setAssignmentDetailFlash, setAssignmentsFlash, STUDENT_NOT_FOUND } from './flash';
@@ -52,6 +54,9 @@ const REQUIRED: Partial<Record<Field, string>> = {
   course: 'The course field is required.',
   section: 'The section field is required.',
 };
+
+/** Website wording (StudentModal), also the server's 422 required_hours_missing message. */
+const REQUIRED_HOURS_FOR_ONGOING_HINT = "Set this student's required hours in Attendance Monitoring before marking the internship Ongoing.";
 
 /** 422 refusal codes whose message belongs to a picker; the options are refreshed so the counts match. */
 const OPTION_CODES: Record<string, 'company_id' | 'supervisor_id'> = {
@@ -284,6 +289,11 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
   /** The unchanged current supervisor is selected but off the (unchanged) company's roster or no longer a Supervisor. */
   const keptFlagged = !!selectedCompany && !!keptSupervisor && selectedSupervisor?.id === keptSupervisor.id;
 
+  // The server refuses moving a student INTO Ongoing without required hours (null or 0; 422 on
+  // internship_status). Keeping an already-Ongoing status unchanged is allowed, so no hint then.
+  const needsRequiredHoursForOngoing =
+    values.internship_status === 'ongoing' && student.internship_status !== 'ongoing' && (student.required_hours === null || student.required_hours === 0);
+
   // Without a company the picker only offers the student's existing supervisor (to keep or clear), as the
   // server accepts that unchanged value; otherwise it waits for a company like the website.
   const supervisorPickable = !!selectedCompany || keptSupervisor !== null;
@@ -492,14 +502,23 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
               <Text className="text-xs text-amber-700">This company is inactive. Activate it in Company Management before assigning a new supervisor.</Text>
             ) : null}
           </View>
-          <SegmentedControl<InternshipStatus>
-            label="Internship Status"
-            options={statuses}
-            value={values.internship_status}
-            onChange={(value) => set('internship_status', value)}
-            disabled={submitting}
-            error={errors.internship_status}
-          />
+          <View className="gap-1">
+            <SegmentedControl<InternshipStatus>
+              label="Internship Status"
+              options={statuses}
+              value={values.internship_status}
+              onChange={(value) => set('internship_status', value)}
+              disabled={submitting}
+              error={errors.internship_status}
+            />
+            {/* A warning only: the server decides (its 422 shows under the field instead). */}
+            {needsRequiredHoursForOngoing && !errors.internship_status ? (
+              <View className="flex-row items-start gap-1.5" accessibilityRole="alert">
+                <Ionicons name="warning-outline" size={14} color={colors.amber600} style={{ marginTop: 1 }} />
+                <Text className="flex-1 text-xs text-amber-700">{REQUIRED_HOURS_FOR_ONGOING_HINT}</Text>
+              </View>
+            ) : null}
+          </View>
           <TextField
             label="Internship Schedule"
             placeholder="e.g. Mon-Fri, 8:00 AM - 5:00 PM"
