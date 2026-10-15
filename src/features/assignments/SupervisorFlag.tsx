@@ -3,8 +3,12 @@ import { View } from 'react-native';
 import type { AssignmentStudent } from '@/api/types';
 import { Text } from '@/components/ui/Text';
 
-/** Why a student without a working supervisor matters (form hint and student screen). */
+/** Why a student without a working supervisor matters (form hint and student screen). Website wording. */
 export const NO_SUPERVISOR_HINT = "Without a supervisor, no one can approve this student's attendance or reports.";
+
+/** Form hint while the unchanged current supervisor is off the company's roster. Website wording. */
+export const OFF_ROSTER_HINT =
+  "This supervisor is no longer on this company's roster. Choose one from the roster, or add them back in Company Management.";
 
 type Flaggable = Pick<AssignmentStudent, 'needs_supervisor' | 'supervisor' | 'supervisor_on_roster'>;
 
