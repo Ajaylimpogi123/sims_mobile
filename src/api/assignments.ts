@@ -34,6 +34,8 @@ export const assignmentKeys = {
   list: (filters: AssignmentFilters) => ['assignments', 'list', filters] as const,
   detail: (id: number) => ['assignments', 'detail', id] as const,
   options: ['assignments', 'options'] as const,
+  /** Not under `lists`: assignmentFromLists() reads every `lists` entry as pages of rows. */
+  needsSupervisorCount: ['assignments', 'needs-supervisor-count'] as const,
 };
 
 export const NO_ASSIGNMENT_FILTERS: AssignmentFilters = {
@@ -62,6 +64,12 @@ export async function getAssignments(filters: AssignmentFilters, page: number): 
     },
   });
   return data;
+}
+
+/** How many students the server flags needs_supervisor (all of them, ignoring the list's other filters). */
+export async function getNeedsSupervisorCount(): Promise<number> {
+  const { data } = await api.get<AssignmentsPage>('/assignments', { params: { per_page: 1, needs_supervisor: 1 } });
+  return data.meta.total;
 }
 
 export async function getAssignment(id: number): Promise<AssignmentStudent> {
@@ -134,6 +142,11 @@ export function useAssignments(filters: AssignmentFilters) {
   });
 }
 
+/** The "Needs supervisor (N)" chip's N. */
+export function useNeedsSupervisorCount() {
+  return useQuery({ queryKey: assignmentKeys.needsSupervisorCount, queryFn: getNeedsSupervisorCount, staleTime: 30_000 });
+}
+
 /** A row already loaded by a list, to show the detail at once while it loads. */
 export function assignmentFromLists(queryClient: QueryClient, id: number): AssignmentStudent | undefined {
   for (const query of queryClient.getQueryCache().findAll({ queryKey: assignmentKeys.lists })) {
@@ -171,6 +184,7 @@ export function useAssignmentOptions(enabled = true) {
 export function refreshAfterAssignmentWrite(queryClient: QueryClient, id?: number) {
   void queryClient.invalidateQueries({ queryKey: assignmentKeys.lists });
   void queryClient.invalidateQueries({ queryKey: assignmentKeys.options });
+  void queryClient.invalidateQueries({ queryKey: assignmentKeys.needsSupervisorCount });
   if (id !== undefined) void queryClient.invalidateQueries({ queryKey: assignmentKeys.detail(id) });
   void queryClient.invalidateQueries({ queryKey: companyKeys.all });
   void queryClient.invalidateQueries({ queryKey: userKeys.all });

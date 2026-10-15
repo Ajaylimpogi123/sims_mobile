@@ -4,7 +4,14 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState, type ReactElement, type ReactNode } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 
-import { ASSIGNMENT_SEARCH_MAX, assignmentKeys, NO_ASSIGNMENT_FILTERS, useAssignmentOptions, useAssignments } from '@/api/assignments';
+import {
+  ASSIGNMENT_SEARCH_MAX,
+  assignmentKeys,
+  NO_ASSIGNMENT_FILTERS,
+  useAssignmentOptions,
+  useAssignments,
+  useNeedsSupervisorCount,
+} from '@/api/assignments';
 import { toApiError } from '@/api/errors';
 import type { AssignmentFilters, AssignmentStudent, InternshipStatus } from '@/api/types';
 import { Banner } from '@/components/ui/Banner';
@@ -16,7 +23,7 @@ import { SearchField } from '@/components/ui/SearchField';
 import { SelectSheet } from '@/components/ui/SelectSheet';
 import { SkeletonBlock, SkeletonPulse } from '@/components/ui/Skeleton';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { TABULAR } from '@/lib/format';
+import { formatNumber, TABULAR } from '@/lib/format';
 import { colors } from '@/theme/colors';
 
 import { takeAssignmentsFlash } from './flash';
@@ -137,6 +144,7 @@ export function AssignmentsScreen() {
   const students = useAssignments(filters);
   const [companyPicker, setCompanyPicker] = useState(false);
   const options = useAssignmentOptions();
+  const needsSupervisor = useNeedsSupervisorCount();
   const [pulling, setPulling] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
   const lastOpen = useRef(0);
@@ -162,6 +170,7 @@ export function AssignmentsScreen() {
       const message = takeAssignmentsFlash();
       if (message) setFlash(message);
       void queryClient.refetchQueries({ queryKey: assignmentKeys.lists, stale: true, type: 'active' });
+      void queryClient.refetchQueries({ queryKey: assignmentKeys.needsSupervisorCount, stale: true, type: 'active' });
     }, [queryClient]),
   );
 
@@ -177,7 +186,7 @@ export function AssignmentsScreen() {
   const refresh = async () => {
     setPulling(true);
     try {
-      await Promise.all([students.refetch(), options.refetch()]);
+      await Promise.all([students.refetch(), options.refetch(), needsSupervisor.refetch()]);
     } finally {
       setPulling(false);
     }
@@ -230,7 +239,9 @@ export function AssignmentsScreen() {
           <Ionicons name="chevron-down" size={16} color={filters.company_id !== null ? colors.brand700 : colors.gray500} />
         </Pressable>
         <FilterChip
-          label="Needs Supervisor"
+          // Website toggle: "Needs supervisor (N)", disabled while off when nobody needs one.
+          label={needsSupervisor.data === undefined ? 'Needs supervisor' : `Needs supervisor (${formatNumber(needsSupervisor.data)})`}
+          disabled={!filters.needs_supervisor && needsSupervisor.data === 0}
           selected={filters.needs_supervisor}
           onPress={() => setFilters((f) => ({ ...f, needs_supervisor: !f.needs_supervisor }))}
         />
@@ -277,7 +288,8 @@ export function AssignmentsScreen() {
       </View>
     );
   } else if (onlyNeedsSupervisor) {
-    empty = <EmptyState icon="checkmark-circle-outline" message="Every student with a company has a supervisor." />;
+    // Website filtered-empty text.
+    empty = <EmptyState icon="checkmark-circle-outline" message="Every placed student has a supervisor on their company's roster." />;
   } else if (filtered) {
     empty = <EmptyState icon="filter-outline" message="No students match these filters." />;
   } else {
