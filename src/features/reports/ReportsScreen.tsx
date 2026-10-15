@@ -1,11 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, View } from 'react-native';
 
 import { isNoStudentProfile } from '@/api/attendance';
 import { toApiError } from '@/api/errors';
-import { NO_REPORT_FILTERS, useReports } from '@/api/reports';
+import { NO_REPORT_FILTERS, reportKeys, useReports } from '@/api/reports';
 import type { Report, ReportFilters } from '@/api/types';
 import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
@@ -101,11 +102,14 @@ export function ReportsScreen() {
   const [flash, setFlash] = useState<string | null>(null);
   const lastOpen = useRef(0);
 
+  const queryClient = useQueryClient();
   useFocusEffect(
     useCallback(() => {
       const message = takeReportsFlash();
       if (message) setFlash(message);
-    }, []),
+      // Back from another tab: refresh old data, so New Report follows the internship status.
+      void queryClient.refetchQueries({ queryKey: reportKeys.lists, stale: true, type: 'active' });
+    }, [queryClient]),
   );
 
   const open = useCallback(
