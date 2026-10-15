@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { formatDate, formatTime } from '@/lib/datetime';
 import { capitalize, formatNumber, TABULAR } from '@/lib/format';
+import { submissionClosedMessage } from '@/lib/submission';
 import { hrefForFeature } from '@/navigation/access';
 import { openHref } from '@/navigation/targets';
 import { colors } from '@/theme/colors';
@@ -55,9 +56,13 @@ export function StudentDashboard({ data, me }: { data: StudentData | null; me: M
   const { internship, hours, today_attendance: today, reports, recent_reports: recent } = data;
   const attendanceHref = hrefForFeature('attendance', me);
   const reportsHref = hrefForFeature('my-reports', me);
+  // Website (StudentSummary): attendance and reports are accepted only while the internship is Ongoing.
+  const closedMessage = internship.can_submit === false ? submissionClosedMessage(internship.status) : null;
 
   return (
     <View className="gap-4">
+      {closedMessage ? <Banner tone="warning" message={closedMessage} /> : null}
+
       {/* Hours Rendered + Hours Progress (two web cards, one here) */}
       <Card title="Hours Progress">
         <View className="flex-row items-baseline gap-1.5" accessible accessibilityLabel={`Hours rendered: ${formatNumber(hours.rendered)}${hours.required !== null ? ` of ${formatNumber(hours.required)} required` : `, ${REQUIRED_HOURS_NOT_SET}`}`}>
