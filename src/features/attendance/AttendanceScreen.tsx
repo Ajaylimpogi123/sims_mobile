@@ -16,6 +16,7 @@ import { SkeletonBlock, SkeletonPulse } from '@/components/ui/Skeleton';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { formatLongDate, formatTime } from '@/lib/datetime';
 import { formatNumber, TABULAR } from '@/lib/format';
+import { submissionClosedMessage } from '@/lib/submission';
 import { colors } from '@/theme/colors';
 
 import { AttendanceDayCard } from './AttendanceDayCard';
@@ -74,10 +75,28 @@ function TodayLeg({ record, leg }: { record: AttendanceRecord | null; leg: Atten
   );
 }
 
+/**
+ * While submissions are closed (internship not Ongoing) the server allows no action. Like the website,
+ * keep showing the step the day is at, disabled, with the amber banner above explaining why.
+ */
+function closedSteps(record: AttendanceRecord | null) {
+  const timeIn = record?.time_in_status ?? null;
+  const timeOut = record?.time_out_status ?? null;
+  const timeOutDone = timeOut === 'pending' || timeOut === 'approved';
+  return {
+    time_in: (!timeIn || timeIn === 'rejected') && !timeOutDone,
+    time_out: timeIn === 'approved' && !timeOutDone,
+    emergency_time_out: !!record?.time_in && timeIn !== 'rejected' && !timeOutDone,
+  };
+}
+
 function TodayCard({ today, onAction }: { today: AttendanceToday; onAction: (action: AttendanceAction) => void }) {
   const { record, actions } = today;
+  const closed = today.submission?.can_submit === false;
+  const disabledSteps = closed ? closedSteps(record) : null;
   // Only what the server allows; otherwise the server's reason for the next step (time out once time-in is used).
-  const blockedReason = !actions.time_in.allowed && !actions.time_out.allowed ? actions.time_out.reason : null;
+  // While closed, the amber banner at the top says why instead.
+  const blockedReason = !closed && !actions.time_in.allowed && !actions.time_out.allowed ? actions.time_out.reason : null;
 
   return (
     <Card title={`Today — ${formatLongDate(today.date)}`}>
@@ -93,11 +112,11 @@ function TodayCard({ today, onAction }: { today: AttendanceToday; onAction: (act
       ) : null}
 
       <View className="mt-4 gap-3">
-        {actions.time_in.allowed ? (
-          <Button label="Time In" icon="log-in-outline" onPress={() => onAction('time_in')} />
+        {actions.time_in.allowed || disabledSteps?.time_in ? (
+          <Button label="Time In" icon="log-in-outline" disabled={!actions.time_in.allowed} onPress={() => onAction('time_in')} />
         ) : null}
-        {actions.time_out.allowed ? (
-          <Button label="Time Out" icon="log-out-outline" onPress={() => onAction('time_out')} />
+        {actions.time_out.allowed || disabledSteps?.time_out ? (
+          <Button label="Time Out" icon="log-out-outline" disabled={!actions.time_out.allowed} onPress={() => onAction('time_out')} />
         ) : null}
         {blockedReason ? <Banner tone="info" message={blockedReason} /> : null}
         <Text className="text-xs text-gray-500">
@@ -105,12 +124,14 @@ function TodayCard({ today, onAction }: { today: AttendanceToday; onAction: (act
         </Text>
       </View>
 
-      {actions.emergency_time_out.allowed ? (
+      {actions.emergency_time_out.allowed || disabledSteps?.emergency_time_out ? (
         <View className="mt-3 border-t border-gray-100 pt-2">
           <Pressable
             onPress={() => onAction('emergency_time_out')}
+            disabled={!actions.emergency_time_out.allowed}
             accessibilityRole="button"
-            className="min-h-11 flex-row items-center gap-2 rounded-md active:bg-red-50">
+            accessibilityState={{ disabled: !actions.emergency_time_out.allowed }}
+            className={`min-h-11 flex-row items-center gap-2 rounded-md active:bg-red-50 ${actions.emergency_time_out.allowed ? '' : 'opacity-50'}`}>
             <Ionicons name="warning-outline" size={18} color={colors.red600} />
             <Text className="flex-1 text-sm font-medium text-red-600">
               Report Emergency (time out without an approved time-in)
@@ -204,6 +225,9 @@ export function AttendanceScreen() {
   };
 
   const noProfile = isNoStudentProfile(today.error) || isNoStudentProfile(history.error);
+  const submission = today.data?.submission;
+  const closedMessage =
+    submission && !submission.can_submit ? submissionClosedMessage(submission.internship_status, submission.reason) : null;
   const items = noProfile ? [] : (history.data?.pages.flatMap((page) => page.data) ?? []);
 
   // A notification ("Your time-in was approved") lands here with ?attendance_id=12, once the history is loaded.
@@ -241,6 +265,7 @@ export function AttendanceScreen() {
         <Banner tone="warning" message={toApiError(today.error ?? history.error).message} />
       ) : today.data ? (
         <>
+          {closedMessage ? <Banner tone="warning" message={closedMessage} /> : null}
           {today.isRefetchError ? (
             <Banner tone="warning" message={`Showing saved data. ${toApiError(today.error).message}`} />
           ) : null}

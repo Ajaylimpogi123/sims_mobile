@@ -28,6 +28,17 @@ export interface IdName {
   name: string;
 }
 
+/**
+ * Whether the student may submit attendance and reports: only while the internship is Ongoing
+ * (enforced by the API). `reason` is null when allowed, else the server's refusal text.
+ * Optional where it was added later, so an older server reads as "allowed" (the API still refuses).
+ */
+export interface SubmissionState {
+  can_submit: boolean;
+  internship_status: InternshipStatus | null;
+  reason: string | null;
+}
+
 export interface StudentProfile {
   /** Student record id (not the user id). */
   id: number;
@@ -35,6 +46,8 @@ export interface StudentProfile {
   course: string;
   section: string;
   internship_status: InternshipStatus;
+  /** Attendance and reports are accepted only while Ongoing (see SubmissionState). */
+  can_submit?: boolean;
   /** null = not set yet */
   required_hours: number | null;
   /** null = not assigned to a company yet */
@@ -210,6 +223,8 @@ export interface DashboardReportRow {
 export interface StudentDashboard {
   internship: {
     status: InternshipStatus;
+    /** Attendance and reports are accepted only while Ongoing. */
+    can_submit?: boolean;
     company: IdName | null;
     supervisor: IdName | null;
   };
@@ -392,6 +407,8 @@ export interface AttendanceToday {
   record: AttendanceRecord | null;
   actions: Record<AttendanceAction, AttendanceActionState>;
   hours: { rendered: number; required: number | null; remaining: number | null };
+  /** When not Ongoing every action is { allowed: false, reason: <Ongoing message> }; this drives the banner. */
+  submission?: SubmissionState;
 }
 
 /** POST /attendance/{time-in|time-out|emergency-time-out} → message + the fresh today state. */
@@ -455,6 +472,8 @@ export interface ReportsPage {
     per_page: number;
     next_cursor: string | null;
     has_more: boolean;
+    /** New / Edit report are accepted only while Ongoing. */
+    submission?: SubmissionState;
   };
 }
 
