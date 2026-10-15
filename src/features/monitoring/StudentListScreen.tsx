@@ -64,16 +64,14 @@ function AttendanceBody({ student, onSetHours }: { student: MonitoredStudent; on
   );
 }
 
-/** Progress Monitoring row: Name, Company, Status, Progress ("120/486 hrs (25%)" or "Required hours not set"), Remaining Hours. */
-function ProgressBody({ student, onSetHours }: { student: MonitoredStudent; onSetHours?: () => void }) {
+/**
+ * Progress Monitoring row: Name, Company, Status, Progress ("120/486 hrs (25%)" or "Required hours not set",
+ * text only like the website's page, which has no Required Hours action), Remaining Hours.
+ */
+function ProgressBody({ student }: { student: MonitoredStudent }) {
   return (
     <>
-      <HoursProgressBar
-        rendered={student.rendered_hours}
-        required={student.required_hours}
-        percent={student.progress_percent}
-        onSetRequired={onSetHours}
-      />
+      <HoursProgressBar rendered={student.rendered_hours} required={student.required_hours} percent={student.progress_percent} />
       <Text className="text-sm text-gray-600" style={TABULAR}>
         Remaining Hours:{' '}
         <Text className="font-medium text-gray-900">{student.remaining_hours !== null ? formatNumber(student.remaining_hours) : '—'}</Text>
@@ -91,8 +89,8 @@ interface StudentCardProps {
 
 function StudentCard({ student, kind, onOpen, onSetHours }: StudentCardProps) {
   const meta = studentMeta(student);
-  // Website: a "Set" link next to "Required hours not set", only for roles that may edit them.
-  const canSet = student.required_hours === null && student.can_edit_required_hours;
+  // Website (Attendance Monitoring only): a "Set" link next to "Required hours not set", for roles that may edit them.
+  const canSet = kind === 'attendance' && student.required_hours === null && student.can_edit_required_hours;
   const setHours = canSet ? onSetHours : undefined;
   return (
     <Pressable
@@ -118,7 +116,7 @@ function StudentCard({ student, kind, onOpen, onSetHours }: StudentCardProps) {
         <StatusBadge status={internshipStatus(student)} />
         <Ionicons name="chevron-forward" size={18} color={colors.gray400} />
       </View>
-      {kind === 'attendance' ? <AttendanceBody student={student} onSetHours={setHours} /> : <ProgressBody student={student} onSetHours={setHours} />}
+      {kind === 'attendance' ? <AttendanceBody student={student} onSetHours={setHours} /> : <ProgressBody student={student} />}
     </Pressable>
   );
 }

@@ -13,7 +13,7 @@ import { hrefForFeature } from '@/navigation/access';
 import { openHref } from '@/navigation/targets';
 import { colors } from '@/theme/colors';
 
-import { HoursProgressBar } from './HoursProgressBar';
+import { HoursProgressBar, REQUIRED_HOURS_NOT_SET, RequiredHoursNotSet } from './HoursProgressBar';
 import { Text } from '@/components/ui/Text';
 
 /** "View all" link in a card header, to a tab of this role. */
@@ -60,12 +60,12 @@ export function StudentDashboard({ data, me }: { data: StudentData | null; me: M
     <View className="gap-4">
       {/* Hours Rendered + Hours Progress (two web cards, one here) */}
       <Card title="Hours Progress">
-        <View className="flex-row items-baseline gap-1.5" accessible accessibilityLabel={`Hours rendered: ${formatNumber(hours.rendered)}${hours.required !== null ? ` of ${formatNumber(hours.required)} required` : ''}`}>
+        <View className="flex-row items-baseline gap-1.5" accessible accessibilityLabel={`Hours rendered: ${formatNumber(hours.rendered)}${hours.required !== null ? ` of ${formatNumber(hours.required)} required` : `, ${REQUIRED_HOURS_NOT_SET}`}`}>
           <Text className="text-3xl font-semibold text-gray-900" style={TABULAR}>
             {formatNumber(hours.rendered)}
           </Text>
           <Text className="text-sm text-gray-500" style={TABULAR}>
-            {hours.required !== null ? `of ${formatNumber(hours.required)} required hrs` : 'hrs rendered · No target set yet'}
+            {hours.required !== null ? `of ${formatNumber(hours.required)} required hrs` : 'hrs rendered'}
           </Text>
         </View>
         {hours.required !== null ? (
@@ -80,7 +80,11 @@ export function StudentDashboard({ data, me }: { data: StudentData | null; me: M
               </Text>
             </View>
           </View>
-        ) : null}
+        ) : (
+          <View className="mt-2">
+            <RequiredHoursNotSet />
+          </View>
+        )}
       </Card>
 
       <Card
