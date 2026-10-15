@@ -61,6 +61,9 @@ const OPTION_CODES: Record<string, 'company_id' | 'supervisor_id'> = {
   supervisor_inactive: 'supervisor_id',
 };
 
+/** Under Supervisor when a company is chosen but no supervisor. A warning only: saving is still allowed. */
+const NO_SUPERVISOR_HINT = "Without a supervisor, no one can approve this student's attendance or reports.";
+
 /** Website company option text: "Acme Corp (2/5)". */
 function slotCount(company: Pick<AssignmentCompanyOption, 'students_count' | 'slots'>) {
   return `${company.students_count ?? 0}/${company.slots}`;
@@ -461,6 +464,9 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
               disabled={submitting || !supervisorPickable}
               error={errors.supervisor_id}
             />
+            {selectedCompany && values.supervisor_id === null && !errors.supervisor_id ? (
+              <Text className="text-xs text-amber-700">{NO_SUPERVISOR_HINT}</Text>
+            ) : null}
             {selectedCompany && roster.length === 0 ? (
               <Text className="text-xs text-gray-500">No active supervisors on this company&apos;s roster</Text>
             ) : companyInactive ? (
