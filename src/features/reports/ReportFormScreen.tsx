@@ -11,6 +11,7 @@ import {
   notPendingReport,
   refreshAfterReportChange,
   reportKeys,
+  reportRuleRefusal,
   useCreateReport,
   useReport,
   useUpdateReport,
@@ -31,6 +32,7 @@ import { formatNumber } from '@/lib/format';
 import { AttachmentField } from './AttachmentField';
 import { setReportsFlash } from './flash';
 import { TYPE_LABEL } from './format';
+import { useReportSubmission } from './useReportSubmission';
 import { Text } from '@/components/ui/Text';
 
 /** The API's cap on Accomplishment Details. */
@@ -104,11 +106,11 @@ export function ReportFormScreen() {
   return <EditReport id={reportId} />;
 }
 
-function Unavailable({ message }: { message: string }) {
+function Unavailable({ message, title = 'Edit Report' }: { message: string; title?: string }) {
   const router = useRouter();
   return (
     <View className="flex-1 gap-3 bg-gray-50 p-4">
-      <Stack.Screen options={{ title: 'Edit Report' }} />
+      <Stack.Screen options={{ title }} />
       <Banner tone="warning" message={message} />
       <Button label="Back" variant="outline" onPress={() => router.back()} />
     </View>
@@ -117,11 +119,14 @@ function Unavailable({ message }: { message: string }) {
 
 function EditReport({ id }: { id: number }) {
   const query = useReport(id);
+  const submission = useReportSubmission();
   // Freeze the report the form started from: a background refresh must not reset what's being typed.
   const [initial, setInitial] = useState<Report | null>(null);
   if (!initial && query.data?.can_edit) setInitial(query.data);
 
   if (initial) return <ReportForm initial={initial} />;
+  // Still pending but not editable: the internship isn't Ongoing (the website disables Edit for the same reason).
+  if (query.data?.status === 'pending') return <Unavailable message={submission.message} />;
   if (query.data) return <Unavailable message="This report has already been reviewed and can no longer be changed." />;
   if (query.isPending) {
     return (
@@ -168,6 +173,10 @@ function ReportForm({ initial }: { initial: Report | null }) {
   /** The server refused because the report is no longer pending: nothing more can be saved here. */
   const [locked, setLocked] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  /** Reports are closed (internship not Ongoing): known from /me, or learned from the server's 422 report_rule. */
+  const submission = useReportSubmission();
+  const [refusedClosed, setRefusedClosed] = useState(false);
+  const closed = submission.closed === true || refusedClosed;
 
   const create = useCreateReport();
   const update = useUpdateReport(initial?.id ?? 0);
@@ -283,6 +292,12 @@ function ReportForm({ initial }: { initial: Report | null }) {
     }
     uploading.current = false;
     if (apiError.endsSession) return; // back to login, handled app-wide
+    if (reportRuleRefusal(apiError)) {
+      // The server's own words, in red like the website's flash error; the button stays disabled.
+      setRefusedClosed(true);
+      showProblem(apiError.message);
+      return;
+    }
     if (notPendingReport(apiError)) {
       setLocked(true);
       showProblem(apiError.message);
@@ -299,7 +314,7 @@ function ReportForm({ initial }: { initial: Report | null }) {
   };
 
   const submit = () => {
-    if (uploading.current || submitting || locked) return;
+    if (uploading.current || submitting || locked || closed) return;
     const clientErrors = validate(values);
     if (Object.keys(clientErrors).length > 0) {
       setErrors(clientErrors);
@@ -336,6 +351,7 @@ function ReportForm({ initial }: { initial: Report | null }) {
           {isEdit ? 'Only pending reports can be edited' : 'Submit your daily/weekly accomplishment reports for review'}
         </Text>
 
+        {closed && !refusedClosed ? <Banner tone="warning" message={submission.message} /> : null}
         {banner ? <Banner message={banner} /> : null}
 
         <SegmentedControl label="Type" options={TYPE_OPTIONS} value={values.type} onChange={changeType} error={errors.type} disabled={inputsDisabled} />
@@ -413,6 +429,7 @@ function ReportForm({ initial }: { initial: Report | null }) {
             label={isEdit ? 'Save' : 'Submit Report'}
             loadingLabel={verifying ? 'Checking…' : isEdit ? 'Saving…' : 'Submitting…'}
             loading={submitting}
+            disabled={closed}
             onPress={submit}
           />
         )}

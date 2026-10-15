@@ -15,6 +15,7 @@ import { AttachmentCard } from './AttachmentCard';
 import { setReportsFlash, takeReportsFlash } from './flash';
 import { TYPE_LABEL } from './format';
 import { ReportContentCard, ReportSummaryCard, ReviewerCard } from './ReportParts';
+import { useReportSubmission } from './useReportSubmission';
 
 function DetailSkeleton() {
   return (
@@ -59,6 +60,7 @@ function ReportDetail({ id }: { id: number }) {
   const insets = useSafeAreaInsets();
   const query = useReport(id);
   const remove = useDeleteReport();
+  const submission = useReportSubmission();
   const [pulling, setPulling] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
@@ -142,6 +144,9 @@ function ReportDetail({ id }: { id: number }) {
   const deletedMeanwhile = query.isRefetchError && toApiError(query.error).kind === 'not_found';
   const canEdit = report.can_edit && !deletedMeanwhile;
   const canDelete = report.can_delete && !deletedMeanwhile;
+  // The student's own pending report that the server won't let them edit: the internship isn't Ongoing.
+  // Like the website, Edit stays visible but disabled (Delete is still allowed) with the amber notice.
+  const editClosed = report.status === 'pending' && canDelete && !report.can_edit;
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -157,6 +162,7 @@ function ReportDetail({ id }: { id: number }) {
         ) : query.isRefetchError ? (
           <Banner tone="warning" message={`Showing saved data. ${toApiError(query.error).message}`} />
         ) : null}
+        {editClosed ? <Banner tone="warning" message={submission.message} /> : null}
 
         <ReportSummaryCard report={report} />
         <ReportContentCard report={report} />
@@ -179,7 +185,9 @@ function ReportDetail({ id }: { id: number }) {
               onPress={confirmDelete}
             />
           ) : null}
-          {canEdit ? <Button label="Edit" icon="create-outline" className="flex-1" disabled={remove.isPending} onPress={openEdit} /> : null}
+          {canEdit || editClosed ? (
+            <Button label="Edit" icon="create-outline" className="flex-1" disabled={!canEdit || remove.isPending} onPress={openEdit} />
+          ) : null}
         </View>
       ) : null}
     </View>

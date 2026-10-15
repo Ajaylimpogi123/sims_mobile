@@ -1,10 +1,11 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData, type QueryClient } from '@tanstack/react-query';
 
+import { meQueryOptions } from './auth';
 import { api } from './client';
 import { dashboardKeys } from './dashboard';
 import { toApiError } from './errors';
 import { notificationKeys } from './notifications';
-import type { Report, ReportFilters, ReportSaveResponse, ReportsPage, ReportType } from './types';
+import type { Report, ReportFilters, ReportSaveResponse, ReportsPage, ReportType, SubmissionState } from './types';
 
 const PER_PAGE = 20;
 /** Uploading an attachment over mobile data takes longer than a normal request. */
@@ -149,6 +150,20 @@ export function notPendingReport(error: unknown): Report | null {
   return report && typeof report === 'object' && 'id' in report ? (report as Report) : null;
 }
 
+/**
+ * 422 code report_rule ("You can only submit reports while your internship is Ongoing.") carries the
+ * fresh `submission` state, plus the fresh `report` on an update.
+ */
+export function reportRuleRefusal(error: unknown): { submission: SubmissionState | null; report: Report | null } | null {
+  const apiError = toApiError(error);
+  if (apiError.kind !== 'validation' || apiError.code !== 'report_rule') return null;
+  const { submission, report } = apiError.body;
+  return {
+    submission: submission && typeof submission === 'object' && 'can_submit' in submission ? (submission as SubmissionState) : null,
+    report: report && typeof report === 'object' && 'id' in report ? (report as Report) : null,
+  };
+}
+
 /** Everything a create / update / delete changes: the lists, the Home dashboard and the bell. */
 export function refreshAfterReportChange(queryClient: QueryClient) {
   void queryClient.invalidateQueries({ queryKey: reportKeys.lists });
@@ -158,6 +173,14 @@ export function refreshAfterReportChange(queryClient: QueryClient) {
 
 /** The server refused because the report changed under us: show what it says is true now. */
 function applyRefusal(queryClient: QueryClient, id: number | null, error: unknown) {
+  const rule = reportRuleRefusal(error);
+  if (rule) {
+    // The internship is no longer Ongoing: the lists, Home and /me all carry that state.
+    if (rule.report) queryClient.setQueryData(reportKeys.detail(rule.report.id), rule.report);
+    refreshAfterReportChange(queryClient);
+    void queryClient.invalidateQueries({ queryKey: meQueryOptions.queryKey });
+    return;
+  }
   const fresh = notPendingReport(error);
   if (fresh) {
     queryClient.setQueryData(reportKeys.detail(fresh.id), fresh);
@@ -176,6 +199,7 @@ export function useCreateReport() {
       queryClient.setQueryData(reportKeys.detail(report.id), report);
       refreshAfterReportChange(queryClient);
     },
+    onError: (error) => applyRefusal(queryClient, null, error),
   });
 }
 

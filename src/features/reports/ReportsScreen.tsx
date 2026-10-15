@@ -13,6 +13,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { SkeletonBlock, SkeletonPulse } from '@/components/ui/Skeleton';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { submissionClosedMessage } from '@/lib/submission';
 import { colors } from '@/theme/colors';
 
 import { takeReportsFlash } from './flash';
@@ -146,12 +147,17 @@ export function ReportsScreen() {
   const noProfile = isNoStudentProfile(reports.error);
   const items = noProfile ? [] : (reports.data?.pages.flatMap((page) => page.data) ?? []);
   const filtered = filters.type !== null || filters.status !== null;
+  // The API sends whether reports are accepted (internship Ongoing) with every page.
+  const submission = reports.data?.pages[0]?.meta.submission;
+  const closedMessage =
+    !noProfile && submission && !submission.can_submit ? submissionClosedMessage(submission.internship_status, submission.reason) : null;
 
   const header = (
     <View className="gap-3 pb-3 pt-4">
-      {flash || noProfile || reports.isRefetchError ? (
+      {flash || noProfile || closedMessage || reports.isRefetchError ? (
         <View className="gap-3 px-4">
           {flash ? <Banner tone="success" message={flash} /> : null}
+          {closedMessage ? <Banner tone="warning" message={closedMessage} /> : null}
           {noProfile ? <Banner tone="warning" message={toApiError(reports.error).message} /> : null}
           {!noProfile && reports.isRefetchError ? (
             <Banner tone="warning" message={`Showing saved data. ${toApiError(reports.error).message}`} />
@@ -209,13 +215,15 @@ export function ReportsScreen() {
         refreshControl={<RefreshControl refreshing={pulling} onRefresh={() => void refresh()} colors={[colors.brand700]} />}
       />
 
-      {/* Thumb-zone primary action (website: the "New Report" button). */}
+      {/* Thumb-zone primary action (website: the "New Report" button, disabled while reports are closed). */}
       {!noProfile ? (
         <Pressable
           onPress={() => open('/report-form')}
+          disabled={!!closedMessage}
           accessibilityRole="button"
           accessibilityLabel="New Report"
-          className="absolute bottom-5 right-4 h-14 flex-row items-center gap-2 rounded-xl bg-brand-700 px-5 active:bg-brand-800"
+          accessibilityState={{ disabled: !!closedMessage }}
+          className={`absolute bottom-5 right-4 h-14 flex-row items-center gap-2 rounded-xl bg-brand-700 px-5 active:bg-brand-800 ${closedMessage ? 'opacity-50' : ''}`}
           style={{ elevation: 4, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 6, shadowOffset: { width: 0, height: 2 } }}>
           <Ionicons name="add" size={22} color={colors.white} />
           <Text className="text-base font-semibold text-white">New Report</Text>
