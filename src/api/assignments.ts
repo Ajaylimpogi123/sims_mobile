@@ -93,6 +93,11 @@ export interface AssignmentInput {
   supervisor_id: number | null;
   internship_status: InternshipStatus;
   internship_schedule: string;
+  /**
+   * As typed; '' (or 0) = not set. Undefined = not sent, which keeps the current value (used when an
+   * older server doesn't send required_hours, so the form can't show it).
+   */
+  required_hours?: string;
 }
 
 /**
@@ -111,7 +116,15 @@ function body(input: AssignmentInput) {
     supervisor_id: input.supervisor_id,
     internship_status: input.internship_status,
     internship_schedule: schedule === '' ? null : schedule,
+    ...(input.required_hours !== undefined ? { required_hours: requiredHoursValue(input.required_hours) } : {}),
   };
+}
+
+/** '' → null (not set); whole numbers as numbers; anything else as typed, so the server's 422 explains it. */
+function requiredHoursValue(text: string): number | string | null {
+  const trimmed = text.trim();
+  if (trimmed === '') return null;
+  return /^\d+$/.test(trimmed) ? Number(trimmed) : trimmed;
 }
 
 export async function updateAssignment({ id, input }: { id: number; input: AssignmentInput }): Promise<AssignmentWriteResponse> {

@@ -42,6 +42,7 @@ const FIELDS: Field[] = [
   'section',
   'company_id',
   'supervisor_id',
+  'required_hours',
   'internship_status',
   'internship_schedule',
 ];
@@ -56,7 +57,19 @@ const REQUIRED: Partial<Record<Field, string>> = {
 };
 
 /** Website wording (StudentModal), also the server's 422 required_hours_missing message. */
-const REQUIRED_HOURS_FOR_ONGOING_HINT = "Set this student's required hours in Attendance Monitoring before marking the internship Ongoing.";
+const REQUIRED_HOURS_FOR_ONGOING_HINT = 'Set the required hours before marking the internship Ongoing.';
+
+/** Website wording, also the server's 422 required_hours_locked message. */
+const REQUIRED_HOURS_LOCKED_HINT = "Required hours can't be cleared while the internship is Ongoing.";
+
+/** Laravel's wording for the same rule, so the client check reads like the server's 422. */
+const REQUIRED_HOURS_INTEGER = 'The required hours field must be an integer.';
+
+/** The form's text for a student's required hours: '' when not set (0 means not set, as on the server). */
+function requiredHoursText(hours: number | null | undefined): string | undefined {
+  if (hours === undefined) return undefined; // older server: the field isn't shown or sent
+  return hours !== null && hours > 0 ? String(hours) : '';
+}
 
 /** 422 refusal codes whose message belongs to a picker; the options are refreshed so the counts match. */
 const OPTION_CODES: Record<string, 'company_id' | 'supervisor_id'> = {
@@ -70,6 +83,16 @@ const OPTION_CODES: Record<string, 'company_id' | 'supervisor_id'> = {
 /** Website company option text: "Acme Corp (2/5)". */
 function slotCount(company: Pick<AssignmentCompanyOption, 'students_count' | 'slots'>) {
   return `${company.students_count ?? 0}/${company.slots}`;
+}
+
+/** The website's amber field hint with a warning icon (a warning only: the server decides). */
+function AmberHint({ text }: { text: string }) {
+  return (
+    <View className="flex-row items-start gap-1.5" accessibilityRole="alert">
+      <Ionicons name="warning-outline" size={14} color={colors.amber600} style={{ marginTop: 1 }} />
+      <Text className="flex-1 text-xs text-amber-700">{text}</Text>
+    </View>
+  );
 }
 
 function FormSkeleton() {
@@ -181,6 +204,7 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
     supervisor_id: student.supervisor?.id ?? null,
     internship_status: student.internship_status ?? 'not_started',
     internship_schedule: student.internship_schedule ?? '',
+    required_hours: requiredHoursText(student.required_hours),
   }));
   const [values, setValues] = useState<AssignmentInput>(start);
   const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
@@ -289,10 +313,19 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
   /** The unchanged current supervisor is selected but off the (unchanged) company's roster or no longer a Supervisor. */
   const keptFlagged = !!selectedCompany && !!keptSupervisor && selectedSupervisor?.id === keptSupervisor.id;
 
-  // The server refuses moving a student INTO Ongoing without required hours (null or 0; 422 on
-  // internship_status). Keeping an already-Ongoing status unchanged is allowed, so no hint then.
-  const needsRequiredHoursForOngoing =
-    values.internship_status === 'ongoing' && student.internship_status !== 'ongoing' && (student.required_hours === null || student.required_hours === 0);
+  // The server refuses moving a student INTO Ongoing without required hours (empty or 0, checked against the
+  // value sent in the same save; 422 on internship_status). Keeping an already-Ongoing status unchanged is
+  // allowed, so no hint then.
+  const hoursSet =
+    values.required_hours !== undefined ? Number(values.required_hours.trim() || 0) > 0 : (student.required_hours ?? 0) > 0;
+  const needsRequiredHoursForOngoing = values.internship_status === 'ongoing' && student.internship_status !== 'ongoing' && !hoursSet;
+  // ...and refuses clearing the hours of a student who is Ongoing with hours set and stays Ongoing.
+  const clearingLockedHours =
+    values.required_hours !== undefined &&
+    student.internship_status === 'ongoing' &&
+    (student.required_hours ?? 0) > 0 &&
+    values.internship_status === 'ongoing' &&
+    !hoursSet;
 
   // Without a company the picker only offers the student's existing supervisor (to keep or clear), as the
   // server accepts that unchanged value; otherwise it waits for a company like the website.
@@ -329,6 +362,8 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
     for (const [field, message] of Object.entries(REQUIRED) as [Field, string][]) {
       if (!String(values[field] ?? '').trim()) found[field] = message;
     }
+    const hours = values.required_hours?.trim();
+    if (hours && !/^\d+$/.test(hours)) found.required_hours = REQUIRED_HOURS_INTEGER;
     setErrors(found);
     return Object.keys(found).length === 0;
   };
@@ -371,7 +406,7 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
     <KeyboardAvoidingView behavior="padding" className="flex-1 bg-gray-50">
       <Stack.Screen options={{ title }} />
       <ScrollView className="flex-1" contentContainerClassName="gap-5 p-4" keyboardShouldPersistTaps="handled">
-        <Text className="text-sm text-gray-600">Update the student&apos;s profile, company/supervisor assignment, and internship status</Text>
+        <Text className="text-sm text-gray-600">Update the student&apos;s profile, company/supervisor assignment, required hours and internship status</Text>
         {formError ? <Banner tone="error" message={formError} /> : null}
 
         <Text accessibilityRole="header" className="text-sm font-semibold text-gray-500">
@@ -505,6 +540,26 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
               <Text className="text-xs text-amber-700">This company is inactive. Activate it in Company Management before assigning a new supervisor.</Text>
             ) : null}
           </View>
+          {values.required_hours !== undefined ? (
+            <View className="gap-1">
+              <TextField
+                label="Required Hours"
+                placeholder="e.g. 486"
+                value={values.required_hours}
+                onChangeText={(text) => {
+                  set('required_hours', text);
+                  // The Ongoing refusal sits under Internship Status; typing the hours answers it.
+                  clear('internship_status');
+                }}
+                keyboardType="number-pad"
+                maxLength={10}
+                returnKeyType="done"
+                editable={!submitting}
+                error={errors.required_hours}
+              />
+              {clearingLockedHours && !errors.required_hours ? <AmberHint text={REQUIRED_HOURS_LOCKED_HINT} /> : null}
+            </View>
+          ) : null}
           <View className="gap-1">
             <SegmentedControl<InternshipStatus>
               label="Internship Status"
@@ -515,12 +570,7 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
               error={errors.internship_status}
             />
             {/* A warning only: the server decides (its 422 shows under the field instead). */}
-            {needsRequiredHoursForOngoing && !errors.internship_status ? (
-              <View className="flex-row items-start gap-1.5" accessibilityRole="alert">
-                <Ionicons name="warning-outline" size={14} color={colors.amber600} style={{ marginTop: 1 }} />
-                <Text className="flex-1 text-xs text-amber-700">{REQUIRED_HOURS_FOR_ONGOING_HINT}</Text>
-              </View>
-            ) : null}
+            {needsRequiredHoursForOngoing && !errors.internship_status ? <AmberHint text={REQUIRED_HOURS_FOR_ONGOING_HINT} /> : null}
           </View>
           <TextField
             label="Internship Schedule"
