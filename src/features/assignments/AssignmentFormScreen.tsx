@@ -30,7 +30,7 @@ import { colors } from '@/theme/colors';
 
 import { INTERNSHIP_STATUSES } from './AssignmentsScreen';
 import { setAssignmentDetailFlash, setAssignmentsFlash, STUDENT_NOT_FOUND } from './flash';
-import { NO_SUPERVISOR_HINT, NOT_SUPERVISOR_HINT, OFF_ROSTER_HINT, supervisorProblem } from './SupervisorFlag';
+import { INACTIVE_SUPERVISOR_HINT, NO_SUPERVISOR_HINT, NOT_SUPERVISOR_HINT, OFF_ROSTER_HINT, supervisorProblem } from './SupervisorFlag';
 import { Text, TextInput } from '@/components/ui/Text';
 
 type Field = keyof AssignmentInput;
@@ -495,6 +495,9 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
               <Text className="text-xs text-amber-700">{NO_SUPERVISOR_HINT}</Text>
             ) : keptFlagged && !errors.supervisor_id ? (
               <Text className="text-xs text-amber-700">{currentNotSupervisor ? NOT_SUPERVISOR_HINT : OFF_ROSTER_HINT}</Text>
+            ) : selectedSupervisor?.status === 'inactive' && !errors.supervisor_id ? (
+              // Only the unchanged current supervisor can be inactive here (new picks must be active).
+              <Text className="text-xs text-amber-700">{INACTIVE_SUPERVISOR_HINT}</Text>
             ) : null}
             {selectedCompany && roster.length === 0 ? (
               <Text className="text-xs text-gray-500">No active supervisors on this company&apos;s roster</Text>

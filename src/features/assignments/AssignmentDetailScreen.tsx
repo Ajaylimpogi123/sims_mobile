@@ -19,7 +19,7 @@ import { TABULAR } from '@/lib/format';
 import { colors } from '@/theme/colors';
 
 import { setAssignmentsFlash, STUDENT_NOT_FOUND, takeAssignmentDetailFlash } from './flash';
-import { NO_SUPERVISOR_HINT, NOT_SUPERVISOR_HINT, SupervisorFlag, supervisorProblem } from './SupervisorFlag';
+import { SUPERVISOR_HINTS, SupervisorFlag, supervisorProblem } from './SupervisorFlag';
 import { Text } from '@/components/ui/Text';
 
 const TITLE = 'Student';
@@ -82,6 +82,7 @@ function ProfileCard({ student }: { student: AssignmentStudent }) {
 }
 
 function AssignmentCard({ student }: { student: AssignmentStudent }) {
+  const problem = supervisorProblem(student);
   return (
     <Card title="Internship Assignment">
       <Row label="Company">
@@ -97,15 +98,14 @@ function AssignmentCard({ student }: { student: AssignmentStudent }) {
           <View className="flex-1">
             <Value text={student.supervisor?.name ?? 'Unassigned'} muted={!student.supervisor} />
           </View>
-          {student.supervisor?.status === 'inactive' ? <StatusBadge status="inactive" /> : null}
+          {/* The "Supervisor inactive" flag already says it; no second Inactive badge then. */}
+          {student.supervisor?.status === 'inactive' && problem !== 'inactive' ? <StatusBadge status="inactive" /> : null}
           <SupervisorFlag student={student} />
         </View>
-        {student.supervisor_on_roster === false ? (
+        {problem === 'off_roster' ? (
           <Text className="text-xs text-amber-700">No longer on this company&apos;s roster. The assignment stays until you change it.</Text>
-        ) : supervisorProblem(student) === 'not_supervisor' ? (
-          <Text className="text-xs text-amber-700">{NOT_SUPERVISOR_HINT}</Text>
-        ) : student.needs_supervisor ? (
-          <Text className="text-xs text-amber-700">{NO_SUPERVISOR_HINT}</Text>
+        ) : problem ? (
+          <Text className="text-xs text-amber-700">{SUPERVISOR_HINTS[problem]}</Text>
         ) : null}
       </Row>
       <Row label="Internship Status">
