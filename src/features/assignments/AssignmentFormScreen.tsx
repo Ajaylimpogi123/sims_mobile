@@ -499,7 +499,7 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
               // Only the unchanged current supervisor can be inactive here (new picks must be active).
               <Text className="text-xs text-amber-700">{INACTIVE_SUPERVISOR_HINT}</Text>
             ) : null}
-            {selectedCompany && roster.length === 0 ? (
+            {selectedCompany && !roster.some((s) => s.status === 'active') ? (
               <Text className="text-xs text-gray-500">No active supervisors on this company&apos;s roster</Text>
             ) : companyInactive ? (
               <Text className="text-xs text-amber-700">This company is inactive. Activate it in Company Management before assigning a new supervisor.</Text>
