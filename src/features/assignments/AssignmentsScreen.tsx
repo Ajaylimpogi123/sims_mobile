@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
-import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useRef, useState, type ReactElement } from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useEffect, useRef, useState, type ReactElement, type ReactNode } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 
 import { ASSIGNMENT_SEARCH_MAX, assignmentKeys, NO_ASSIGNMENT_FILTERS, useAssignmentOptions, useAssignments } from '@/api/assignments';
@@ -20,6 +20,7 @@ import { TABULAR } from '@/lib/format';
 import { colors } from '@/theme/colors';
 
 import { takeAssignmentsFlash } from './flash';
+import { SupervisorFlag, supervisorFlagLabel } from './SupervisorFlag';
 import { Text } from '@/components/ui/Text';
 
 /** Website subtitle (InternshipAssignment/Index.jsx). */
@@ -32,6 +33,9 @@ export const INTERNSHIP_STATUSES: { value: InternshipStatus; label: string }[] =
   { value: 'completed', label: 'Completed' },
 ];
 
+/** Only students the server flags needs_supervisor (the dashboard action item's list). */
+const NEEDS_SUPERVISOR_FILTERS: AssignmentFilters = { ...NO_ASSIGNMENT_FILTERS, needs_supervisor: true };
+
 /** Company filter: 0 in the picker stands for the API's "none" (no company). */
 const UNASSIGNED_OPTION = 0;
 
@@ -39,13 +43,14 @@ const UNASSIGNED_OPTION = 0;
 // Card (website row: Name, Student Number, Company, Supervisor, Internship Status, Account Status)
 // ---------------------------------------------------------------------------
 
-function Line({ icon, text, muted }: { icon: keyof typeof Ionicons.glyphMap; text: string; muted: boolean }) {
+function Line({ icon, text, muted, trailing }: { icon: keyof typeof Ionicons.glyphMap; text: string; muted: boolean; trailing?: ReactNode }) {
   return (
     <View className="flex-row items-center gap-2">
       <Ionicons name={icon} size={14} color={colors.gray500} />
       <Text className={`flex-1 text-sm ${muted ? 'text-gray-500' : 'text-gray-700'}`} numberOfLines={1}>
         {text}
       </Text>
+      {trailing}
     </View>
   );
 }
@@ -59,6 +64,7 @@ function StudentCard({ item, onOpen }: { item: AssignmentStudent; onOpen: () => 
     item.student_number,
     `Company ${company}`,
     `Supervisor ${supervisor}`,
+    supervisorFlagLabel(item),
     `Internship status ${status}`,
     item.status === 'inactive' ? 'Account inactive' : null,
   ]
@@ -87,7 +93,7 @@ function StudentCard({ item, onOpen }: { item: AssignmentStudent; onOpen: () => 
       </View>
       <View className="mt-1 gap-1">
         <Line icon="business-outline" text={company} muted={!item.company} />
-        <Line icon="person-outline" text={supervisor} muted={!item.supervisor} />
+        <Line icon="person-outline" text={supervisor} muted={!item.supervisor} trailing={<SupervisorFlag student={item} />} />
       </View>
     </Pressable>
   );
@@ -122,7 +128,12 @@ function ListSkeleton() {
 export function AssignmentsScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [filters, setFilters] = useState<AssignmentFilters>(NO_ASSIGNMENT_FILTERS);
+  const params = useLocalSearchParams<{ needs_supervisor?: string }>();
+  const [filters, setFilters] = useState<AssignmentFilters>(() =>
+    params.needs_supervisor === '1' ? NEEDS_SUPERVISOR_FILTERS : NO_ASSIGNMENT_FILTERS,
+  );
+  /** Bumped to clear the search box when a link replaces every filter. */
+  const [searchKey, setSearchKey] = useState(0);
   const students = useAssignments(filters);
   const [companyPicker, setCompanyPicker] = useState(false);
   const options = useAssignmentOptions();
@@ -133,6 +144,18 @@ export function AssignmentsScreen() {
   const pages = students.data?.pages ?? [];
   const items = pages.flatMap((page) => page.data);
   const total = pages[pages.length - 1]?.meta.total ?? 0;
+
+  // The dashboard's "N student(s) need a supervisor" item links here with ?needs_supervisor=1: show
+  // exactly those students (other filters off, so the list matches the count), once per tap.
+  const needsSupervisorParam = params.needs_supervisor;
+  useEffect(() => {
+    if (needsSupervisorParam === undefined) return;
+    router.setParams({ needs_supervisor: undefined });
+    if (needsSupervisorParam !== '1') return;
+    setFilters(NEEDS_SUPERVISOR_FILTERS);
+    setSearchKey((key) => key + 1);
+    setFlash(null);
+  }, [needsSupervisorParam, router]);
 
   useFocusEffect(
     useCallback(() => {
@@ -160,7 +183,13 @@ export function AssignmentsScreen() {
     }
   };
 
-  const filtered = filters.search !== '' || filters.internship_status !== null || filters.status !== null || filters.company_id !== null;
+  const filtered =
+    filters.search !== '' ||
+    filters.internship_status !== null ||
+    filters.status !== null ||
+    filters.company_id !== null ||
+    filters.needs_supervisor;
+  const onlyNeedsSupervisor = JSON.stringify(filters) === JSON.stringify(NEEDS_SUPERVISOR_FILTERS);
   const companyLabel =
     filters.company_id === null
       ? 'All Companies'
@@ -178,6 +207,7 @@ export function AssignmentsScreen() {
       ) : null}
       <View className="px-4">
         <SearchField
+          key={searchKey}
           placeholder="Filter by student name..."
           maxLength={ASSIGNMENT_SEARCH_MAX}
           onSearch={(search) => setFilters((f) => ({ ...f, search }))}
@@ -199,6 +229,11 @@ export function AssignmentsScreen() {
           </Text>
           <Ionicons name="chevron-down" size={16} color={filters.company_id !== null ? colors.brand700 : colors.gray500} />
         </Pressable>
+        <FilterChip
+          label="Needs Supervisor"
+          selected={filters.needs_supervisor}
+          onPress={() => setFilters((f) => ({ ...f, needs_supervisor: !f.needs_supervisor }))}
+        />
         <View className="h-5 w-px bg-gray-300" />
         <FilterChip
           label="All Statuses"
@@ -241,6 +276,8 @@ export function AssignmentsScreen() {
         <ErrorState message={toApiError(students.error).message} onRetry={() => void students.refetch()} retrying={students.isFetching} />
       </View>
     );
+  } else if (onlyNeedsSupervisor) {
+    empty = <EmptyState icon="checkmark-circle-outline" message="Every student with a company has a supervisor." />;
   } else if (filtered) {
     empty = <EmptyState icon="filter-outline" message="No students match these filters." />;
   } else {
