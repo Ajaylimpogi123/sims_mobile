@@ -15,8 +15,10 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { SkeletonBlock, SkeletonPulse } from '@/components/ui/Skeleton';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { TABULAR } from '@/lib/format';
+import { formatNumber, TABULAR } from '@/lib/format';
 import { colors } from '@/theme/colors';
+
+import { REQUIRED_HOURS_NOT_SET } from '../dashboard/HoursProgressBar';
 
 import { setAssignmentsFlash, STUDENT_NOT_FOUND, takeAssignmentDetailFlash } from './flash';
 import { SUPERVISOR_HINTS, SupervisorFlag, supervisorProblem } from './SupervisorFlag';
@@ -108,6 +110,16 @@ function AssignmentCard({ student }: { student: AssignmentStudent }) {
           <Text className="text-xs text-amber-700">{SUPERVISOR_HINTS[problem]}</Text>
         ) : null}
       </Row>
+      {student.required_hours !== undefined ? (
+        <Row label="Required Hours">
+          {/* 0 means not set, as on the server and the website. */}
+          {student.required_hours !== null && student.required_hours > 0 ? (
+            <Value text={formatNumber(student.required_hours)} tabular />
+          ) : (
+            <Value text={REQUIRED_HOURS_NOT_SET} muted />
+          )}
+        </Row>
+      ) : null}
       <Row label="Internship Status">
         <StatusBadge status={student.internship_status} />
       </Row>

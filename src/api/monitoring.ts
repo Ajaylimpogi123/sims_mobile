@@ -152,6 +152,8 @@ export function refreshAfterMonitoringWrite(queryClient: QueryClient, fresh?: Mo
   void queryClient.invalidateQueries({ queryKey: dashboardKeys.dashboard });
   void queryClient.invalidateQueries({ queryKey: ['analytics'] });
   void queryClient.invalidateQueries({ queryKey: approvalKeys.all });
+  // Internship Assignment shows required hours too (literal key: assignments.ts imports this module).
+  void queryClient.invalidateQueries({ queryKey: ['assignments'] });
 }
 
 /** Refetch what may have changed when a write failed in a way that says our data is stale. */

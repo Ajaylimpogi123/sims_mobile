@@ -26,6 +26,8 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { formatNumber, TABULAR } from '@/lib/format';
 import { colors } from '@/theme/colors';
 
+import { REQUIRED_HOURS_NOT_SET } from '../dashboard/HoursProgressBar';
+
 import { takeAssignmentsFlash } from './flash';
 import { SupervisorFlag, supervisorFlagLabel } from './SupervisorFlag';
 import { Text } from '@/components/ui/Text';
@@ -66,12 +68,17 @@ function StudentCard({ item, onOpen }: { item: AssignmentStudent; onOpen: () => 
   const status = INTERNSHIP_STATUSES.find((s) => s.value === item.internship_status)?.label ?? 'Not Started';
   const company = item.company?.company_name ?? 'Unassigned';
   const supervisor = item.supervisor?.name ?? 'Unassigned';
+  // Website column "Required Hours": the number, or "Required hours not set" (null or 0). Older server: no line.
+  const hoursSet = item.required_hours !== undefined && item.required_hours !== null && item.required_hours > 0;
+  const hours =
+    item.required_hours === undefined ? null : hoursSet ? `${formatNumber(item.required_hours ?? 0)} required hours` : REQUIRED_HOURS_NOT_SET;
   const label = [
     item.name ?? item.student_number,
     item.student_number,
     `Company ${company}`,
     `Supervisor ${supervisor}`,
     supervisorFlagLabel(item),
+    hours,
     `Internship status ${status}`,
     item.status === 'inactive' ? 'Account inactive' : null,
   ]
@@ -101,6 +108,7 @@ function StudentCard({ item, onOpen }: { item: AssignmentStudent; onOpen: () => 
       <View className="mt-1 gap-1">
         <Line icon="business-outline" text={company} muted={!item.company} />
         <Line icon="person-outline" text={supervisor} muted={!item.supervisor} trailing={<SupervisorFlag student={item} />} />
+        {hours ? <Line icon="hourglass-outline" text={hours} muted={!hoursSet} /> : null}
       </View>
     </Pressable>
   );
