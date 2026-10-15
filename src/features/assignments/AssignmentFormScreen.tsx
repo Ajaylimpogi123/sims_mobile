@@ -28,6 +28,7 @@ import { TextField } from '@/components/ui/TextField';
 
 import { INTERNSHIP_STATUSES } from './AssignmentsScreen';
 import { setAssignmentDetailFlash, setAssignmentsFlash, STUDENT_NOT_FOUND } from './flash';
+import { NO_SUPERVISOR_HINT } from './SupervisorFlag';
 import { Text, TextInput } from '@/components/ui/Text';
 
 type Field = keyof AssignmentInput;
@@ -60,9 +61,6 @@ const OPTION_CODES: Record<string, 'company_id' | 'supervisor_id'> = {
   supervisor_not_on_roster: 'supervisor_id',
   supervisor_inactive: 'supervisor_id',
 };
-
-/** Under Supervisor when a company is chosen but no supervisor. A warning only: saving is still allowed. */
-const NO_SUPERVISOR_HINT = "Without a supervisor, no one can approve this student's attendance or reports.";
 
 /** Website company option text: "Acme Corp (2/5)". */
 function slotCount(company: Pick<AssignmentCompanyOption, 'students_count' | 'slots'>) {
@@ -464,6 +462,7 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
               disabled={submitting || !supervisorPickable}
               error={errors.supervisor_id}
             />
+            {/* A warning only: saving without a supervisor is allowed. */}
             {selectedCompany && values.supervisor_id === null && !errors.supervisor_id ? (
               <Text className="text-xs text-amber-700">{NO_SUPERVISOR_HINT}</Text>
             ) : null}

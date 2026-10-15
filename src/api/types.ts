@@ -948,6 +948,11 @@ export interface AssignmentStudent {
   supervisor: AssignmentSupervisor | null;
   /** null when no supervisor; false = the supervisor was later removed from the company's roster (still valid). */
   supervisor_on_roster: boolean | null;
+  /**
+   * Has a company but no supervisor, or one no longer on its roster (never true without a company;
+   * an inactive supervisor alone doesn't count). Same rows as the needs_supervisor=1 filter.
+   */
+  needs_supervisor: boolean;
   internship_status: InternshipStatus;
   internship_schedule: string | null;
   /** ISO 8601 */
@@ -963,6 +968,8 @@ export interface AssignmentFilters {
   internship_status: InternshipStatus | null;
   status: 'active' | 'inactive' | null;
   company_id: number | 'none' | null;
+  /** true sends needs_supervisor=1 (only flagged students); false = no filter. */
+  needs_supervisor: boolean;
 }
 
 /** GET /assignments: page pagination, newest student profile first. */

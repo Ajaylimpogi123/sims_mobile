@@ -36,7 +36,13 @@ export const assignmentKeys = {
   options: ['assignments', 'options'] as const,
 };
 
-export const NO_ASSIGNMENT_FILTERS: AssignmentFilters = { search: '', internship_status: null, status: null, company_id: null };
+export const NO_ASSIGNMENT_FILTERS: AssignmentFilters = {
+  search: '',
+  internship_status: null,
+  status: null,
+  company_id: null,
+  needs_supervisor: false,
+};
 
 // ---------------------------------------------------------------------------
 // Requests
@@ -52,6 +58,7 @@ export async function getAssignments(filters: AssignmentFilters, page: number): 
       ...(filters.internship_status ? { internship_status: filters.internship_status } : {}),
       ...(filters.status ? { status: filters.status } : {}),
       ...(filters.company_id !== null ? { company_id: filters.company_id } : {}),
+      ...(filters.needs_supervisor ? { needs_supervisor: 1 } : {}),
     },
   });
   return data;

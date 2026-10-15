@@ -19,6 +19,7 @@ import { TABULAR } from '@/lib/format';
 import { colors } from '@/theme/colors';
 
 import { setAssignmentsFlash, STUDENT_NOT_FOUND, takeAssignmentDetailFlash } from './flash';
+import { NO_SUPERVISOR_HINT, SupervisorFlag } from './SupervisorFlag';
 import { Text } from '@/components/ui/Text';
 
 const TITLE = 'Student';
@@ -97,9 +98,12 @@ function AssignmentCard({ student }: { student: AssignmentStudent }) {
             <Value text={student.supervisor?.name ?? 'Unassigned'} muted={!student.supervisor} />
           </View>
           {student.supervisor?.status === 'inactive' ? <StatusBadge status="inactive" /> : null}
+          <SupervisorFlag student={student} />
         </View>
         {student.supervisor_on_roster === false ? (
           <Text className="text-xs text-amber-700">No longer on this company&apos;s roster. The assignment stays until you change it.</Text>
+        ) : student.needs_supervisor ? (
+          <Text className="text-xs text-amber-700">{NO_SUPERVISOR_HINT}</Text>
         ) : null}
       </Row>
       <Row label="Internship Status">
