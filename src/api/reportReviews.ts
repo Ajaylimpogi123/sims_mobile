@@ -1,5 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData, type QueryClient } from '@tanstack/react-query';
 
+import { termKey, termParams, useTermParam, type TermKey } from '@/terms/selected-term';
+
 import { api } from './client';
 import { dashboardKeys } from './dashboard';
 import { toApiError } from './errors';
@@ -14,7 +16,7 @@ export const REVIEW_COMMENT_MAX = 2000;
 export const reviewKeys = {
   all: ['report-reviews'] as const,
   lists: ['report-reviews', 'list'] as const,
-  list: (filters: ReviewReportFilters) => ['report-reviews', 'list', filters] as const,
+  list: (filters: ReviewReportFilters, term: TermKey) => ['report-reviews', 'list', filters, term] as const,
   detail: (id: number) => ['report-reviews', 'detail', id] as const,
 };
 
@@ -24,11 +26,16 @@ export const NO_REVIEW_FILTERS: ReviewReportFilters = { status: null, type: null
 // Requests
 // ---------------------------------------------------------------------------
 
-export async function getReviewReports(filters: ReviewReportFilters, cursor: string | null): Promise<ReviewReportsPage> {
+export async function getReviewReports(
+  filters: ReviewReportFilters,
+  cursor: string | null,
+  termId: number | null = null,
+): Promise<ReviewReportsPage> {
   const search = filters.search.trim();
   const { data } = await api.get<ReviewReportsPage>('/report-reviews', {
     params: {
       per_page: PER_PAGE,
+      ...termParams(termId),
       ...(filters.status ? { status: filters.status } : {}),
       ...(filters.type ? { type: filters.type } : {}),
       ...(filters.studentId !== null ? { student_id: filters.studentId } : {}),
@@ -63,9 +70,10 @@ export async function reviewReport({ id, comment }: ReviewInput): Promise<Review
 type ListData = InfiniteData<ReviewReportsPage, string | null>;
 
 export function useReviewReports(filters: ReviewReportFilters) {
+  const termId = useTermParam();
   return useInfiniteQuery({
-    queryKey: reviewKeys.list(filters),
-    queryFn: ({ pageParam }) => getReviewReports(filters, pageParam),
+    queryKey: reviewKeys.list(filters, termKey(termId)),
+    queryFn: ({ pageParam }) => getReviewReports(filters, pageParam, termId),
     initialPageParam: null as string | null,
     getNextPageParam: (last) => (last.meta.has_more && last.meta.next_cursor ? last.meta.next_cursor : undefined),
     // Keep the old results on screen while a new search / filter loads.

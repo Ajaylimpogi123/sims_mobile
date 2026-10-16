@@ -2,6 +2,7 @@ import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useEffect, useLayoutEffect, useState } from 'react';
 
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { TermBar } from '@/features/terms/TermSwitcher';
 
 import { ReportReviewsList } from '../reportReviews/ReportReviewsList';
 
@@ -46,7 +47,12 @@ export function SupervisorMonitoringTab() {
     navigation.setOptions({ title: TITLE[view] });
   }, [navigation, view]);
 
-  const top = <SegmentedControl label="View" options={OPTIONS} value={view} onChange={setView} />;
+  const top = (
+    <>
+      <TermBar />
+      <SegmentedControl label="View" options={OPTIONS} value={view} onChange={setView} />
+    </>
+  );
 
   if (view === 'reports') return <ReportReviewsList top={top} />;
   return <StudentList key={view} kind={view} top={top} />;

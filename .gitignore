@@ -49,3 +49,6 @@ example
 google-services.json
 *.keystore
 credentials.json
+
+.claude
+# 

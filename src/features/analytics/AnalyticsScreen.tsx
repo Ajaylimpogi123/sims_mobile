@@ -3,6 +3,7 @@ import { ActivityIndicator, RefreshControl, ScrollView, View } from 'react-nativ
 
 import { EMPTY_ANALYTICS_FILTERS, useAnalytics, useAnalyticsFilterOptions } from '@/api/dashboard';
 import { toApiError } from '@/api/errors';
+import { ArchivedTermBanner } from '@/features/terms/TermSwitcher';
 import { ROLE_SUPERVISOR, type AnalyticsFilters, type AnalyticsResponse, type ChartPoint } from '@/api/types';
 import { useAuth } from '@/auth/AuthProvider';
 import { Banner } from '@/components/ui/Banner';
@@ -209,6 +210,7 @@ export function AnalyticsScreen() {
       contentContainerClassName="gap-4 p-4 pb-10"
       keyboardShouldPersistTaps="handled"
       refreshControl={<RefreshControl refreshing={pulling} onRefresh={() => void refresh()} colors={[colors.brand700]} />}>
+      <ArchivedTermBanner />
       <Text className="text-sm text-gray-600">{featureInfo('analytics', user?.role_id).description}</Text>
 
       <FilterBar

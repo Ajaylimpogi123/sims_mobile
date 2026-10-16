@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState, type ReactElement, type React
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, View } from 'react-native';
 
 import { toApiError } from '@/api/errors';
+import { ArchivedTermBanner } from '@/features/terms/TermSwitcher';
 import { useMonitoringList } from '@/api/monitoring';
 import type { MonitoredStudent } from '@/api/types';
 import { Banner } from '@/components/ui/Banner';
@@ -205,7 +206,7 @@ export function StudentList({ kind, top }: StudentListProps) {
 
   const header = (
     <View className="gap-3 px-4 pb-3 pt-4">
-      {top}
+      {top ?? <ArchivedTermBanner />}
       <Text className="text-sm text-gray-600">{SUBTITLE[kind]}</Text>
       <SearchField placeholder="Filter by student name..." onSearch={setSearch} />
       {query.isRefetchError && items.length > 0 ? (

@@ -21,6 +21,7 @@ const MORE_ROUTES: FeatureKey[] = [
   'approvals',
   'evaluations',
   'criteria',
+  'terms',
   'attendance-monitoring',
   'progress',
   'profile',

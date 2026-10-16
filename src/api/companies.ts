@@ -3,7 +3,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteD
 import { api } from './client';
 import { dashboardKeys } from './dashboard';
 import { monitoringKeys } from './monitoring';
-import type { AvailableSupervisor, CompaniesPage, CompanyFilters, CompanyWriteResponse, ManagedCompany } from './types';
+import type { CompaniesPage, CompanyFilters, CompanyWriteResponse, ManagedCompany, SupervisorOption } from './types';
 
 const PER_PAGE = 20;
 
@@ -19,7 +19,7 @@ export const companyKeys = {
   lists: ['companies', 'list'] as const,
   list: (filters: CompanyFilters) => ['companies', 'list', filters] as const,
   detail: (id: number) => ['companies', 'detail', id] as const,
-  available: (id: number) => ['companies', 'available-supervisors', id] as const,
+  supervisorOptions: ['companies', 'supervisor-options'] as const,
 };
 
 export const NO_COMPANY_FILTERS: CompanyFilters = { search: '', status: null };
@@ -46,8 +46,9 @@ export async function getCompany(id: number): Promise<ManagedCompany> {
   return data.data;
 }
 
-export async function getAvailableSupervisors(id: number): Promise<AvailableSupervisor[]> {
-  const { data } = await api.get<{ data: AvailableSupervisor[] }>(`/companies/${id}/supervisors/available`);
+/** Active Supervisor accounts for the Company Supervisor picker. */
+export async function getSupervisorOptions(): Promise<SupervisorOption[]> {
+  const { data } = await api.get<{ data: SupervisorOption[] }>('/companies/supervisor-options');
   return data.data;
 }
 
@@ -55,7 +56,8 @@ export async function getAvailableSupervisors(id: number): Promise<AvailableSupe
 export interface CompanyInput {
   company_name: string;
   address: string;
-  contact_person: string;
+  /** The Company Supervisor; null = none. Its students' supervisor follows it. */
+  supervisor_id: number | null;
   contact_number: string;
   email: string;
   industry: string;
@@ -72,7 +74,7 @@ function body(input: CompanyInput) {
   return {
     company_name: input.company_name.trim(),
     address: text(input.address),
-    contact_person: text(input.contact_person),
+    supervisor_id: input.supervisor_id,
     contact_number: text(input.contact_number),
     email: text(input.email),
     industry: text(input.industry),
@@ -99,16 +101,6 @@ export async function setCompanyActive({ id, active }: { id: number; active: boo
 
 export async function deleteCompany(id: number): Promise<{ message: string }> {
   const { data } = await api.delete<{ message: string }>(`/companies/${id}`);
-  return data;
-}
-
-export async function attachSupervisor({ id, userId }: { id: number; userId: number }): Promise<CompanyWriteResponse> {
-  const { data } = await api.post<CompanyWriteResponse>(`/companies/${id}/supervisors`, { user_id: userId });
-  return data;
-}
-
-export async function detachSupervisor({ id, userId }: { id: number; userId: number }): Promise<CompanyWriteResponse> {
-  const { data } = await api.delete<CompanyWriteResponse>(`/companies/${id}/supervisors/${userId}`);
   return data;
 }
 
@@ -148,14 +140,9 @@ export function useCompany(id: number | null) {
   });
 }
 
-/** Supervisors that can be added to this company's roster (loaded when the picker opens). */
-export function useAvailableSupervisors(id: number | null, enabled: boolean) {
-  return useQuery({
-    queryKey: companyKeys.available(id ?? 0),
-    queryFn: () => getAvailableSupervisors(id as number),
-    enabled: enabled && id !== null,
-    staleTime: 0,
-  });
+/** Active Supervisor accounts for the Company Supervisor picker (re-checked when the form opens). */
+export function useSupervisorOptions() {
+  return useQuery({ queryKey: companyKeys.supervisorOptions, queryFn: getSupervisorOptions, staleTime: 0 });
 }
 
 // ---------------------------------------------------------------------------
@@ -163,16 +150,13 @@ export function useAvailableSupervisors(id: number | null, enabled: boolean) {
 // ---------------------------------------------------------------------------
 
 /**
- * Everything a company write changes: the lists, the detail and its roster picker, Home's counts,
- * the Analytics company filter options and monitoring screens that show company names.
- * Also Internship Assignment's lists and company options (slot counts, rosters).
+ * Everything a company write changes: the lists, the detail, Home's counts, the Analytics filter
+ * options, monitoring screens (company names, students' supervisors), and Internship Assignment's
+ * lists and company options (slot counts; a supervisor change moves the company's students).
  */
 export function refreshAfterCompanyWrite(queryClient: QueryClient, id?: number) {
   void queryClient.invalidateQueries({ queryKey: companyKeys.lists });
-  if (id !== undefined) {
-    void queryClient.invalidateQueries({ queryKey: companyKeys.detail(id) });
-    void queryClient.invalidateQueries({ queryKey: companyKeys.available(id) });
-  }
+  if (id !== undefined) void queryClient.invalidateQueries({ queryKey: companyKeys.detail(id) });
   void queryClient.invalidateQueries({ queryKey: dashboardKeys.dashboard });
   void queryClient.invalidateQueries({ queryKey: dashboardKeys.filterOptions });
   void queryClient.invalidateQueries({ queryKey: monitoringKeys.all });
@@ -217,26 +201,8 @@ export function useDeleteCompany() {
       void queryClient.invalidateQueries({ queryKey: dashboardKeys.dashboard });
       void queryClient.invalidateQueries({ queryKey: dashboardKeys.filterOptions });
       void queryClient.invalidateQueries({ queryKey: monitoringKeys.all });
-      queryClient.removeQueries({ queryKey: companyKeys.available(id), exact: true });
       void queryClient.invalidateQueries({ queryKey: ['assignments'] });
     },
   });
 }
 
-export function useAttachSupervisor() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: attachSupervisor,
-    onSuccess: ({ company }) => queryClient.setQueryData(companyKeys.detail(company.id), company),
-    onSettled: (_data, _error, { id }) => refreshAfterCompanyWrite(queryClient, id),
-  });
-}
-
-export function useDetachSupervisor() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: detachSupervisor,
-    onSuccess: ({ company }) => queryClient.setQueryData(companyKeys.detail(company.id), company),
-    onSettled: (_data, _error, { id }) => refreshAfterCompanyWrite(queryClient, id),
-  });
-}

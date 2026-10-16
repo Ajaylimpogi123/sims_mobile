@@ -1,20 +1,13 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useQueryClient } from '@tanstack/react-query';
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, View } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import { Alert, RefreshControl, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import {
-  companyFromLists,
-  useAttachSupervisor,
-  useCompany,
-  useDeleteCompany,
-  useDetachSupervisor,
-  useSetCompanyActive,
-} from '@/api/companies';
+import { companyFromLists, useCompany, useDeleteCompany, useSetCompanyActive } from '@/api/companies';
 import { toApiError } from '@/api/errors';
-import type { AvailableSupervisor, CompanyDeleteBlockedReason, ManagedCompany, RosterSupervisor } from '@/api/types';
+import type { CompanyDeleteBlockedReason, ManagedCompany } from '@/api/types';
 import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -26,7 +19,7 @@ import { TABULAR } from '@/lib/format';
 import { colors } from '@/theme/colors';
 
 import { slotsLabel } from './CompaniesScreen';
-import { SupervisorPickerSheet } from './SupervisorPickerSheet';
+import { SupervisorFlag } from '@/features/assignments/SupervisorFlag';
 import { COMPANY_NOT_FOUND, setCompaniesFlash, takeCompanyDetailFlash } from './flash';
 import { Text } from '@/components/ui/Text';
 
@@ -76,71 +69,15 @@ function HeaderCard({ company }: { company: ManagedCompany }) {
           <Text className="text-lg font-semibold text-gray-900" style={TABULAR}>
             {company.students_count}
           </Text>
-          <Text className="text-xs text-gray-500" style={TABULAR}>
-            {plural(company.supervisors_count, 'supervisor', 'supervisors')}
-          </Text>
         </View>
       </View>
       <View className="mt-4 gap-3">
         <Meta icon="location-outline" label="Address" text={company.address} />
-        <Meta icon="person-outline" label="Contact Person" text={company.contact_person} />
         <Meta icon="call-outline" label="Contact Number" text={company.contact_number} />
         <Meta icon="mail-outline" label="Email" text={company.email} />
         <Meta icon="briefcase-outline" label="Industry" text={company.industry} />
       </View>
     </Card>
-  );
-}
-
-function RosterRow({
-  supervisor,
-  canRemove,
-  removing,
-  disabled,
-  onRemove,
-}: {
-  supervisor: RosterSupervisor;
-  canRemove: boolean;
-  removing: boolean;
-  disabled: boolean;
-  onRemove: () => void;
-}) {
-  return (
-    <View className="min-h-14 flex-row items-center gap-3 rounded-lg border border-gray-200 px-3 py-2">
-      <View className="flex-1 gap-0.5">
-        <View className="flex-row items-center gap-2">
-          <Text className="flex-shrink text-sm font-medium text-gray-900" numberOfLines={1}>
-            {supervisor.name}
-          </Text>
-          {supervisor.status === 'inactive' ? <StatusBadge status="inactive" /> : null}
-        </View>
-        <Text className="text-xs text-gray-500" numberOfLines={1}>
-          {supervisor.email}
-        </Text>
-        {supervisor.students_count > 0 ? (
-          <Text className="text-xs text-gray-500" style={TABULAR}>
-            Supervises {plural(supervisor.students_count, 'student', 'students')} here
-          </Text>
-        ) : null}
-      </View>
-      {canRemove ? (
-        removing ? (
-          <View className="h-12 w-12 items-center justify-center">
-            <ActivityIndicator color={colors.red600} accessibilityLabel={`Removing ${supervisor.name}`} />
-          </View>
-        ) : (
-          <Pressable
-            onPress={onRemove}
-            disabled={disabled}
-            accessibilityRole="button"
-            accessibilityLabel={`Remove ${supervisor.name}`}
-            accessibilityState={{ disabled }}
-            className={`h-12 w-12 items-center justify-center rounded-full active:bg-red-50 ${disabled ? 'opacity-50' : ''}`}>
-            <Ionicons name="close" size={20} color={colors.red600} />
-          </Pressable>
-        )
-      ) : null}
-    </View>
   );
 }
 
@@ -162,8 +99,8 @@ function DetailSkeleton() {
 }
 
 /**
- * One company (website: a Companies row with its Actions menu: Edit, Manage Supervisors,
- * Activate / Deactivate, Delete). Buttons follow the API's per-company flags; the server enforces
+ * One company (website: a Companies row with its Actions menu: Edit, Activate / Deactivate,
+ * Delete), with its Company Supervisor (changed in Edit). Buttons follow the API's per-company flags; the server enforces
  * every rule (e.g. Delete refused while students are assigned).
  */
 export function CompanyDetailScreen() {
@@ -176,13 +113,9 @@ export function CompanyDetailScreen() {
   const query = useCompany(id);
   const setActive = useSetCompanyActive();
   const remove = useDeleteCompany();
-  const attach = useAttachSupervisor();
-  const detach = useDetachSupervisor();
   const [pulling, setPulling] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
-  const [picking, setPicking] = useState(false);
-  const [removingId, setRemovingId] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false);
   const deleted = useRef(false);
@@ -201,8 +134,6 @@ export function CompanyDetailScreen() {
   const apiError = query.isError ? toApiError(query.error) : null;
   const gone = id === null || apiError?.kind === 'not_found';
   const company = gone ? undefined : (query.data ?? initial);
-  const roster = useMemo(() => company?.supervisors ?? [], [company]);
-  const rosterIds = useMemo(() => new Set(roster.map((s) => s.id)), [roster]);
 
   if (gone && !deleted.current) {
     return (
@@ -243,7 +174,6 @@ export function CompanyDetailScreen() {
     } finally {
       inFlight.current = false;
       setBusy(false);
-      setRemovingId(null);
     }
   };
 
@@ -287,35 +217,6 @@ export function CompanyDetailScreen() {
     ]);
   };
 
-  const confirmDetach = (target: ManagedCompany, supervisor: RosterSupervisor) => {
-    const keeps =
-      supervisor.students_count > 0
-        ? ` ${supervisor.name} still supervises ${plural(supervisor.students_count, 'student', 'students')} here; they keep them as their supervisor.`
-        : '';
-    Alert.alert('Remove Supervisor?', `Remove ${supervisor.name} from the "${target.company_name}" roster?${keeps}`, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Remove',
-        style: 'destructive',
-        onPress: () => {
-          setRemovingId(supervisor.id);
-          void run(async () => {
-            const response = await detach.mutateAsync({ id: target.id, userId: supervisor.id });
-            return response.message;
-          });
-        },
-      },
-    ]);
-  };
-
-  const pick = (target: ManagedCompany, supervisor: AvailableSupervisor) => {
-    setPicking(false);
-    void run(async () => {
-      const response = await attach.mutateAsync({ id: target.id, userId: supervisor.id });
-      return response.message;
-    }, 'user_id');
-  };
-
   const openEdit = () => {
     const now = Date.now();
     if (!company || inFlight.current || now - lastOpen.current < 1000) return;
@@ -342,37 +243,19 @@ export function CompanyDetailScreen() {
           <>
             <HeaderCard company={company} />
 
-            {/* Website: "Supervisor Roster — <company>" modal. */}
-            <Card title="Supervisor Roster" description="Supervisors eligible to be assigned to students at this company">
-              <View className="gap-2">
-                {roster.length ? (
-                  roster.map((supervisor) => (
-                    <RosterRow
-                      key={supervisor.id}
-                      supervisor={supervisor}
-                      canRemove={company.can_manage_roster}
-                      removing={removingId === supervisor.id}
-                      disabled={busy}
-                      onRemove={() => confirmDetach(company, supervisor)}
-                    />
-                  ))
-                ) : (
-                  <Text className="text-sm text-gray-500">No supervisors on this company&apos;s roster yet.</Text>
-                )}
+            {/* Website: the "Company Supervisor" column; changed in Edit. */}
+            <Card title="Company Supervisor" description="Supervises every student placed at this company">
+              {company.supervisor ? (
+                <View className="gap-0.5" accessible accessibilityLabel={`Company Supervisor: ${company.supervisor.name}, ${company.supervisor.email}`}>
+                  <Text className="text-sm font-medium text-gray-900">{company.supervisor.name}</Text>
+                  <Text className="text-xs text-gray-500">{company.supervisor.email}</Text>
+                </View>
+              ) : null}
+              <View className={company.supervisor ? 'mt-2' : undefined}>
+                <SupervisorFlag subject={company} />
               </View>
-              {company.can_manage_roster ? (
-                <Button
-                  label="Add Supervisor"
-                  icon="person-add-outline"
-                  variant="outline"
-                  onPress={() => {
-                    if (!inFlight.current) setPicking(true);
-                  }}
-                  loading={attach.isPending}
-                  loadingLabel="Adding…"
-                  disabled={busy}
-                  className="mt-3"
-                />
+              {company.supervisor_issue && company.can_edit ? (
+                <Text className="mt-2 text-xs text-gray-500">Tap Edit to set an active supervisor.</Text>
               ) : null}
             </Card>
 
@@ -418,15 +301,6 @@ export function CompanyDetailScreen() {
         </View>
       ) : null}
 
-      {company?.can_manage_roster ? (
-        <SupervisorPickerSheet
-          visible={picking}
-          companyId={company.id}
-          rosterIds={rosterIds}
-          onPick={(supervisor) => pick(company, supervisor)}
-          onClose={() => setPicking(false)}
-        />
-      ) : null}
     </View>
   );
 }

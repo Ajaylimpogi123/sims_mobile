@@ -6,6 +6,7 @@ import { ActivityIndicator, FlatList, Pressable, RefreshControl, View } from 're
 
 import { approvalKeys, useApprovals } from '@/api/approvals';
 import { toApiError } from '@/api/errors';
+import { ArchivedTermBanner } from '@/features/terms/TermSwitcher';
 import type { ApprovalItem } from '@/api/types';
 import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
@@ -213,6 +214,7 @@ export function ApprovalsScreen() {
 
   const header = (
     <View className="gap-3 px-4 pb-3 pt-4">
+      <ArchivedTermBanner />
       <Text className="text-sm text-gray-600">Review and approve or reject student time-in and time-out requests</Text>
       {approvals.isRefetchError && items.length > 0 ? (
         <Banner tone="warning" message={`Showing saved data. ${toApiError(approvals.error).message}`} />

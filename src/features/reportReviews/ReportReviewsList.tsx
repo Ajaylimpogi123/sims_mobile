@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState, type ReactElement, type React
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, View } from 'react-native';
 
 import { toApiError } from '@/api/errors';
+import { ArchivedTermBanner } from '@/features/terms/TermSwitcher';
 import { NO_REVIEW_FILTERS, reviewKeys, useReviewReports } from '@/api/reportReviews';
 import type { ReviewReport, ReviewReportFilters } from '@/api/types';
 import { Banner } from '@/components/ui/Banner';
@@ -215,7 +216,13 @@ export function ReportReviewsList({ studentId, top }: ReportReviewsListProps) {
 
   const header = (
     <View className="gap-3 pb-3 pt-4">
-      {top ? <View className="px-4">{top}</View> : null}
+      {top ? (
+        <View className="gap-3 px-4">{top}</View>
+      ) : !forStudent ? (
+        <View className="px-4">
+          <ArchivedTermBanner />
+        </View>
+      ) : null}
       {!forStudent ? <Text className="px-4 text-sm text-gray-600">{SUBTITLE}</Text> : null}
       {flash ? (
         <View className="px-4">

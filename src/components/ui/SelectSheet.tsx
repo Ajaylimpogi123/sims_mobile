@@ -20,13 +20,16 @@ export interface SelectOption {
 interface SelectSheetProps {
   visible: boolean;
   title: string;
-  /** First row, meaning "no filter", e.g. "All Companies" (the website's empty <option>). */
-  allLabel: string;
+  /**
+   * First row, meaning "no filter", e.g. "All Companies" (the website's empty <option>).
+   * Omit it for a required pick (e.g. a term), which has no such row.
+   */
+  allLabel?: string;
   options: SelectOption[];
   selected: number | null;
   onSelect: (value: number | null) => void;
   onClose: () => void;
-  /** Shown under the "all" row when there are no options at all, e.g. "No supervisors on this company's roster yet". */
+  /** Shown under the "all" row when there are no options at all, e.g. "No active supervisor accounts yet". */
   emptyText?: string;
 }
 
@@ -42,7 +45,8 @@ export function SelectSheet({ visible, title, allLabel, options, selected, onSel
     const matches = q
       ? options.filter((o) => o.label.toLowerCase().includes(q) || o.hint?.toLowerCase().includes(q))
       : options;
-    return [{ value: null, label: allLabel } as Omit<SelectOption, 'value'> & { value: number | null }, ...matches];
+    type Row = Omit<SelectOption, 'value'> & { value: number | null };
+    return allLabel === undefined ? (matches as Row[]) : [{ value: null, label: allLabel } as Row, ...matches];
   }, [allLabel, options, query]);
 
   const close = () => {

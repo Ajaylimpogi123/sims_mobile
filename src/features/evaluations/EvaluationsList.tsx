@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState, type ReactElement } from 'rea
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, View } from 'react-native';
 
 import { toApiError } from '@/api/errors';
+import { ArchivedTermBanner } from '@/features/terms/TermSwitcher';
 import { evaluationKeys, NO_EVALUATION_FILTERS, useEvaluations } from '@/api/evaluations';
 import { ROLE_SUPERVISOR, type EvaluationFilters, type EvaluationStatus, type EvaluationSummary } from '@/api/types';
 import { useAuth } from '@/auth/AuthProvider';
@@ -195,6 +196,9 @@ export function EvaluationsList() {
 
   const header = (
     <View className="gap-3 pb-3 pt-4">
+      <View className="px-4">
+        <ArchivedTermBanner />
+      </View>
       <Text className="px-4 text-sm text-gray-600">{SUBTITLE}</Text>
       {flash ? (
         <View className="px-4">

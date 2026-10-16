@@ -14,6 +14,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { SkeletonBlock, SkeletonPulse } from '@/components/ui/Skeleton';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { useAuth } from '@/auth/AuthProvider';
 import { submissionClosedMessage } from '@/lib/submission';
 import { colors } from '@/theme/colors';
 
@@ -95,6 +96,7 @@ function ListSkeleton() {
 /** Student "My Reports" tab (website: InternshipReports/Index.jsx). `?report_id=` (from a notification) opens that report. */
 export function ReportsScreen() {
   const router = useRouter();
+  const { me } = useAuth();
   const params = useLocalSearchParams<{ report_id?: string }>();
   const [filters, setFilters] = useState<ReportFilters>(NO_REPORT_FILTERS);
   const reports = useReports(filters);
@@ -153,8 +155,9 @@ export function ReportsScreen() {
   const filtered = filters.type !== null || filters.status !== null;
   // The API sends whether reports are accepted (internship Ongoing) with every page.
   const submission = reports.data?.pages[0]?.meta.submission;
+  const studentTerm = me?.student?.term ?? null;
   const closedMessage =
-    !noProfile && submission && !submission.can_submit ? submissionClosedMessage(submission.internship_status, submission.reason) : null;
+    !noProfile && submission && !submission.can_submit ? submissionClosedMessage(submission.internship_status, submission.reason, studentTerm) : null;
 
   const header = (
     <View className="gap-3 pb-3 pt-4">

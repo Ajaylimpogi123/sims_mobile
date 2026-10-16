@@ -54,6 +54,8 @@ export interface StudentProfile {
   company: IdName | null;
   /** null = no supervisor assigned yet */
   supervisor: IdName | null;
+  /** The student's own term (never null on a current server; optional for older ones). */
+  term?: TermRef | null;
 }
 
 export interface SupervisorSummary {
@@ -68,7 +70,7 @@ export interface SupervisorSummary {
 export interface StaffPermissions {
   /** User Management */
   can_manage_users: boolean;
-  /** Company Management + Supervisor Roster */
+  /** Company Management (incl. each company's Company Supervisor) */
   can_manage_companies: boolean;
   /** Internship Assignment */
   can_assign_internships: boolean;
@@ -107,6 +109,8 @@ export interface MeResponse {
   supervisor: SupervisorSummary | null;
   /** Coordinators and Administrators only. */
   staff: StaffPermissions | null;
+  /** The current school term, every role (null when none is set; undefined on an older server). */
+  current_term?: Term | null;
 }
 
 // Errors
@@ -863,25 +867,29 @@ export interface UserWriteResponse {
 }
 
 // ---------------------------------------------------------------------------
-// Company Management & Supervisor Roster (Module 14): Coordinator + Admin,
-// /me staff.can_manage_companies.
+// Company Management (Module 14): Coordinator + Admin, /me staff.can_manage_companies.
+// Each company has one Company Supervisor; its students' supervisor is always that person.
 // ---------------------------------------------------------------------------
 
 export type CompanyStatus = 'active' | 'inactive';
 
-/** A Supervisor account that can be added to a roster (GET /companies/{id}/supervisors/available). */
-export interface AvailableSupervisor {
+/**
+ * Why a company (or one of its students) has no working supervisor; first match wins in this order:
+ * none set, the account is no longer a Supervisor (role 3), the account is inactive.
+ */
+export type SupervisorIssue = 'no_supervisor' | 'not_a_supervisor' | 'inactive';
+
+/** GET /companies/supervisor-options: ACTIVE Supervisor accounts, by name (the Company Supervisor picker). */
+export interface SupervisorOption {
   id: number;
   name: string;
   email: string;
-  /** Inactive supervisors are listed too, as on the website. */
-  status: 'active' | 'inactive';
 }
 
-/** A supervisor on a company's roster (sorted by name). */
-export interface RosterSupervisor extends AvailableSupervisor {
-  /** How many of THIS company's students this person supervises (kept when removed from the roster). */
-  students_count: number;
+/** A company's supervisor as stored (may have become inactive or lost the Supervisor role since). */
+export interface CompanySupervisor extends SupervisorOption {
+  status: 'active' | 'inactive';
+  role_id: number;
 }
 
 export type CompanyDeleteBlockedReason = 'company_has_students' | 'company_has_evaluations';
@@ -891,7 +899,6 @@ export interface ManagedCompany {
   id: number;
   company_name: string;
   address: string | null;
-  contact_person: string | null;
   contact_number: string | null;
   email: string | null;
   industry: string | null;
@@ -902,14 +909,16 @@ export interface ManagedCompany {
   /** max(0, slots - students_count) */
   slots_available: number;
   status: CompanyStatus;
-  supervisors: RosterSupervisor[];
-  supervisors_count: number;
+  /** The Company Supervisor (its students' supervisor), or null when none is set. */
+  supervisor_id: number | null;
+  supervisor: CompanySupervisor | null;
+  /** Why the company has no working supervisor; null when it has one. */
+  supervisor_issue: SupervisorIssue | null;
   /** ISO 8601 */
   created_at: string | null;
   updated_at: string | null;
   can_edit: boolean;
   can_toggle_status: boolean;
-  can_manage_roster: boolean;
   can_delete: boolean;
   /** Why Delete is refused (null when can_delete). */
   delete_blocked_reason: CompanyDeleteBlockedReason | null;
@@ -927,10 +936,12 @@ export interface CompaniesPage {
   can_create: boolean;
 }
 
-/** POST /companies, PATCH /companies/{id}, activate/deactivate, roster attach/detach. */
+/** POST /companies, PATCH /companies/{id}, activate/deactivate. */
 export interface CompanyWriteResponse {
   message: string;
   company: ManagedCompany;
+  /** PATCH only: how many students' supervisor changed with this save (the message says so too). */
+  students_reassigned?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -951,11 +962,12 @@ export interface AssignmentSupervisor {
   status: 'active' | 'inactive';
 }
 
-export type SupervisorIssue = 'no_supervisor' | 'not_on_roster' | 'not_a_supervisor' | 'inactive';
-
 /** One student in GET /assignments and GET /assignments/{id}. The flags are the server's decision. */
 export interface AssignmentStudent {
   id: number;
+  /** The student's term (always present on a current server). Movable only while Not Started. */
+  term_id?: number;
+  term?: TermRef;
   user_id: number;
   /** null only if the account is missing. */
   name: string | null;
@@ -966,20 +978,15 @@ export interface AssignmentStudent {
   course: string;
   section: string;
   company: AssignmentCompany | null;
+  /** Always the company's supervisor (set on the company, not per student). */
   supervisor: AssignmentSupervisor | null;
-  /** null when no supervisor; false = the supervisor was later removed from the company's roster (still valid). */
-  supervisor_on_roster: boolean | null;
   /**
-   * Has a company but no working supervisor: none, one off its roster, one whose account is no longer
-   * a Supervisor, or one whose account is inactive (never true without a company). Same rows as the
-   * needs_supervisor=1 filter.
+   * Has a company but no working supervisor: none, one whose account is no longer a Supervisor, or
+   * one whose account is inactive (never true without a company). Same rows as needs_supervisor=1.
    */
   needs_supervisor: boolean;
-  /**
-   * Why needs_supervisor is true (null exactly when it's false); first match wins in this order.
-   * Optional: an older server doesn't send it (the app then derives it from the other fields).
-   */
-  supervisor_issue?: SupervisorIssue | null;
+  /** Why needs_supervisor is true (null exactly when it's false). */
+  supervisor_issue: SupervisorIssue | null;
   internship_status: InternshipStatus;
   internship_schedule: string | null;
   /** null = not set. Moving a student into Ongoing needs it (422 code required_hours_missing). */
@@ -1007,12 +1014,14 @@ export interface AssignmentsPage {
   meta: { current_page: number; last_page: number; per_page: number; total: number; has_more: boolean };
 }
 
-/** A company in GET /assignments/options, with its roster (both sorted by name). */
+/** A company in GET /assignments/options (sorted by name), with its Company Supervisor. */
 export interface AssignmentCompanyOption extends AssignmentCompany {
   slots: number;
   students_count: number;
   slots_available: number;
-  supervisors: AssignmentSupervisor[];
+  supervisor: AssignmentSupervisor | null;
+  /** Why the company has no working supervisor; null when it has one (optional for older servers). */
+  supervisor_issue?: SupervisorIssue | null;
 }
 
 /** GET /assignments/options */
@@ -1025,4 +1034,55 @@ export interface AssignmentOptions {
 export interface AssignmentWriteResponse {
   message: string;
   student: AssignmentStudent;
+}
+
+// ---------------------------------------------------------------------------
+// School terms (Phase 1): School Year + Semester. One is current; past terms are read-only
+// (Administrators may still change them). GET /terms for every role; writes Coordinator + Admin.
+// ---------------------------------------------------------------------------
+
+export type Semester = 'first' | 'second' | 'summer';
+
+/** A term as other resources reference it (student.term, AssignmentStudent.term). */
+export interface TermRef {
+  id: number;
+  /** "SY 2026-2027 · 1st Semester" */
+  label: string;
+  is_current: boolean;
+  /**
+   * Earlier than the current term (school year, then 1st → 2nd → Summer): archived, read-only except
+   * for Administrators. A term that is neither current nor past is upcoming and fully open.
+   * Optional for an older server, where every non-current term reads as past.
+   */
+  is_past?: boolean;
+}
+
+export interface Term extends TermRef {
+  /** 2026 → SY 2026-2027 (2000–2100) */
+  school_year_start: number;
+  semester: Semester;
+  /** "1st Semester", "2nd Semester", "Summer" */
+  semester_label: string;
+  /** YYYY-MM-DD or null */
+  starts_on: string | null;
+  ends_on: string | null;
+  /** Coordinator / Admin only. */
+  students_count?: number;
+  can_edit?: boolean;
+  /** False when it has students or is the current term. */
+  can_delete?: boolean;
+}
+
+/** GET /terms: newest first (school year desc, then Summer, 2nd, 1st). */
+export interface TermsResponse {
+  data: Term[];
+  current_term_id: number | null;
+  /** Coordinator / Admin. */
+  can_create: boolean;
+}
+
+/** POST /terms (201), PATCH /terms/{id}, POST /terms/{id}/current; DELETE sends the message only. */
+export interface TermWriteResponse {
+  message: string;
+  term?: Term;
 }

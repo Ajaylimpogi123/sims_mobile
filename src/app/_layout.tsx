@@ -14,6 +14,7 @@ import { SplashView } from '@/components/SplashView';
 import { config } from '@/config';
 import { canUse } from '@/navigation/access';
 import { queryClient } from '@/lib/query-client';
+import { TermSync } from '@/terms/useTermScope';
 import { colors } from '@/theme/colors';
 import { fontFiles, fonts } from '@/theme/fonts';
 
@@ -49,6 +50,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
+          <TermSync />
           <RootNavigator />
         </AuthProvider>
       </QueryClientProvider>
@@ -269,6 +271,20 @@ function RootNavigator() {
           }}
         />
       </Stack.Protected>
+      {/* Coordinators and Admins (access.ts "terms"): the Add / Edit Term form, above the tabs. */}
+      <Stack.Protected guard={signedIn && group === 'staff' && !!me && canUse('terms', me)}>
+        <Stack.Screen
+          name="term-form"
+          options={{
+            headerShown: true,
+            title: 'Add Term',
+            animation: 'slide_from_bottom',
+            headerStyle: { backgroundColor: colors.brand700 },
+            headerTintColor: colors.white,
+            headerTitleStyle: { fontFamily: fonts.semibold },
+          }}
+        />
+      </Stack.Protected>
       {/* Coordinators and Admins (access.ts "users", /me can_manage_users): one account and the Register / Edit User
           form, above the tabs. Buttons follow the API's can_create / can_edit / can_toggle_status. */}
       <Stack.Protected guard={signedIn && group === 'staff' && !!me && canUse('users', me)}>
@@ -295,8 +311,8 @@ function RootNavigator() {
           }}
         />
       </Stack.Protected>
-      {/* Coordinators and Admins (access.ts "companies", /me can_manage_companies): one company with its supervisor
-          roster and the Add / Edit Company form, above the tabs. Buttons follow the API's per-company flags. */}
+      {/* Coordinators and Admins (access.ts "companies", /me can_manage_companies): one company with its
+          Company Supervisor and the Add / Edit Company form, above the tabs. Buttons follow the API's per-company flags. */}
       <Stack.Protected guard={signedIn && group === 'staff' && !!me && canUse('companies', me)}>
         <Stack.Screen
           name="company/[id]"

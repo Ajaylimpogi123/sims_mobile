@@ -1,5 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData, type QueryClient } from '@tanstack/react-query';
 
+import { termKey, termParams, useTermParam, type TermKey } from '@/terms/selected-term';
+
 import { approvalKeys } from './approvals';
 import { api } from './client';
 import { companyKeys } from './companies';
@@ -26,16 +28,17 @@ export const ASSIGNMENT_SEARCH_MAX = 255;
 
 /**
  * Root key ['assignments']. companies.ts and users.ts invalidate it by its literal value (their
- * writes change slot counts, rosters, names); they don't import this file to avoid a require cycle.
+ * writes change slot counts, company supervisors, names); they don't import this file to avoid a require cycle.
  */
 export const assignmentKeys = {
   all: ['assignments'] as const,
   lists: ['assignments', 'list'] as const,
-  list: (filters: AssignmentFilters) => ['assignments', 'list', filters] as const,
+  list: (filters: AssignmentFilters, term: TermKey) => ['assignments', 'list', filters, term] as const,
   detail: (id: number) => ['assignments', 'detail', id] as const,
   options: ['assignments', 'options'] as const,
-  /** Not under `lists`: assignmentFromLists() reads every `lists` entry as pages of rows. */
+  /** Not under `lists`: assignmentFromLists() reads every `lists` entry as pages of rows. A prefix (per term below). */
   needsSupervisorCount: ['assignments', 'needs-supervisor-count'] as const,
+  needsSupervisorCountFor: (term: TermKey) => ['assignments', 'needs-supervisor-count', term] as const,
 };
 
 export const NO_ASSIGNMENT_FILTERS: AssignmentFilters = {
@@ -50,12 +53,14 @@ export const NO_ASSIGNMENT_FILTERS: AssignmentFilters = {
 // Requests
 // ---------------------------------------------------------------------------
 
-export async function getAssignments(filters: AssignmentFilters, page: number): Promise<AssignmentsPage> {
+/** termId null = the current term. */
+export async function getAssignments(filters: AssignmentFilters, page: number, termId: number | null = null): Promise<AssignmentsPage> {
   const search = filters.search.trim();
   const { data } = await api.get<AssignmentsPage>('/assignments', {
     params: {
       per_page: PER_PAGE,
       page,
+      ...termParams(termId),
       ...(search ? { search } : {}),
       ...(filters.internship_status ? { internship_status: filters.internship_status } : {}),
       ...(filters.status ? { status: filters.status } : {}),
@@ -67,8 +72,8 @@ export async function getAssignments(filters: AssignmentFilters, page: number): 
 }
 
 /** How many students the server flags needs_supervisor (all of them, ignoring the list's other filters). */
-export async function getNeedsSupervisorCount(): Promise<number> {
-  const { data } = await api.get<AssignmentsPage>('/assignments', { params: { per_page: 1, needs_supervisor: 1 } });
+export async function getNeedsSupervisorCount(termId: number | null = null): Promise<number> {
+  const { data } = await api.get<AssignmentsPage>('/assignments', { params: { per_page: 1, needs_supervisor: 1, ...termParams(termId) } });
   return data.meta.total;
 }
 
@@ -89,8 +94,8 @@ export interface AssignmentInput {
   student_number: string;
   course: string;
   section: string;
+  /** The student's supervisor follows the company (its Company Supervisor); there's no per-student pick. */
   company_id: number | null;
-  supervisor_id: number | null;
   internship_status: InternshipStatus;
   internship_schedule: string;
   /**
@@ -98,12 +103,11 @@ export interface AssignmentInput {
    * older server doesn't send required_hours, so the form can't show it).
    */
   required_hours?: string;
+  /** Move to another term (only while Not Started). Undefined = not sent (keeps the student's term). */
+  term_id?: number;
 }
 
-/**
- * Every field, every time, as the website form sends it (supervisor_id as-is: the server accepts an
- * unchanged supervisor even without a company); a blank schedule goes as null.
- */
+/** Every field, every time, as the website form sends it; a blank schedule goes as null. */
 function body(input: AssignmentInput) {
   const schedule = input.internship_schedule.trim();
   return {
@@ -113,10 +117,10 @@ function body(input: AssignmentInput) {
     course: input.course.trim(),
     section: input.section.trim(),
     company_id: input.company_id,
-    supervisor_id: input.supervisor_id,
     internship_status: input.internship_status,
     internship_schedule: schedule === '' ? null : schedule,
     ...(input.required_hours !== undefined ? { required_hours: requiredHoursValue(input.required_hours) } : {}),
+    ...(input.term_id !== undefined ? { term_id: input.term_id } : {}),
   };
 }
 
@@ -144,10 +148,12 @@ export async function setStudentActive({ id, active }: { id: number; active: boo
 
 type ListData = InfiniteData<AssignmentsPage, number>;
 
+/** Students of the viewed term (src/terms/selected-term.ts). */
 export function useAssignments(filters: AssignmentFilters) {
+  const termId = useTermParam();
   return useInfiniteQuery({
-    queryKey: assignmentKeys.list(filters),
-    queryFn: ({ pageParam }) => getAssignments(filters, pageParam),
+    queryKey: assignmentKeys.list(filters, termKey(termId)),
+    queryFn: ({ pageParam }) => getAssignments(filters, pageParam, termId),
     initialPageParam: 1,
     getNextPageParam: (last) => (last.meta.has_more ? last.meta.current_page + 1 : undefined),
     placeholderData: (previous) => previous,
@@ -157,7 +163,12 @@ export function useAssignments(filters: AssignmentFilters) {
 
 /** The "Needs supervisor (N)" chip's N. */
 export function useNeedsSupervisorCount() {
-  return useQuery({ queryKey: assignmentKeys.needsSupervisorCount, queryFn: getNeedsSupervisorCount, staleTime: 30_000 });
+  const termId = useTermParam();
+  return useQuery({
+    queryKey: assignmentKeys.needsSupervisorCountFor(termKey(termId)),
+    queryFn: () => getNeedsSupervisorCount(termId),
+    staleTime: 30_000,
+  });
 }
 
 /** A row already loaded by a list, to show the detail at once while it loads. */
@@ -179,7 +190,7 @@ export function useAssignment(id: number | null) {
   });
 }
 
-/** Companies (slot counts + rosters) for the form and the list's Company filter. Kept fresh: slots change often. */
+/** Companies (slot counts + each Company Supervisor) for the form and the list's Company filter. Kept fresh: slots change often. */
 export function useAssignmentOptions(enabled = true) {
   return useQuery({ queryKey: assignmentKeys.options, queryFn: getAssignmentOptions, enabled, staleTime: 10_000 });
 }
@@ -190,7 +201,7 @@ export function useAssignmentOptions(enabled = true) {
 
 /**
  * Everything an assignment write changes: these lists and options (slot counts), Company
- * Management (students_count, roster counts), User Management (name / email / status), Home's
+ * Management (students_count), User Management (name / email / status), Home's
  * counts and analytics filters, and the screens listing students with their company or
  * supervisor (monitoring, approvals, report reviews, evaluations).
  */
@@ -207,6 +218,8 @@ export function refreshAfterAssignmentWrite(queryClient: QueryClient, id?: numbe
   void queryClient.invalidateQueries({ queryKey: approvalKeys.all });
   void queryClient.invalidateQueries({ queryKey: reviewKeys.all });
   void queryClient.invalidateQueries({ queryKey: evaluationKeys.all });
+  // Moving a student to another term changes the Terms screen's student counts.
+  void queryClient.invalidateQueries({ queryKey: ['terms'] });
 }
 
 export function useUpdateAssignment() {

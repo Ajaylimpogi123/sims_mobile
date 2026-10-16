@@ -12,6 +12,8 @@ export interface ActionSheetOption {
   hint?: string;
   icon: keyof typeof Ionicons.glyphMap;
   destructive?: boolean;
+  /** Listed but not tappable (e.g. Delete with the reason it's refused in `hint`). */
+  disabled?: boolean;
 }
 
 interface ActionSheetProps {
@@ -43,10 +45,12 @@ export function ActionSheet({ visible, title, options, onSelect, onClose }: Acti
                 onClose();
                 onSelect(option.key);
               }}
+              disabled={option.disabled}
               accessibilityRole="button"
               accessibilityHint={option.hint}
-              android_ripple={{ color: 'rgba(0,0,0,0.06)' }}
-              className="min-h-14 flex-row items-center gap-4 px-4 py-3">
+              accessibilityState={{ disabled: !!option.disabled }}
+              android_ripple={option.disabled ? undefined : { color: 'rgba(0,0,0,0.06)' }}
+              className={`min-h-14 flex-row items-center gap-4 px-4 py-3 ${option.disabled ? 'opacity-50' : ''}`}>
               <Ionicons name={option.icon} size={22} color={option.destructive ? colors.red600 : colors.gray500} />
               <View className="flex-1">
                 <Text className={`text-base ${option.destructive ? 'text-red-600' : 'text-gray-900'}`}>{option.label}</Text>

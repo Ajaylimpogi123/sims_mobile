@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, KeyboardAvoidingView, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -12,6 +12,7 @@ import {
   companyKeys,
   useCompany,
   useCreateCompany,
+  useSupervisorOptions,
   useUpdateCompany,
   type CompanyInput,
 } from '@/api/companies';
@@ -21,14 +22,18 @@ import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
+import { PickerField } from '@/components/ui/PickerField';
+import { SelectSheet, type SelectOption } from '@/components/ui/SelectSheet';
 import { SkeletonBlock, SkeletonPulse } from '@/components/ui/Skeleton';
 import { TextField } from '@/components/ui/TextField';
+
+import { SUPERVISOR_ISSUE_SUFFIX } from '@/features/assignments/SupervisorFlag';
 
 import { COMPANY_NOT_FOUND, setCompaniesFlash, setCompanyDetailFlash } from './flash';
 import { Text, TextInput } from '@/components/ui/Text';
 
 type Field = keyof CompanyInput;
-const FIELDS: Field[] = ['company_name', 'address', 'contact_person', 'contact_number', 'email', 'industry', 'slots'];
+const FIELDS: Field[] = ['company_name', 'address', 'supervisor_id', 'contact_number', 'email', 'industry', 'slots'];
 
 /** Laravel's wording for the same rules (the server's message wins when it answers). */
 const RULE_MESSAGES = {
@@ -57,8 +62,8 @@ function FormSkeleton() {
 // ---------------------------------------------------------------------------
 
 /**
- * Add Company / Edit Company (website: AddModal / EditModal): Company Name, Address, Contact
- * Person, Contact Number, Email, Industry, Internship Slots, in the website's order.
+ * Add Company / Edit Company (website: AddModal / EditModal): Company Name, Address, Company
+ * Supervisor, Contact Number, Email, Industry, Internship Slots, in the website's order.
  */
 export function CompanyFormScreen() {
   const router = useRouter();
@@ -125,7 +130,7 @@ function CompanyForm({ title, company }: { title: string; company: ManagedCompan
   const [start] = useState<CompanyInput>(() => ({
     company_name: company?.company_name ?? '',
     address: company?.address ?? '',
-    contact_person: company?.contact_person ?? '',
+    supervisor_id: company?.supervisor_id ?? null,
     contact_number: company?.contact_number ?? '',
     email: company?.email ?? '',
     industry: company?.industry ?? '',
@@ -140,7 +145,6 @@ function CompanyForm({ title, company }: { title: string; company: ManagedCompan
   const saved = useRef(false);
   const refs = {
     address: useRef<TextInput>(null),
-    contact_person: useRef<TextInput>(null),
     contact_number: useRef<TextInput>(null),
     email: useRef<TextInput>(null),
     industry: useRef<TextInput>(null),
@@ -149,6 +153,32 @@ function CompanyForm({ title, company }: { title: string; company: ManagedCompan
 
   const create = useCreateCompany();
   const update = useUpdateCompany();
+  const supervisors = useSupervisorOptions();
+  const [picking, setPicking] = useState(false);
+
+  // Active Supervisor accounts, plus the company's current one when it no longer is a valid pick
+  // (inactive / lost the role): it can be kept unchanged, as on the website.
+  const current = company?.supervisor ?? null;
+  const currentSuffix = company?.supervisor_issue ? SUPERVISOR_ISSUE_SUFFIX[company.supervisor_issue] : undefined;
+  const supervisorOptions = useMemo<SelectOption[]>(() => {
+    const options: SelectOption[] = (supervisors.data ?? []).map((s) => ({ value: s.id, label: s.name, hint: s.email }));
+    if (current && !options.some((o) => o.value === current.id)) {
+      options.unshift({ value: current.id, label: currentSuffix ? `${current.name} (${currentSuffix})` : current.name, hint: current.email });
+    }
+    return options;
+  }, [supervisors.data, current, currentSuffix]);
+  const picked = supervisorOptions.find((o) => o.value === values.supervisor_id);
+  const supervisorLabel = values.supervisor_id === null ? 'No supervisor' : (picked?.label ?? null);
+
+  const studentsCount = company?.students_count ?? 0;
+  const changed = editing && values.supervisor_id !== (company?.supervisor_id ?? null);
+  const atCompany = studentsCount === 1 ? 'The 1 student at this company' : `All ${studentsCount} students at this company`;
+  const moveMessage =
+    changed && studentsCount > 0
+      ? values.supervisor_id === null
+        ? `${atCompany} will be left without a supervisor.`
+        : `${atCompany} will be moved to ${picked?.label ?? 'the new supervisor'}.`
+      : null;
 
   const dirty = JSON.stringify(values) !== JSON.stringify(start);
   const dirtyRef = useRef(dirty);
@@ -172,7 +202,7 @@ function CompanyForm({ title, company }: { title: string; company: ManagedCompan
     [navigation, editing],
   );
 
-  const set = (field: Field, value: string) => {
+  const set = (field: Exclude<Field, 'supervisor_id'>, value: string) => {
     setValues((old) => ({ ...old, [field]: value }));
     setErrors((old) => (old[field] ? { ...old, [field]: undefined } : old));
   };
@@ -213,6 +243,22 @@ function CompanyForm({ title, company }: { title: string; company: ManagedCompan
     }
   };
 
+  /**
+   * Website EditModal: saving a different supervisor moves every student at the company, so ask
+   * first (same wording as its warning).
+   */
+  const confirmAndSubmit = () => {
+    if (inFlight.current) return;
+    if (!moveMessage) {
+      void submit();
+      return;
+    }
+    Alert.alert('Change supervisor?', `${moveMessage} Continue?`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Continue', onPress: () => void submit() },
+    ]);
+  };
+
   const next = (field: keyof typeof refs) => () => refs[field].current?.focus();
 
   return (
@@ -243,23 +289,26 @@ function CompanyForm({ title, company }: { title: string; company: ManagedCompan
           maxLength={COMPANY_TEXT_MAX}
           returnKeyType="next"
           submitBehavior="submit"
-          onSubmitEditing={next('contact_person')}
+          onSubmitEditing={next('contact_number')}
           editable={!submitting}
           error={errors.address}
         />
-        <TextField
-          ref={refs.contact_person}
-          label="Contact Person"
-          value={values.contact_person}
-          onChangeText={(text) => set('contact_person', text)}
-          autoCapitalize="words"
-          maxLength={COMPANY_TEXT_MAX}
-          returnKeyType="next"
-          submitBehavior="submit"
-          onSubmitEditing={next('contact_number')}
-          editable={!submitting}
-          error={errors.contact_person}
-        />
+        <View className="gap-1">
+          <PickerField
+            label="Company Supervisor"
+            icon="person-outline"
+            value={supervisorLabel}
+            placeholder="No supervisor"
+            onPress={() => setPicking(true)}
+            disabled={submitting}
+            error={errors.supervisor_id ?? (supervisors.isError ? toApiError(supervisors.error).message : null)}
+          />
+          {moveMessage ? (
+            <Text className="text-xs text-amber-700">{moveMessage}</Text>
+          ) : (
+            <Text className="text-xs text-gray-500">Every student placed at this company is supervised by this person.</Text>
+          )}
+        </View>
         <TextField
           ref={refs.contact_number}
           label="Contact Number"
@@ -327,8 +376,21 @@ function CompanyForm({ title, company }: { title: string; company: ManagedCompan
       </ScrollView>
       <View className="flex-row gap-3 border-t border-gray-200 bg-white px-4 pt-3" style={{ paddingBottom: insets.bottom + 12 }}>
         <Button label="Cancel" variant="outline" onPress={() => router.back()} disabled={submitting} className="flex-1" />
-        <Button label={editing ? 'Save' : 'Submit'} onPress={() => void submit()} loading={submitting} loadingLabel="Saving…" className="flex-1" />
+        <Button label={editing ? 'Save' : 'Submit'} onPress={confirmAndSubmit} loading={submitting} loadingLabel="Saving…" className="flex-1" />
       </View>
+      <SelectSheet
+        visible={picking}
+        title="Company Supervisor"
+        allLabel="No supervisor"
+        options={supervisorOptions}
+        selected={values.supervisor_id}
+        onSelect={(value) => {
+          setValues((old) => ({ ...old, supervisor_id: value }));
+          setErrors((old) => (old.supervisor_id ? { ...old, supervisor_id: undefined } : old));
+        }}
+        onClose={() => setPicking(false)}
+        emptyText={supervisors.isPending ? 'Loading supervisors…' : 'No active supervisor accounts yet'}
+      />
     </KeyboardAvoidingView>
   );
 }

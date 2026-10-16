@@ -33,6 +33,7 @@ export type FeatureKey =
   | 'report-reviews'
   | 'companies'
   | 'users'
+  | 'terms'
   | 'criteria'
   | 'attendance-monitoring'
   | 'progress'
@@ -127,7 +128,7 @@ const CATALOG: Record<FeatureKey, CatalogEntry> = {
     icon: 'people-outline',
     iconFocused: 'people',
     module: 'Module 15 — Internship Assignment',
-    description: 'All students: assign a company, a supervisor from its roster, status and schedule.',
+    description: 'All students: assign a company (its supervisor comes with it), status, schedule and required hours.',
     byRole: {
       [ROLE_SUPERVISOR]: {
         // Same page as the website's supervisor menu item.
@@ -166,8 +167,8 @@ const CATALOG: Record<FeatureKey, CatalogEntry> = {
     tabLabel: 'Companies',
     icon: 'business-outline',
     iconFocused: 'business',
-    module: 'Module 14 — Company Management & Supervisor Roster',
-    description: 'Host companies: add, edit, activate or deactivate, and manage each company’s supervisor roster.',
+    module: 'Module 14 — Company Management',
+    description: 'Host companies: add, edit, activate or deactivate, and set each company’s supervisor.',
   },
   users: {
     title: 'User Management',
@@ -175,6 +176,13 @@ const CATALOG: Record<FeatureKey, CatalogEntry> = {
     iconFocused: 'person-add',
     module: 'Module 13 — User Management',
     description: 'Search accounts, create and edit users, and activate or deactivate them.',
+  },
+  terms: {
+    title: 'Terms',
+    icon: 'school-outline',
+    iconFocused: 'school',
+    module: 'Phase 1 — School Terms',
+    description: 'School years and semesters: add, edit, and set the current term.',
   },
   criteria: {
     title: 'Evaluation Criteria',
@@ -271,6 +279,9 @@ export function canUse(key: FeatureKey, me: MeResponse): boolean {
       return flag(staff, 'can_manage_users');
     case 'criteria':
       return flag(staff, 'can_manage_criteria');
+    // Website: routes/terms.php, role:2,4 (no /me flag).
+    case 'terms':
+      return isStaff;
     // Viewing needs no flag for staff; write actions inside are gated by flags in their modules.
     case 'evaluations':
     case 'report-reviews':
@@ -304,6 +315,7 @@ const MORE_ORDER: FeatureKey[] = [
   'approvals',
   'evaluations',
   'criteria',
+  'terms',
   'attendance-monitoring',
   'progress',
   'notifications',
@@ -352,6 +364,7 @@ const MORE_HREF: Partial<Record<FeatureKey, Href>> = {
   approvals: '/staff/more/approvals',
   evaluations: '/staff/more/evaluations',
   criteria: '/staff/more/criteria',
+  terms: '/staff/more/terms',
   'attendance-monitoring': '/staff/more/attendance-monitoring',
   progress: '/staff/more/progress',
   // The one Notifications screen (src/app/notifications.tsx), also opened by the header bell.

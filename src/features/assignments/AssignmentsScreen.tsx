@@ -13,6 +13,7 @@ import {
   useNeedsSupervisorCount,
 } from '@/api/assignments';
 import { toApiError } from '@/api/errors';
+import { TermBar } from '@/features/terms/TermSwitcher';
 import type { AssignmentFilters, AssignmentStudent, InternshipStatus } from '@/api/types';
 import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
@@ -107,7 +108,7 @@ function StudentCard({ item, onOpen }: { item: AssignmentStudent; onOpen: () => 
       </View>
       <View className="mt-1 gap-1">
         <Line icon="business-outline" text={company} muted={!item.company} />
-        <Line icon="person-outline" text={supervisor} muted={!item.supervisor} trailing={<SupervisorFlag student={item} />} />
+        <Line icon="person-outline" text={supervisor} muted={!item.supervisor} trailing={<SupervisorFlag subject={item} />} />
         {hours ? <Line icon="hourglass-outline" text={hours} muted={!hoursSet} /> : null}
       </View>
     </Pressable>
@@ -216,6 +217,9 @@ export function AssignmentsScreen() {
 
   const header = (
     <View className="gap-3 pb-3 pt-4">
+      <View className="px-4">
+        <TermBar />
+      </View>
       <Text className="px-4 text-sm text-gray-600">{SUBTITLE}</Text>
       {flash ? (
         <View className="px-4">
@@ -297,7 +301,7 @@ export function AssignmentsScreen() {
     );
   } else if (onlyNeedsSupervisor) {
     // Website filtered-empty text.
-    empty = <EmptyState icon="checkmark-circle-outline" message="Every placed student has a supervisor on their company's roster." />;
+    empty = <EmptyState icon="checkmark-circle-outline" message="Every placed student's company has an active supervisor." />;
   } else if (filtered) {
     empty = <EmptyState icon="filter-outline" message="No students match these filters." />;
   } else {

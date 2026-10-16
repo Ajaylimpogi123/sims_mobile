@@ -1,5 +1,7 @@
 import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData, type QueryClient } from '@tanstack/react-query';
 
+import { termKey, termParams, useTermParam, type TermKey } from '@/terms/selected-term';
+
 import { approvalKeys } from './approvals';
 import { api } from './client';
 import { dashboardKeys } from './dashboard';
@@ -18,8 +20,8 @@ const PER_PAGE = 20;
 /** Everything under ['monitoring'] is refreshed after any write (lists, progress, students, logs). */
 export const monitoringKeys = {
   all: ['monitoring'] as const,
-  students: (search: string) => ['monitoring', 'students', search] as const,
-  progress: (search: string) => ['monitoring', 'progress', search] as const,
+  students: (search: string, term: TermKey) => ['monitoring', 'students', search, term] as const,
+  progress: (search: string, term: TermKey) => ['monitoring', 'progress', search, term] as const,
   student: (id: number) => ['monitoring', 'student', id] as const,
   log: (id: number) => ['monitoring', 'log', id] as const,
 };
@@ -28,9 +30,14 @@ export const monitoringKeys = {
 // Requests
 // ---------------------------------------------------------------------------
 
-async function getStudents(path: '/monitoring/students' | '/progress', search: string, page: number): Promise<MonitoredStudentsPage> {
+async function getStudents(
+  path: '/monitoring/students' | '/progress',
+  search: string,
+  page: number,
+  termId: number | null,
+): Promise<MonitoredStudentsPage> {
   const { data } = await api.get<MonitoredStudentsPage>(path, {
-    params: { per_page: PER_PAGE, page, ...(search ? { search } : {}) },
+    params: { per_page: PER_PAGE, page, ...(search ? { search } : {}), ...termParams(termId) },
   });
   return data;
 }
@@ -86,9 +93,11 @@ type StudentsData = InfiniteData<MonitoredStudentsPage, number>;
 
 /** Attendance Monitoring ('students') or Progress Monitoring list; search = student name contains (the website's filter). */
 export function useMonitoringList(kind: 'students' | 'progress', search: string) {
+  const termId = useTermParam();
+  const term = termKey(termId);
   return useInfiniteQuery({
-    queryKey: kind === 'students' ? monitoringKeys.students(search) : monitoringKeys.progress(search),
-    queryFn: ({ pageParam }) => getStudents(kind === 'students' ? '/monitoring/students' : '/progress', search, pageParam),
+    queryKey: kind === 'students' ? monitoringKeys.students(search, term) : monitoringKeys.progress(search, term),
+    queryFn: ({ pageParam }) => getStudents(kind === 'students' ? '/monitoring/students' : '/progress', search, pageParam, termId),
     initialPageParam: 1,
     getNextPageParam: (last) => (last.meta.has_more ? last.meta.current_page + 1 : undefined),
     staleTime: 30_000,

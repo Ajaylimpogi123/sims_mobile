@@ -1,5 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData, type QueryClient } from '@tanstack/react-query';
 
+import { termKey, termParams, useTermParam, type TermKey } from '@/terms/selected-term';
+
 import { api } from './client';
 import { dashboardKeys } from './dashboard';
 import { toApiError } from './errors';
@@ -18,8 +20,11 @@ const PER_PAGE = 20;
 
 export const approvalKeys = {
   all: ['approvals'] as const,
+  /** Prefixes: one list / count per viewed term below. */
   list: ['approvals', 'list'] as const,
+  listFor: (term: TermKey) => ['approvals', 'list', term] as const,
   count: ['approvals', 'count'] as const,
+  countFor: (term: TermKey) => ['approvals', 'count', term] as const,
   detail: (id: number) => ['approvals', 'detail', id] as const,
 };
 
@@ -32,15 +37,15 @@ const LEG_PATH: Record<AttendanceLeg, string> = { time_in: 'time-in', time_out: 
 // Requests
 // ---------------------------------------------------------------------------
 
-export async function getApprovals(cursor: string | null): Promise<ApprovalsPage> {
+export async function getApprovals(cursor: string | null, termId: number | null = null): Promise<ApprovalsPage> {
   const { data } = await api.get<ApprovalsPage>('/approvals', {
-    params: { per_page: PER_PAGE, ...(cursor ? { cursor } : {}) },
+    params: { per_page: PER_PAGE, ...(cursor ? { cursor } : {}), ...termParams(termId) },
   });
   return data;
 }
 
-export async function getApprovalCount(): Promise<number> {
-  const { data } = await api.get<ApprovalCountResponse>('/approvals/count');
+export async function getApprovalCount(termId: number | null = null): Promise<number> {
+  const { data } = await api.get<ApprovalCountResponse>('/approvals/count', { params: termParams(termId) });
   return data.count;
 }
 
@@ -71,9 +76,10 @@ export async function decideApproval({ id, leg, decision, reason }: DecisionInpu
 type ListData = InfiniteData<ApprovalsPage, string | null>;
 
 export function useApprovals() {
+  const termId = useTermParam();
   return useInfiniteQuery({
-    queryKey: approvalKeys.list,
-    queryFn: ({ pageParam }) => getApprovals(pageParam),
+    queryKey: approvalKeys.listFor(termKey(termId)),
+    queryFn: ({ pageParam }) => getApprovals(pageParam, termId),
     initialPageParam: null as string | null,
     getNextPageParam: (last) => (last.meta.has_more && last.meta.next_cursor ? last.meta.next_cursor : undefined),
     staleTime: 15_000,
@@ -85,7 +91,8 @@ export function useApprovals() {
  * (useBadgePolling in RoleTabs) refreshes it together with the bell.
  */
 export function useApprovalCount(enabled: boolean) {
-  return useQuery({ queryKey: approvalKeys.count, queryFn: getApprovalCount, staleTime: 15_000, enabled });
+  const termId = useTermParam();
+  return useQuery({ queryKey: approvalKeys.countFor(termKey(termId)), queryFn: () => getApprovalCount(termId), staleTime: 15_000, enabled });
 }
 
 /** One record (a notification target, or a card opened from the list, shown at once from the list cache). */
@@ -101,10 +108,11 @@ export function useApproval(id: number | null) {
 }
 
 function findInList(queryClient: QueryClient, id: number): ApprovalItem | undefined {
-  const list = queryClient.getQueryData<ListData>(approvalKeys.list);
-  for (const page of list?.pages ?? []) {
-    const item = page.data.find((row) => row.id === id);
-    if (item) return item;
+  for (const [, list] of queryClient.getQueriesData<ListData>({ queryKey: approvalKeys.list })) {
+    for (const page of list?.pages ?? []) {
+      const item = page.data.find((row) => row.id === id);
+      if (item) return item;
+    }
   }
   return undefined;
 }
@@ -115,7 +123,7 @@ function findInList(queryClient: QueryClient, id: number): ApprovalItem | undefi
 
 /** Puts the server's fresh record in the caches; a record with nothing left pending leaves the list. */
 function applyFresh(queryClient: QueryClient, fresh: ApprovalItem) {
-  queryClient.setQueryData<ListData>(approvalKeys.list, (old) =>
+  queryClient.setQueriesData<ListData>({ queryKey: approvalKeys.list }, (old) =>
     old
       ? {
           ...old,
@@ -133,7 +141,7 @@ function applyFresh(queryClient: QueryClient, fresh: ApprovalItem) {
 }
 
 function removeRecord(queryClient: QueryClient, id: number) {
-  queryClient.setQueryData<ListData>(approvalKeys.list, (old) =>
+  queryClient.setQueriesData<ListData>({ queryKey: approvalKeys.list }, (old) =>
     old ? { ...old, pages: old.pages.map((page) => ({ ...page, data: page.data.filter((row) => row.id !== id) })) } : old,
   );
 }

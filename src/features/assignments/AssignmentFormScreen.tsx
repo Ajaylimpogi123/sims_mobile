@@ -16,7 +16,7 @@ import {
   type AssignmentInput,
 } from '@/api/assignments';
 import { toApiError } from '@/api/errors';
-import type { AssignmentCompanyOption, AssignmentOptions, AssignmentStudent, InternshipStatus } from '@/api/types';
+import type { AssignmentCompanyOption, AssignmentOptions, AssignmentStudent, InternshipStatus, SupervisorIssue } from '@/api/types';
 import { Banner } from '@/components/ui/Banner';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -27,11 +27,13 @@ import { SelectSheet, type SelectOption } from '@/components/ui/SelectSheet';
 import { SkeletonBlock, SkeletonPulse } from '@/components/ui/Skeleton';
 import { TextField } from '@/components/ui/TextField';
 import { REQUIRED_HOURS_MAX_LENGTH, requiredHoursError } from '@/lib/requiredHours';
+import { isPastTerm, termStatusLabel } from '@/terms/selected-term';
+import { useTermScope } from '@/terms/useTermScope';
 import { colors } from '@/theme/colors';
 
 import { INTERNSHIP_STATUSES } from './AssignmentsScreen';
 import { setAssignmentDetailFlash, setAssignmentsFlash, STUDENT_NOT_FOUND } from './flash';
-import { INACTIVE_SUPERVISOR_HINT, NO_SUPERVISOR_HINT, NOT_SUPERVISOR_HINT, OFF_ROSTER_HINT, supervisorProblem } from './SupervisorFlag';
+import { STUDENT_SUPERVISOR_HINTS, SUPERVISOR_ISSUE_SUFFIX } from './SupervisorFlag';
 import { Text, TextInput } from '@/components/ui/Text';
 
 type Field = keyof AssignmentInput;
@@ -41,8 +43,8 @@ const FIELDS: Field[] = [
   'student_number',
   'course',
   'section',
+  'term_id',
   'company_id',
-  'supervisor_id',
   'required_hours',
   'internship_status',
   'internship_schedule',
@@ -69,13 +71,16 @@ function requiredHoursText(hours: number | null | undefined): string | undefined
   return hours !== null && hours > 0 ? String(hours) : '';
 }
 
+/** Website wording (StudentModal), also the server's 422 term_id message. */
+const TERM_LOCKED_HINT = "Only students who haven't started can move to another term.";
+
+/** The server's 422 term_id message for a non-Administrator picking a past term. */
+const PAST_TERM_HINT = 'Only an Administrator can move a student into a past term.';
+
 /** 422 refusal codes whose message belongs to a picker; the options are refreshed so the counts match. */
-const OPTION_CODES: Record<string, 'company_id' | 'supervisor_id'> = {
+const OPTION_CODES: Record<string, 'company_id'> = {
   company_inactive: 'company_id',
   company_full: 'company_id',
-  supervisor_needs_company: 'supervisor_id',
-  supervisor_not_on_roster: 'supervisor_id',
-  supervisor_inactive: 'supervisor_id',
 };
 
 /** Website company option text: "Acme Corp (2/5)". */
@@ -114,7 +119,7 @@ function FormSkeleton() {
 
 /**
  * Edit student (website: StudentModal): Profile (Name, Email, Student Number, Course, Section)
- * and Internship Assignment (Company, Supervisor from that company's roster, Internship Status,
+ * and Internship Assignment (Company with its supervisor read-only, Required Hours, Internship Status,
  * Internship Schedule), in the website's order.
  */
 export function AssignmentFormScreen() {
@@ -199,16 +204,18 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
     course: student.course ?? '',
     section: student.section ?? '',
     company_id: student.company?.id ?? null,
-    supervisor_id: student.supervisor?.id ?? null,
     internship_status: student.internship_status ?? 'not_started',
     internship_schedule: student.internship_schedule ?? '',
     required_hours: requiredHoursText(student.required_hours),
+    // Undefined on an older server: the Term field isn't shown or sent.
+    term_id: student.term_id ?? student.term?.id,
   }));
   const [values, setValues] = useState<AssignmentInput>(start);
   const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [picker, setPicker] = useState<'company' | 'supervisor' | null>(null);
+  const [picker, setPicker] = useState<'company' | 'term' | null>(null);
+  const { terms, isAdmin } = useTermScope();
   const inFlight = useRef(false);
   const saved = useRef(false);
   const refs = {
@@ -243,34 +250,31 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
   );
 
   const companies = options.companies;
-  /** The student's current supervisor account no longer has the Supervisor role (server's needs_supervisor). */
-  const currentNotSupervisor = supervisorProblem(student) === 'not_supervisor';
   const selectedCompany = useMemo(() => companies.find((c) => c.id === values.company_id) ?? null, [companies, values.company_id]);
-  // Active roster supervisors. The student's current supervisor, if inactive, is listed only for the student's
-  // current company: after a company change the server refuses them (supervisor_inactive), so they're dropped.
-  // A current supervisor whose account is no longer a Supervisor is never a roster choice: the server
-  // only lets the student keep them unchanged (shown as kept below), never take them to a new company.
-  const rosterFor = (company: AssignmentCompanyOption | null | undefined) =>
-    (company?.supervisors ?? []).filter(
-      (s) =>
-        !(currentNotSupervisor && s.id === start.supervisor_id) &&
-        (s.status === 'active' || (s.id === start.supervisor_id && company?.id === start.company_id)),
-    );
-  const roster = rosterFor(selectedCompany);
   const statuses = options.internship_statuses.length > 0 ? options.internship_statuses : INTERNSHIP_STATUSES;
 
-  // The student's own supervisor stays selectable while the company is unchanged, even if they
-  // were later removed from its roster (the server keeps that assignment, like the website).
-  const keptSupervisor =
-    student.supervisor && values.company_id === start.company_id && !roster.some((s) => s.id === student.supervisor?.id)
-      ? student.supervisor
-      : null;
-  const selectedSupervisor =
-    roster.find((s) => s.id === values.supervisor_id) ?? (keptSupervisor && keptSupervisor.id === values.supervisor_id ? keptSupervisor : null);
+  // The student's supervisor is always the company's supervisor (set in Company Management); the server
+  // assigns it on save. Shown read-only. supervisor_issue only describes the student's saved company; for
+  // another company only the account status is known here (website StudentModal, same order).
+  const companySupervisor = selectedCompany?.supervisor ?? null;
+  const keepsCurrentCompany = selectedCompany !== null && selectedCompany.id === start.company_id;
+  // The server's own reason for each company (GET /assignments/options supervisor_issue) wins; the
+  // fallback below is for an older server without it.
+  const supervisorIssue: SupervisorIssue | null = !selectedCompany
+    ? null
+    : selectedCompany.supervisor_issue !== undefined
+      ? selectedCompany.supervisor_issue
+      : !companySupervisor
+      ? 'no_supervisor'
+      : keepsCurrentCompany && student.supervisor_issue === 'not_a_supervisor'
+        ? 'not_a_supervisor'
+        : companySupervisor.status !== 'active'
+          ? 'inactive'
+          : null;
+  const supervisorSuffix = supervisorIssue ? SUPERVISOR_ISSUE_SUFFIX[supervisorIssue] : undefined;
 
-  // New picks follow the server's rules: an active company with a free slot, an active supervisor, and no new
-  // supervisor at an inactive company. The student's current company / supervisor always stay selectable.
-  // Like the website, inactive companies are hidden unless current (then labelled "(inactive)").
+  // New picks follow the server's rules: an active company with a free slot. The student's current company
+  // always stays selectable. Like the website, inactive companies are hidden unless current ("(inactive)").
   const companyOptions: SelectOption[] = companies
     .filter((company) => company.status === 'active' || company.id === start.company_id)
     .map((company) => {
@@ -280,36 +284,30 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
         value: company.id,
         label: company.status === 'active' ? company.company_name : `${company.company_name} (inactive)`,
         meta: slotCount(company),
-        hint: (current ? 'Current company' : full ? 'No available slots' : undefined),
+        hint: [company.supervisor?.name, current ? 'Current company' : full ? 'No available slots' : null].filter(Boolean).join(' · ') || undefined,
         disabled: full,
       };
     });
-  const companyInactive = selectedCompany?.status === 'inactive';
-  const keptSuffix = currentNotSupervisor ? ' (not a supervisor)' : ' (not on roster)';
-  const supervisorOptions: SelectOption[] = [
-    ...roster.map((s) => {
-      const current = s.id === start.supervisor_id;
-      const inactive = s.status === 'inactive';
+
+  // Only a Not Started student (as saved) can move to another term, and only an Administrator into a
+  // past term; the server enforces both (422 on term_id). The student's own term stays listed and selectable.
+  const canChangeTerm = student.internship_status === 'not_started';
+  const termOptions: SelectOption[] = useMemo(() => {
+    const own = student.term;
+    const option = (term: { id: number; label: string; is_current: boolean; is_past?: boolean }): SelectOption => {
+      const blocked = !isAdmin && isPastTerm(term) && term.id !== own?.id;
       return {
-        value: s.id,
-        label: inactive ? `${s.name} (inactive)` : s.name,
-        hint: [s.email, current ? 'Current supervisor' : null].filter(Boolean).join(' · '),
-        disabled: !current && companyInactive,
+        value: term.id,
+        label: term.label,
+        meta: termStatusLabel(term),
+        hint: blocked ? PAST_TERM_HINT : undefined,
+        disabled: blocked,
       };
-    }),
-    ...(keptSupervisor
-      ? [
-          {
-            value: keptSupervisor.id,
-            // Website option text for a kept current supervisor who is off the roster / no longer a Supervisor.
-            label: selectedCompany ? `${keptSupervisor.name}${keptSuffix}` : keptSupervisor.name,
-            hint: 'Current supervisor',
-          },
-        ]
-      : []),
-  ];
-  /** The unchanged current supervisor is selected but off the (unchanged) company's roster or no longer a Supervisor. */
-  const keptFlagged = !!selectedCompany && !!keptSupervisor && selectedSupervisor?.id === keptSupervisor.id;
+    };
+    const list = terms.map(option);
+    return own && !list.some((item) => item.value === own.id) ? [option(own), ...list] : list;
+  }, [terms, student.term, isAdmin]);
+  const selectedTerm = termOptions.find((option) => option.value === values.term_id) ?? null;
 
   // The server refuses moving a student INTO Ongoing without required hours (empty or 0, checked against the
   // value sent in the same save; 422 on internship_status). Keeping an already-Ongoing status unchanged is
@@ -325,10 +323,6 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
     values.internship_status === 'ongoing' &&
     !hoursSet;
 
-  // Without a company the picker only offers the student's existing supervisor (to keep or clear), as the
-  // server accepts that unchanged value; otherwise it waits for a company like the website.
-  const supervisorPickable = !!selectedCompany || keptSupervisor !== null;
-
   const clear = (...fields: Field[]) =>
     setErrors((old) => {
       if (!fields.some((f) => old[f])) return old;
@@ -342,18 +336,8 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
     clear(field);
   };
 
-  /** Website handleCompanyChange: keep the supervisor only if they're on the new company's roster. */
-  const changeCompany = (companyId: number | null) => {
-    setValues((old) => {
-      const company = companies.find((c) => c.id === companyId);
-      const stillValid =
-        old.supervisor_id !== null &&
-        (rosterFor(company).some((s) => s.id === old.supervisor_id) ||
-          (companyId === start.company_id && old.supervisor_id === start.supervisor_id));
-      return { ...old, company_id: companyId, supervisor_id: stillValid ? old.supervisor_id : null };
-    });
-    clear('company_id', 'supervisor_id');
-  };
+  /** The supervisor follows the company on the server; nothing else to reset here. */
+  const changeCompany = (companyId: number | null) => set('company_id', companyId);
 
   const validate = () => {
     const found: Partial<Record<Field, string>> = {};
@@ -404,7 +388,7 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
     <KeyboardAvoidingView behavior="padding" className="flex-1 bg-gray-50">
       <Stack.Screen options={{ title }} />
       <ScrollView className="flex-1" contentContainerClassName="gap-5 p-4" keyboardShouldPersistTaps="handled">
-        <Text className="text-sm text-gray-600">Update the student&apos;s profile, company/supervisor assignment, required hours and internship status</Text>
+        <Text className="text-sm text-gray-600">Update the student&apos;s profile, company assignment, required hours and internship status</Text>
         {formError ? <Banner tone="error" message={formError} /> : null}
 
         <Text accessibilityRole="header" className="text-sm font-semibold text-gray-500">
@@ -490,53 +474,39 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
           <Text accessibilityRole="header" className="text-sm font-semibold text-gray-500">
             Internship Assignment
           </Text>
-          <PickerField
-            label="Company"
-            icon="business-outline"
-            value={selectedCompany ? `${selectedCompany.company_name}${selectedCompany.status === 'inactive' ? ' (inactive)' : ''}` : values.company_id === null ? 'Unassigned' : null}
-            placeholder="Select a company"
-            detail={
-              selectedCompany
-                ? `${slotCount(selectedCompany)} slots filled`
-                : null
-            }
-            onPress={() => setPicker('company')}
-            disabled={submitting}
-            error={errors.company_id}
-          />
-          <View className="gap-1">
+          {values.term_id !== undefined ? (
+            <View className="gap-1">
+              <PickerField
+                label="Term"
+                icon="calendar-outline"
+                value={selectedTerm ? `${selectedTerm.label} (${selectedTerm.meta})` : null}
+                placeholder="Select a term"
+                onPress={() => setPicker('term')}
+                disabled={submitting || !canChangeTerm}
+                error={errors.term_id}
+              />
+              {!canChangeTerm && !errors.term_id ? <Text className="text-xs text-gray-500">{TERM_LOCKED_HINT}</Text> : null}
+            </View>
+          ) : null}
+          <View className="gap-1.5">
             <PickerField
-              label="Supervisor"
-              icon="person-outline"
-              value={
-                supervisorPickable
-                  ? selectedSupervisor
-                    ? `${selectedSupervisor.name}${keptFlagged ? keptSuffix : selectedSupervisor.status === 'inactive' ? ' (inactive)' : ''}`
-                    : 'Unassigned'
-                  : null
-              }
-              placeholder={selectedCompany ? 'Select a supervisor' : 'Assign a company first'}
-              detail={
-                !selectedCompany && selectedSupervisor && keptSupervisor?.id === selectedSupervisor.id ? 'Kept from before; no company assigned' : null
-              }
-              onPress={() => setPicker('supervisor')}
-              disabled={submitting || !supervisorPickable}
-              error={errors.supervisor_id}
+              label="Company"
+              icon="business-outline"
+              value={selectedCompany ? `${selectedCompany.company_name}${selectedCompany.status === 'inactive' ? ' (inactive)' : ''}` : values.company_id === null ? 'Unassigned' : null}
+              placeholder="Select a company"
+              detail={selectedCompany ? `${slotCount(selectedCompany)} slots filled` : null}
+              onPress={() => setPicker('company')}
+              disabled={submitting}
+              error={errors.company_id}
             />
-            {/* A warning only: saving without a supervisor is allowed. */}
-            {selectedCompany && values.supervisor_id === null && !errors.supervisor_id ? (
-              <Text className="text-xs text-amber-700">{NO_SUPERVISOR_HINT}</Text>
-            ) : keptFlagged && !errors.supervisor_id ? (
-              <Text className="text-xs text-amber-700">{currentNotSupervisor ? NOT_SUPERVISOR_HINT : OFF_ROSTER_HINT}</Text>
-            ) : selectedSupervisor?.status === 'inactive' && !errors.supervisor_id ? (
-              // Only the unchanged current supervisor can be inactive here (new picks must be active).
-              <Text className="text-xs text-amber-700">{INACTIVE_SUPERVISOR_HINT}</Text>
+            {/* Website: "Supervisor: <name>" read-only under Company (set on the company in Company Management). */}
+            {companySupervisor ? (
+              <Text className="text-sm text-gray-600" accessibilityLabel={`Supervisor: ${companySupervisor.name}${supervisorSuffix ? `, ${supervisorSuffix}` : ''}`}>
+                Supervisor: <Text className="font-medium text-gray-900">{companySupervisor.name}</Text>
+                {supervisorSuffix ? ` (${supervisorSuffix})` : ''}
+              </Text>
             ) : null}
-            {selectedCompany && !roster.some((s) => s.status === 'active') ? (
-              <Text className="text-xs text-gray-500">No active supervisors on this company&apos;s roster</Text>
-            ) : companyInactive ? (
-              <Text className="text-xs text-amber-700">This company is inactive. Activate it in Company Management before assigning a new supervisor.</Text>
-            ) : null}
+            {supervisorIssue ? <AmberHint text={STUDENT_SUPERVISOR_HINTS[supervisorIssue]} /> : null}
           </View>
           {values.required_hours !== undefined ? (
             <View className="gap-1">
@@ -588,6 +558,17 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
       </View>
 
       <SelectSheet
+        visible={picker === 'term'}
+        title="Term"
+        options={termOptions}
+        selected={values.term_id ?? null}
+        onSelect={(value) => {
+          if (value !== null) set('term_id', value);
+        }}
+        onClose={() => setPicker(null)}
+        emptyText="No terms yet"
+      />
+      <SelectSheet
         visible={picker === 'company'}
         title="Company"
         allLabel="Unassigned"
@@ -596,16 +577,6 @@ function AssignmentForm({ title, student, options, onRefreshOptions }: FormProps
         onSelect={changeCompany}
         onClose={() => setPicker(null)}
         emptyText="No companies yet"
-      />
-      <SelectSheet
-        visible={picker === 'supervisor'}
-        title="Supervisor"
-        allLabel="Unassigned"
-        options={supervisorOptions}
-        selected={values.supervisor_id}
-        onSelect={(value) => set('supervisor_id', value)}
-        onClose={() => setPicker(null)}
-        emptyText="No active supervisors on this company's roster"
       />
     </KeyboardAvoidingView>
   );

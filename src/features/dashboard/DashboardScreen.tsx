@@ -10,6 +10,7 @@ import { useAuth } from '@/auth/AuthProvider';
 import { HomeGreeting } from '@/components/HomeGreeting';
 import { Banner } from '@/components/ui/Banner';
 import { ErrorState } from '@/components/ui/ErrorState';
+import { TermBar } from '@/features/terms/TermSwitcher';
 import { colors } from '@/theme/colors';
 
 import { DashboardSkeleton } from './DashboardSkeleton';
@@ -79,6 +80,8 @@ export function DashboardScreen() {
       contentContainerClassName="gap-4 p-4 pb-10"
       refreshControl={<RefreshControl refreshing={pulling} onRefresh={() => void refresh()} colors={[colors.brand700]} />}>
       <HomeGreeting />
+      {/* Supervisors / Coordinators / Admins: which term Home shows (renders nothing for students). */}
+      <TermBar />
       {data && dashboard.isRefetchError ? (
         <Banner tone="warning" message={`Showing saved data. ${toApiError(dashboard.error).message}`} />
       ) : null}

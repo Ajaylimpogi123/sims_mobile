@@ -103,6 +103,16 @@ function firstFieldErrors(errors: ApiErrorBody['errors']): Record<string, string
   return result;
 }
 
+/**
+ * 422 code term_archived: a write on a record of a past term by a non-Administrator. The message
+ * (also errors.term[0]) says why, e.g. "This record belongs to an archived term (SY 2025-2026 ·
+ * 2nd Semester). Only an Administrator can change it."
+ */
+export function isTermArchived(error: unknown): boolean {
+  const apiError = toApiError(error);
+  return apiError.kind === 'validation' && apiError.code === 'term_archived';
+}
+
 /** Converts anything thrown by axios (or our own code) into an ApiError. */
 export function toApiError(error: unknown): ApiError {
   if (error instanceof ApiError) return error;

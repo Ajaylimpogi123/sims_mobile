@@ -18,6 +18,10 @@ const STATUS_CONFIG: Record<string, { label: string; box: string; text: string }
   locked: { label: 'Locked', box: 'bg-purple-100', text: 'text-purple-700' },
   approved: { label: 'Approved', box: 'bg-green-100', text: 'text-green-700' },
   rejected: { label: 'Rejected', box: 'bg-red-100', text: 'text-red-700' },
+  // Terms (website Terms/Index.jsx TermStatusBadge).
+  current: { label: 'Current', box: 'bg-green-100', text: 'text-green-700' },
+  archived: { label: 'Archived', box: 'bg-gray-100', text: 'text-gray-600' },
+  upcoming: { label: 'Upcoming', box: 'bg-blue-100', text: 'text-blue-700' },
 };
 
 /** Same fallback as the web: unknown statuses render as Active (if "active") or Inactive. */

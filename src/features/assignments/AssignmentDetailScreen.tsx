@@ -16,12 +16,13 @@ import { ErrorState } from '@/components/ui/ErrorState';
 import { SkeletonBlock, SkeletonPulse } from '@/components/ui/Skeleton';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { formatNumber, TABULAR } from '@/lib/format';
+import { isPastTerm } from '@/terms/selected-term';
 import { colors } from '@/theme/colors';
 
 import { REQUIRED_HOURS_NOT_SET } from '../dashboard/HoursProgressBar';
 
 import { setAssignmentsFlash, STUDENT_NOT_FOUND, takeAssignmentDetailFlash } from './flash';
-import { SUPERVISOR_HINTS, SupervisorFlag, supervisorProblem } from './SupervisorFlag';
+import { STUDENT_SUPERVISOR_HINTS, SupervisorFlag } from './SupervisorFlag';
 import { Text } from '@/components/ui/Text';
 
 const TITLE = 'Student';
@@ -84,9 +85,19 @@ function ProfileCard({ student }: { student: AssignmentStudent }) {
 }
 
 function AssignmentCard({ student }: { student: AssignmentStudent }) {
-  const problem = supervisorProblem(student);
+  const issue = student.supervisor_issue;
   return (
     <Card title="Internship Assignment">
+      {student.term ? (
+        <Row label="Term">
+          <View className="flex-row items-center gap-2">
+            <View className="flex-1">
+              <Value text={student.term.label} />
+            </View>
+            {student.term.is_current ? null : <StatusBadge status={isPastTerm(student.term) ? 'archived' : 'upcoming'} />}
+          </View>
+        </Row>
+      ) : null}
       <Row label="Company">
         <View className="flex-row items-center gap-2">
           <View className="flex-1">
@@ -101,14 +112,10 @@ function AssignmentCard({ student }: { student: AssignmentStudent }) {
             <Value text={student.supervisor?.name ?? 'Unassigned'} muted={!student.supervisor} />
           </View>
           {/* The "Supervisor inactive" flag already says it; no second Inactive badge then. */}
-          {student.supervisor?.status === 'inactive' && problem !== 'inactive' ? <StatusBadge status="inactive" /> : null}
-          <SupervisorFlag student={student} />
+          {student.supervisor?.status === 'inactive' && issue !== 'inactive' ? <StatusBadge status="inactive" /> : null}
+          <SupervisorFlag subject={student} />
         </View>
-        {problem === 'off_roster' ? (
-          <Text className="text-xs text-amber-700">No longer on this company&apos;s roster. The assignment stays until you change it.</Text>
-        ) : problem ? (
-          <Text className="text-xs text-amber-700">{SUPERVISOR_HINTS[problem]}</Text>
-        ) : null}
+        {issue ? <Text className="text-xs text-amber-700">{STUDENT_SUPERVISOR_HINTS[issue]}</Text> : null}
       </Row>
       {student.required_hours !== undefined ? (
         <Row label="Required Hours">

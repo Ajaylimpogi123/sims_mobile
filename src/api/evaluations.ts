@@ -1,5 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData, type QueryClient } from '@tanstack/react-query';
 
+import { termKey, termParams, useTermParam, type TermKey } from '@/terms/selected-term';
+
 import { api } from './client';
 import { dashboardKeys } from './dashboard';
 import { toApiError } from './errors';
@@ -28,10 +30,12 @@ export const CRITERION_DESCRIPTION_MAX = 2000;
 export const evaluationKeys = {
   all: ['evaluations'] as const,
   lists: ['evaluations', 'list'] as const,
-  list: (filters: EvaluationFilters) => ['evaluations', 'list', filters] as const,
+  list: (filters: EvaluationFilters, term: TermKey) => ['evaluations', 'list', filters, term] as const,
   detail: (id: number) => ['evaluations', 'detail', id] as const,
   criteria: ['evaluations', 'criteria'] as const,
+  /** Prefix: one per viewed term below. */
   students: ['evaluations', 'students'] as const,
+  studentsFor: (term: TermKey) => ['evaluations', 'students', term] as const,
   managedCriteria: ['evaluation-criteria'] as const,
 };
 
@@ -41,11 +45,12 @@ export const NO_EVALUATION_FILTERS: EvaluationFilters = { status: null, studentI
 // Requests
 // ---------------------------------------------------------------------------
 
-export async function getEvaluations(filters: EvaluationFilters, cursor: string | null): Promise<EvaluationsPage> {
+export async function getEvaluations(filters: EvaluationFilters, cursor: string | null, termId: number | null = null): Promise<EvaluationsPage> {
   const search = filters.search.trim();
   const { data } = await api.get<EvaluationsPage>('/evaluations', {
     params: {
       per_page: PER_PAGE,
+      ...termParams(termId),
       ...(filters.studentId !== null ? { student_id: filters.studentId } : {}),
       ...(filters.status ? { status: filters.status } : {}),
       ...(search ? { search } : {}),
@@ -65,8 +70,8 @@ export async function getEvaluationCriteria(): Promise<EvaluationCriteriaRespons
   return data;
 }
 
-export async function getEvaluableStudents(): Promise<EvaluableStudent[]> {
-  const { data } = await api.get<{ students: EvaluableStudent[] }>('/evaluations/students');
+export async function getEvaluableStudents(termId: number | null = null): Promise<EvaluableStudent[]> {
+  const { data } = await api.get<{ students: EvaluableStudent[] }>('/evaluations/students', { params: termParams(termId) });
   return data.students;
 }
 
@@ -163,9 +168,10 @@ export async function deleteCriterion(id: number): Promise<CriterionWriteRespons
 type ListData = InfiniteData<EvaluationsPage, string | null>;
 
 export function useEvaluations(filters: EvaluationFilters) {
+  const termId = useTermParam();
   return useInfiniteQuery({
-    queryKey: evaluationKeys.list(filters),
-    queryFn: ({ pageParam }) => getEvaluations(filters, pageParam),
+    queryKey: evaluationKeys.list(filters, termKey(termId)),
+    queryFn: ({ pageParam }) => getEvaluations(filters, pageParam, termId),
     initialPageParam: null as string | null,
     getNextPageParam: (last) => (last.meta.has_more && last.meta.next_cursor ? last.meta.next_cursor : undefined),
     placeholderData: (previous) => previous,
@@ -197,7 +203,13 @@ export function useEvaluationCriteria(enabled = true) {
 }
 
 export function useEvaluableStudents(enabled = true) {
-  return useQuery({ queryKey: evaluationKeys.students, queryFn: getEvaluableStudents, enabled, staleTime: 60_000 });
+  const termId = useTermParam();
+  return useQuery({
+    queryKey: evaluationKeys.studentsFor(termKey(termId)),
+    queryFn: () => getEvaluableStudents(termId),
+    enabled,
+    staleTime: 60_000,
+  });
 }
 
 export function useManagedCriteria() {

@@ -16,6 +16,7 @@ import { SkeletonBlock, SkeletonPulse } from '@/components/ui/Skeleton';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { formatLongDate, formatTime } from '@/lib/datetime';
 import { formatNumber, TABULAR } from '@/lib/format';
+import { useAuth } from '@/auth/AuthProvider';
 import { submissionClosedMessage } from '@/lib/submission';
 import { colors } from '@/theme/colors';
 
@@ -191,6 +192,7 @@ export function AttendanceScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const params = useLocalSearchParams<{ attendance_id?: string }>();
+  const { me } = useAuth();
   const today = useAttendanceToday();
   const history = useAttendanceHistory();
   const [pulling, setPulling] = useState(false);
@@ -226,8 +228,9 @@ export function AttendanceScreen() {
 
   const noProfile = isNoStudentProfile(today.error) || isNoStudentProfile(history.error);
   const submission = today.data?.submission;
+  const studentTerm = me?.student?.term ?? null;
   const closedMessage =
-    submission && !submission.can_submit ? submissionClosedMessage(submission.internship_status, submission.reason) : null;
+    submission && !submission.can_submit ? submissionClosedMessage(submission.internship_status, submission.reason, studentTerm) : null;
   const items = noProfile ? [] : (history.data?.pages.flatMap((page) => page.data) ?? []);
 
   // A notification ("Your time-in was approved") lands here with ?attendance_id=12, once the history is loaded.

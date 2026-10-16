@@ -10,6 +10,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { formatDate, formatTime } from '@/lib/datetime';
 import { capitalize, formatNumber, TABULAR } from '@/lib/format';
 import { submissionClosedMessage } from '@/lib/submission';
+import { isPastTerm } from '@/terms/selected-term';
 import { hrefForFeature } from '@/navigation/access';
 import { openHref } from '@/navigation/targets';
 import { colors } from '@/theme/colors';
@@ -57,10 +58,32 @@ export function StudentDashboard({ data, me }: { data: StudentData | null; me: M
   const attendanceHref = hrefForFeature('attendance', me);
   const reportsHref = hrefForFeature('my-reports', me);
   // Website (StudentSummary): attendance and reports are accepted only while the internship is Ongoing.
-  const closedMessage = internship.can_submit === false ? submissionClosedMessage(internship.status) : null;
+  const term = me?.student?.term ?? null;
+  const closedMessage = internship.can_submit === false ? submissionClosedMessage(internship.status, null, term) : null;
 
   return (
     <View className="gap-4">
+      {/* Website StudentSummary: "Term: <label>", with "Ended" once it's past ("Upcoming" before it starts). */}
+      {term ? (
+        <View
+          className="flex-row items-center gap-2 self-start rounded-full border border-gray-200 bg-white px-3 py-1"
+          accessible
+          accessibilityLabel={`Term: ${term.label}${term.is_current ? '' : isPastTerm(term) ? ', ended' : ', upcoming'}`}>
+          <Ionicons name="calendar-outline" size={16} color={colors.brand700} />
+          <Text className="shrink text-sm text-gray-700" numberOfLines={1}>
+            Term: <Text className="font-medium text-gray-900">{term.label}</Text>
+          </Text>
+          {!term.is_current ? (
+            isPastTerm(term) ? (
+              <View className="rounded-full bg-amber-100 px-2 py-0.5">
+                <Text className="text-xs font-medium text-amber-800">Ended</Text>
+              </View>
+            ) : (
+              <StatusBadge status="upcoming" />
+            )
+          ) : null}
+        </View>
+      ) : null}
       {closedMessage ? <Banner tone="warning" message={closedMessage} /> : null}
 
       {/* Hours Rendered + Hours Progress (two web cards, one here) */}

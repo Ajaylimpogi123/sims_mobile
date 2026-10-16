@@ -18,6 +18,8 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { TABULAR } from '@/lib/format';
 import { colors } from '@/theme/colors';
 
+import { SupervisorFlag, supervisorFlagLabel } from '@/features/assignments/SupervisorFlag';
+
 import { takeCompaniesFlash } from './flash';
 import { Text } from '@/components/ui/Text';
 
@@ -37,16 +39,20 @@ export function slotsLabel(company: Pick<ManagedCompany, 'students_count' | 'slo
 }
 
 // ---------------------------------------------------------------------------
-// Card (website row: Company Name, Contact Person, Contact Number, Industry, Slots, Status)
+// Card (website row: Company Name, Company Supervisor, Contact Number, Industry, Slots, Status)
 // ---------------------------------------------------------------------------
 
 function CompanyCard({ item, onOpen }: { item: ManagedCompany; onOpen: () => void }) {
-  const contact = [item.contact_person, item.contact_number].filter(Boolean).join(' · ');
+  const flag = supervisorFlagLabel(item);
+  // A flagged supervisor shows the amber pill; the name stays visible when there is one.
+  const contact = [item.supervisor?.name, item.contact_number].filter(Boolean).join(' · ');
   const full = item.slots > 0 && item.students_count >= item.slots;
   const label = [
     item.company_name,
     item.status === 'active' ? 'Active' : 'Inactive',
-    contact || null,
+    item.supervisor ? `Supervisor ${item.supervisor.name}` : null,
+    flag,
+    item.contact_number,
     item.industry ? `Industry ${item.industry}` : null,
     `Slots ${item.students_count ?? 0} of ${item.slots} used`,
   ]
@@ -67,9 +73,12 @@ function CompanyCard({ item, onOpen }: { item: ManagedCompany; onOpen: () => voi
         <StatusBadge status={item.status} />
         <Ionicons name="chevron-forward" size={18} color={colors.gray400} />
       </View>
-      <Text className="text-sm text-gray-600" numberOfLines={1}>
-        {contact || '-'}
-      </Text>
+      {contact ? (
+        <Text className="text-sm text-gray-600" numberOfLines={1}>
+          {contact}
+        </Text>
+      ) : null}
+      <SupervisorFlag subject={item} />
       <View className="mt-1 flex-row items-center gap-3">
         <Text className="flex-1 text-xs text-gray-500" numberOfLines={1}>
           {item.industry || '-'}
@@ -111,7 +120,7 @@ function ListSkeleton() {
 
 /**
  * Company Management (website: CompanyManagement/Index.jsx), Coordinator + Admin. Tap a company
- * for its detail (info, supervisor roster, Edit, Activate / Deactivate, Delete).
+ * for its detail (info, Company Supervisor, Edit, Activate / Deactivate, Delete).
  */
 export function CompaniesScreen() {
   const router = useRouter();
